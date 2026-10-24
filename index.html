@@ -93,7 +93,7 @@ tr.struck td.keep{text-decoration:none;opacity:1}
 .rk{color:var(--ink-3);font-size:13px;font-weight:600}
 .sbg .mp{display:inline-block;min-width:44px;text-align:right;color:var(--ink-3);font-weight:400;font-size:15px}.sbg .sc{display:inline-block;min-width:40px;margin-left:12px;text-align:right}
 .sbg .tm.hd{font-size:11px;text-transform:uppercase;letter-spacing:.04em;color:var(--ink-3)}.sbg .tm.hd .mp,.sbg .tm.hd .sc{font-size:11px;color:var(--ink-3);font-weight:700}
-.sbg .ball{font-size:14px}.sbg .dd{font-size:14px;margin-top:2px;color:var(--ink-2)}.sbg .dd.rz{color:var(--bad-ink);font-weight:700}
+.sbg .ball{font-size:14px}.sbg .tm .nm{flex:1;min-width:0;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}.sbg .tm>span:last-child{flex-shrink:0;white-space:nowrap}.sbg .dd{font-size:14px;margin-top:2px;color:var(--ink-2)}.sbg .dd.rz{color:var(--bad-ink);font-weight:700}
 .sbg .mdl{margin-top:6px;font-size:14px;color:var(--ink-2);border-top:1px dashed var(--border);padding-top:6px}
 .sbh{grid-column:1/-1;font-weight:700;font-size:16px;margin-top:6px;color:var(--ink-2)}
 .sline{margin-top:3px;font-weight:700;font-variant-numeric:tabular-nums}.sline .small{font-weight:400}
@@ -1350,7 +1350,7 @@ async function refreshLive() {
 }
 function scoreLine(g) { if (!g || !(g.state === 'in' || g.state === 'post' || g.done)) return '';
   return `<div class="sline ${g.state === 'in' ? 'in' : ''}">${g.as} – ${g.hs} <span class="small">${esc(g.detail || 'Final')}</span></div>`; }
-const PAGE_VER = "20261024155116";   // stamped by tracker.py; a newer published page reloads itself
+const PAGE_VER = "20261024163450";   // stamped by tracker.py; a newer published page reloads itself
 // ---------------- AUTO REFRESH (while the page is open) ----------------
 const busy = () => { const a = document.activeElement; return a && ['INPUT', 'SELECT', 'TEXTAREA'].includes(a.tagName) || $('#m-form').classList.contains('open'); };
 let tickN = 0;
@@ -1419,8 +1419,8 @@ function renderScoreboard() {
       return `<span class="chip ${c === 'neg' ? 'no' : ''}"><span class="${c}">${esc(x.who === 'Model' ? 'AI-LOX: ' : x.who === 'Parlay leg' ? 'Parlay: ' : x.who === 'Teaser leg' ? 'AI-LOX teaser: ' : 'Mine: ')}${esc(x.t)}${w}</span></span>`; }).join('');
     return `<div class="sbg ${live ? 'live' : ''}">
       ${bx ? '<div class="tm hd"><span></span><span><span class="mp">model</span><span class="sc">score</span></span></div>' : ''}
-      <div class="tm ${aL ? 'lead' : ''}"><span>${g.ar ? `<span class="rk">${g.ar}</span>` : ''}${esc(g.away)}${live && g.poss === 'a' ? ' <span class="ball" title="Has the ball">🏈</span>' : ''}</span><span>${bx ? `<span class="mp">${LS[0]}</span>` : ''}<span class="sc">${pre ? '' : g.as}</span></span></div>
-      <div class="tm ${hL ? 'lead' : ''}"><span>${g.hr ? `<span class="rk">${g.hr}</span>` : ''}${esc(g.home)}${live && g.poss === 'h' ? ' <span class="ball" title="Has the ball">🏈</span>' : ''}</span><span>${bx ? `<span class="mp">${LS[1]}</span>` : ''}<span class="sc">${pre ? '' : g.hs}</span></span></div>
+      <div class="tm ${aL ? 'lead' : ''}"><span class="nm">${live && g.poss === 'a' ? '<span class="ball" title="Has the ball">🏈</span> ' : ''}${g.ar ? `<span class="rk">${g.ar}</span>` : ''}${esc(g.away)}</span><span>${bx ? `<span class="mp">${LS[0]}</span>` : ''}<span class="sc">${pre ? '' : g.as}</span></span></div>
+      <div class="tm ${hL ? 'lead' : ''}"><span class="nm">${live && g.poss === 'h' ? '<span class="ball" title="Has the ball">🏈</span> ' : ''}${g.hr ? `<span class="rk">${g.hr}</span>` : ''}${esc(g.home)}</span><span>${bx ? `<span class="mp">${LS[1]}</span>` : ''}<span class="sc">${pre ? '' : g.hs}</span></span></div>
       <div class="st ${live ? 'live' : ''}"><span>${pre ? ctTime(g.kick) : esc(g.detail || (fin ? 'Final' : ''))}</span><span class="small">${esc(g.tv || '')}</span></div>
       ${live && g.dd ? `<div class="dd ${g.rz ? 'rz' : ''}">${esc(g.dd)}${g.rz ? ' · red zone' : ''}</div>` : ''}
       ${chips ? `<div class="bets">${chips}</div>` : ''}${mdl}</div>`.replace(/^/, head); }).join('') + '</div>');
