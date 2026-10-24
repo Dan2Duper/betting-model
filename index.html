@@ -82,6 +82,14 @@ tr.struck td.keep{text-decoration:none;opacity:1}
 .hide{display:none!important}
 .ftoggle{display:none}
 .rtext p{margin:6px 0 10px;color:var(--ink-2)}
+.sb{display:grid;grid-template-columns:repeat(auto-fill,minmax(260px,1fr));gap:10px}
+.sbg{border:1px solid var(--border);border-radius:12px;padding:10px 12px;background:var(--surface)}
+.sbg.live{border-color:var(--bad-ink)}
+.sbg .tm{display:flex;justify-content:space-between;gap:8px;font-size:17px;font-variant-numeric:tabular-nums}
+.sbg .tm.lead{font-weight:700}.sbg .tm .rk{color:var(--ink-3);font-size:13px;margin-right:4px}
+.sbg .st{display:flex;justify-content:space-between;gap:8px;margin-top:4px;font-size:14px;color:var(--ink-2)}
+.sbg .st.live{color:var(--bad-ink);font-weight:700}
+.sbg .bets{margin-top:6px}
 .sline{margin-top:3px;font-weight:700;font-variant-numeric:tabular-nums}.sline .small{font-weight:400}
 .sline.in::before{content:"";display:inline-block;width:8px;height:8px;border-radius:50%;background:var(--bad-ink);margin-right:6px;vertical-align:1px}
 .lv{border:1px solid var(--border);border-radius:12px;padding:12px 14px;margin-top:10px;background:var(--surface);border-left-width:6px}
@@ -189,8 +197,15 @@ a{color:var(--series)}
       <div id="mineboard"></div>
     </div>
     <div class="card">
+      <div class="cardhead"><div><h2>Scoreboard</h2></div>
+        <div style="display:flex;gap:8px;flex-wrap:wrap"><div class="seg" id="sb-lg"><button data-l="CFB" class="on">College</button><button data-l="NFL">NFL</button></div>
+        <div class="seg" id="sb-show"><button data-v="all" class="on">All</button><button data-v="live">Live</button><button data-v="top">Top 25</button><button data-v="mine">My bets</button></div></div></div>
+      <div class="filters" style="margin:8px 0 10px;padding:10px"><label class="f">Day<select id="sb-day"></select></label><label class="f">Team<input id="sb-team" placeholder="any team"></label></div>
+      <div id="scoreboard"></div>
+    </div>
+    <div class="card">
       <div class="cardhead">
-        <div><h2>Games</h2></div>
+        <div><h2>Model games</h2></div>
         <div style="display:flex;gap:8px;flex-wrap:wrap">
           <div class="seg" id="lg"><button data-l="CFB" class="on">College</button><button data-l="NFL">NFL</button></div>
           <div class="seg" id="show"><button data-s="flag" class="on">Flagged</button><button data-s="lines">With lines</button><button data-s="all">All</button></div>
@@ -405,7 +420,8 @@ async function espnDay(lg, d) {
     const rec = {lg, id: ev.id, date: edate, home: H.team.location, away: A.team.location, habbr: nflAbbr(H.team.abbreviation), aabbr: nflAbbr(A.team.abbreviation),
                  hs: +H.score, as: +A.score, done: !!ev.status?.type?.completed};
     if (rec.done) ST.finals[lg + ':' + ev.id] = rec;
-    (ST.slate[lg + ':' + d] = ST.slate[lg + ':' + d] || {})[ev.id] = {id: ev.id, kick: ev.date, away: A.team.location, home: H.team.location, aabbr: rec.aabbr, habbr: rec.habbr, done: rec.done, as: rec.as, hs: rec.hs, state: ev.status?.type?.state || '', detail: ev.status?.type?.shortDetail || '', ts: Date.now()};
+    (ST.slate[lg + ':' + d] = ST.slate[lg + ':' + d] || {})[ev.id] = {id: ev.id, kick: ev.date, away: A.team.location, home: H.team.location, aabbr: rec.aabbr, habbr: rec.habbr, done: rec.done, as: rec.as, hs: rec.hs, state: ev.status?.type?.state || '', detail: ev.status?.type?.shortDetail || '', ts: Date.now(),
+      ar: A.curatedRank?.current < 26 ? A.curatedRank.current : '', hr: H.curatedRank?.current < 26 ? H.curatedRank.current : '', tv: (c.broadcasts?.[0]?.names || []).join('/'), lg};
     const o = c.odds?.[0];
     if (o && !rec.done) {
       let sp = typeof o.spread === 'number' ? o.spread : null;
@@ -749,7 +765,7 @@ function renderWeek() {
   $$('#betboard [data-strike]').forEach(el => el.onclick = () => { if (confirmStrike(el.dataset.strike)) { ST.struck[el.dataset.strike] = Date.now(); usave(); recompute(); } });
   $$('#betboard [data-unstrike]').forEach(el => el.onclick = () => { delete ST.struck[el.dataset.unstrike]; usave(); recompute(); });
   $$('#betboard input[data-ov]').forEach(el => el.onchange = () => { const o = ST.ov[el.dataset.id] = ST.ov[el.dataset.id] || {}; if (el.value.trim() === '') delete o[el.dataset.ov]; else o[el.dataset.ov] = el.value.trim(); usave(); recompute(); });
-  renderMine(); renderGames();
+  renderMine(); renderScoreboard(); renderGames();
 }
 
 function qbChips(lg, g) {
@@ -1254,6 +1270,7 @@ async function tick() {
   tickN++;
   const cfbDays = new Set([today()]), nflDays = new Set([new Date().toLocaleDateString('en-CA', {timeZone: 'America/New_York'})]);
   if (new Date().getHours() < 4) cfbDays.add(ctDate(new Date(Date.now() - 864e5).toISOString()));   // late games past midnight
+  if (SB.day && SB.day !== today()) (SB.lg === 'CFB' ? cfbDays : nflDays).add(SB.day);
   await Promise.allSettled([...[...cfbDays].map(d => espnDay('CFB', d)), ...[...nflDays].map(d => espnDay('NFL', d))]);
   save();
   if (tickN % 5 === 0) syncCycle();
@@ -1267,6 +1284,48 @@ async function checkNewWeek() {   // the Tuesday update publishes a new page; lo
 }
 setInterval(tick, 60e3);
 document.addEventListener('visibilitychange', () => { if (document.visibilityState === 'visible') { tick(); checkNewWeek(); } });
+
+// ---------------- SCOREBOARD ----------------
+let SB = {lg: 'CFB', show: 'all'};
+try { Object.assign(SB, JSON.parse(localStorage.getItem('bt-sb') || '{}')); } catch (e) {}
+const sbSave = () => { try { localStorage.setItem('bt-sb', JSON.stringify(SB)); } catch (e) {} };
+function sbGames(lg) { const out = {}; Object.entries(ST.slate).forEach(([k, day]) => { if (!k.startsWith(lg + ':')) return; Object.values(day).forEach(g => out[g.id] = g); }); return Object.values(out); }
+function betsByGame() {   // every bet this week keyed by ESPN game id, with how it stands
+  const M = {}, add = (id, b, who, t) => (M[id] = M[id] || []).push({b, who, t});
+  BETS.filter(b => !ST.struck[b.id]).forEach(b => { const id = b.league === 'NFL' ? (SNAP.nfl.games.find(x => x.id === b.game_id) || {}).espn || b.game_id : b.game_id; add(id, b, 'Model', b.bet || betText(b)); });
+  MINE.forEach(b => { if (b.market === 'parlay') (b.legs || []).forEach(l => add(l.game_id, l, 'Parlay leg', legText(l))); else add(b.game_id, b, 'Mine', b.bet || betText(b)); });
+  return M;
+}
+function renderScoreboard() {
+  $$('#sb-lg button').forEach(x => x.classList.toggle('on', x.dataset.l === SB.lg)); $$('#sb-show button').forEach(x => x.classList.toggle('on', x.dataset.v === SB.show));
+  const all = sbGames(SB.lg), days = [...new Set(all.map(g => ctDate(g.kick)))].sort(), sel = $('#sb-day');
+  const want = SB.day && days.includes(SB.day) ? SB.day : days.includes(today()) ? today() : days.find(d => d >= today()) || days[days.length - 1] || '';
+  sel.innerHTML = days.map(d => `<option value="${d}">${dayLbl(d)}${d === today() ? ' (today)' : ''}</option>`).join('') || '<option>no games loaded yet</option>'; sel.value = want;
+  const TM = $('#sb-team').value.trim().toLowerCase(), BG = betsByGame();
+  let G = all.filter(g => ctDate(g.kick) === want && (!TM || [g.away, g.home].some(t => t.toLowerCase().includes(TM))));
+  if (SB.show === 'live') G = G.filter(g => g.state === 'in'); else if (SB.show === 'top') G = G.filter(g => g.ar || g.hr); else if (SB.show === 'mine') G = G.filter(g => BG[g.id]);
+  const rank = g => g.state === 'in' ? 0 : g.state === 'pre' || (!g.state && !g.done) ? 1 : 2;
+  G.sort((a, b) => rank(a) - rank(b) || a.kick.localeCompare(b.kick) || a.away.localeCompare(b.away));
+  const nLive = all.filter(g => ctDate(g.kick) === want && g.state === 'in').length;
+  $('#scoreboard').innerHTML = (nLive ? `<div class="small" style="margin-bottom:8px">${nLive} live now · updates every minute</div>` : '') + (!G.length ? '<div class="empty">No games match.</div>' : '<div class="sb">' + G.map(g => {
+    const live = g.state === 'in', fin = g.done || g.state === 'post', pre = !live && !fin, aL = !pre && g.as > g.hs, hL = !pre && g.hs > g.as;
+    const chips = (BG[g.id] || []).map(x => { let c = '', w = '';
+      if (!pre) { const st = standing(x.b, g); c = st.m > 0 ? 'pos' : st.m < 0 ? 'neg' : ''; w = fin ? (st.m > 0 ? ' · won' : st.m < 0 ? ' · lost' : ' · push') : st.m > 0 ? ' · winning' : st.m < 0 ? ' · losing' : ' · even'; }
+      return `<span class="chip ${c === 'neg' ? 'no' : ''}"><span class="${c}">${esc(x.who === 'Model' ? 'Model: ' : x.who === 'Parlay leg' ? 'Parlay: ' : 'Mine: ')}${esc(x.t)}${w}</span></span>`; }).join('');
+    return `<div class="sbg ${live ? 'live' : ''}">
+      <div class="tm ${aL ? 'lead' : ''}"><span>${g.ar ? `<span class="rk">${g.ar}</span>` : ''}${esc(g.away)}</span><span>${pre ? '' : g.as}</span></div>
+      <div class="tm ${hL ? 'lead' : ''}"><span>${g.hr ? `<span class="rk">${g.hr}</span>` : ''}${esc(g.home)}</span><span>${pre ? '' : g.hs}</span></div>
+      <div class="st ${live ? 'live' : ''}"><span>${pre ? ctTime(g.kick) : esc(g.detail || (fin ? 'Final' : ''))}</span><span class="small">${esc(g.tv || '')}</span></div>
+      ${chips ? `<div class="bets">${chips}</div>` : ''}</div>`; }).join('') + '</div>');
+}
+$$('#sb-lg button').forEach(b => b.onclick = () => { SB.lg = b.dataset.l; SB.day = ''; sbSave(); renderScoreboard(); sbLoad(); });
+$$('#sb-show button').forEach(b => b.onclick = () => { SB.show = b.dataset.v; sbSave(); renderScoreboard(); });
+$('#sb-day').onchange = () => { SB.day = $('#sb-day').value; sbSave(); renderScoreboard(); sbLoad(); };
+$('#sb-team').oninput = renderScoreboard;
+async function sbLoad() {   // make sure the chosen day's full slate is loaded
+  const d = SB.day || today(); const k = SB.lg + ':' + d;
+  if (!ST.slate[k] || Date.now() - Math.max(0, ...Object.values(ST.slate[k]).map(g => g.ts || 0)) > 90e3) { try { await espnDay(SB.lg, SB.lg === 'NFL' ? d : d); save(); renderScoreboard(); } catch (e) {} }
+}
 
 // ---------------- filter toggles (phone) ----------------
 $$('.ftoggle').forEach(b => { const box = document.getElementById(b.dataset.for); let open = false;
@@ -1292,7 +1351,7 @@ async function refreshAll(force) {
 }
 $('#refresh').onclick = () => { refreshAll(true); syncCycle(); };
 setStatus('scores', '<b>Scores:</b> loading…'); setStatus('lines', '<b>Lines:</b> loading…'); setStatus('wx', '<b>Weather:</b> loading…'); setStatus('qb', '<b>QB news:</b> loading…');
-themeLbl(); restoreGF(); $$('.ftoggle').forEach(b => b._set && b._set()); recompute(); refreshAll(false); syncCycle();
+themeLbl(); sbLoad(); restoreGF(); $$('.ftoggle').forEach(b => b._set && b._set()); recompute(); refreshAll(false); syncCycle();
 if (screen.width <= 700 && innerWidth >= 900) $('#dsnote').innerHTML = '<div class="note">Your phone is showing the desktop version, so everything is tiny. In Chrome tap <b>⋮</b> and uncheck <b>Desktop site</b>.</div>';
 let rt; addEventListener('resize', () => { clearTimeout(rt); rt = setTimeout(renderAll, 150); });
 </script>
