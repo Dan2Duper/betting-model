@@ -37,7 +37,15 @@ if os.path.exists(chg_f):
         P = pd.concat([P, pk]).drop_duplicates(['league', 'game_id', 'rule'], keep='first'); P.to_csv(f'{L}/picks_log.csv', index=False)
     if C.get('mine') is not None:   # my own bets: the page (synced state) is the full list
         M = pd.DataFrame(C['mine'])
-        if len(M): M.astype(str).to_csv(f'{L}/my_bets_log.csv', index=False)
+        if len(M):
+            old = read('my_bets_log.csv')
+            if len(old) and 'result' in old:   # keep results already graded
+                keep = old.set_index('id')[[c for c in ('result', 'profit') if c in old]]
+                for c in keep.columns:
+                    if c not in M: M[c] = ''
+                    M[c] = [r if str(r) not in ('', 'nan', 'None') else keep[c].get(i, '') for i, r in zip(M['id'], M[c])]
+            if 'legs' in M: M['legs'] = [json.dumps(x) if isinstance(x, list) else x for x in M['legs']]
+            M.astype(str).to_csv(f'{L}/my_bets_log.csv', index=False)
     os.replace(chg_f, f'{L}/page_changes_merged_{dt.date.today():%Y%m%d}.json')
     print('merged page changes')
 
