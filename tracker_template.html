@@ -294,7 +294,7 @@ a{color:var(--series)}
       <div class="rtext">
         <p>A game gets flagged when it matches a rule that beat the closing line in past seasons. A flag becomes a bet only when that rule's backtest hit rate is at least <b>55% for college</b> or <b>53.5% for NFL</b> (52.4% breaks even at -110).</p>
         <p>At most <b>5 bets a day</b>, best hit rates first, one per game. Each day's budget is split by edge (fractional Kelly on a shrunk hit rate, $5 minimum), so the more proven rules get bigger stakes.</p>
-        <p><b>Current bet rules</b> (backtested against closing lines, Oct 2026 review): NFL wind unders, NFL 2-team underdog teasers (+1.5/+2.5 teased to +7.5/+8.5 when the total is 49 or less, paired automatically at DraftKings' −120), CFB east team flying west, CFB wind unders, CFB totals of 68+ under, CFB road team off a 28+ point loss, and CFB letdown fades (half stakes). Leans are tracked but not bet.</p>
+        <p><b>Current bet rules</b> (backtested against closing lines, Oct 2026 review): NFL wind unders, NFL 2-team underdog teasers (+1.5/+2.5 teased to +7.5/+8.5 when the total is 49 or less, paired automatically at DraftKings' −120), CFB east team flying west, CFB wind unders, CFB totals of 68+ under, CFB road team off a 28+ point loss, SEC/Big Ten road teams off a 21+ loss or 3-game skid (half stakes), and CFB letdown fades (half stakes). Leans are tracked but not bet.</p>
         <p><b>Kill switch:</b> after 50 live bets a rule is retired if it falls below 52.4% (teaser legs below 73.9%); a lean is promoted after 50 live picks at 55% or better. Records are on the <b>Stats</b> tab.</p>
       </div>
     </div>
@@ -689,6 +689,8 @@ function flagsFor(lg, g, P, L) {
     }
     if (L.spread != null && !g.neutral && g.away_prev_mar != null && g.away_prev_mar <= -28)
       out.push({rule: 'cfb_road_bounce28', market: 'spread', side: 'away', line: L.spread, text: `${g.away} ${lineTxt(-L.spread)}, off a ${-g.away_prev_mar}-pt loss`});
+    if (L.spread != null && !g.neutral && g.home_conf === g.away_conf && ['SEC', 'Big Ten'].includes(g.home_conf) && ((g.away_prev_mar != null && g.away_prev_mar <= -21) || (g.away_loss_streak || 0) >= 3))
+      out.push({rule: 'cfb_secb1g_road_bounce', market: 'spread', side: 'away', line: L.spread, text: `${g.away} ${lineTxt(-L.spread)}, ${g.home_conf} road team ${g.away_prev_mar <= -21 ? `off a ${-g.away_prev_mar}-pt loss` : `on a ${g.away_loss_streak}-game skid`}`});
     if (L.total != null && etHour(g.kick) >= 22)
       out.push({rule: 'cfb_late_under', market: 'total', side: 'under', line: L.total, text: `Under ${L.total}, late kick`});
     if (P.wind != null && P.wind >= RULES.cfb.wind_under_mph && L.total != null)

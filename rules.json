@@ -149,6 +149,12 @@
     "n": 418,
     "src": "kickoff 10pm ET or later: under 230-188 2015-25",
     "lean_only": true
+   },
+   "cfb_secb1g_road_bounce": {
+    "p": 0.599,
+    "n": 212,
+    "stake_mult": 0.5,
+    "src": "SEC/Big Ten conference games: road team off a 21+ point loss or on a 3+ game losing streak, 127-85 2015-25 (53.4% 2015-19, 63.3% 2021-25) - half stakes"
    }
   },
   "excluded": "time-zone spots where the model disagrees; any game passed with --skip",

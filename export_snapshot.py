@@ -62,12 +62,15 @@ done = sch[(sch.season_type == 'regular') & (sch.completed == True) & (sch.week 
 q81 = pd.concat([sch[sch.season_type == 'regular'].home_pregame_elo, sch[sch.season_type == 'regular'].away_pregame_elo]).quantile(0.81)
 lg_ = pd.concat([pd.DataFrame(dict(team=done.home_team, week=done.week, mar=done.home_points - done.away_points, oelo=done.away_pregame_elo)),
                  pd.DataFrame(dict(team=done.away_team, week=done.week, mar=done.away_points - done.home_points, oelo=done.home_pregame_elo))]).sort_values('week').groupby('team').tail(1).set_index('team')
+allg = pd.concat([pd.DataFrame(dict(team=done.home_team, week=done.week, mar=done.home_points - done.away_points)), pd.DataFrame(dict(team=done.away_team, week=done.week, mar=done.away_points - done.home_points))]).sort_values('week')
+LS = {t: next((i for i, v in enumerate(list(d.mar)[::-1]) if v >= 0), len(d)) for t, d in allg.groupby('team')}   # current losing streak
 for g in cg:
     for sd in ('away', 'home'):
         t = g[sd]
         if t in lg_.index:
             m, oe = lg_.at[t, 'mar'], lg_.at[t, 'oelo']; g[f'{sd}_prev_mar'] = int(m); g[f'{sd}_prev_beat_top'] = bool(m > 0 and pd.notna(oe) and oe >= q81)
         else: g[f'{sd}_prev_mar'] = None; g[f'{sd}_prev_beat_top'] = False
+        g[f'{sd}_loss_streak'] = int(LS.get(t, 0))
 snap['cfb'] = dict(week=cw, games=cg, qbs=cqb)
 print('CFB week', cw, len(cg), 'games')
 

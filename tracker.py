@@ -9,7 +9,7 @@ L = f'{PKG}/logs'
 NAMES = {'cfb_total_gap7': 'CFB model total off by 7+', 'cfb_tz_home': 'CFB east team flying west (home)',
          'cfb_tz_home_late': 'CFB east team west, late kick (home)', 'cfb_wind_under': 'CFB wind 13+ mph under',
          'nfl_wind_under_10_14': 'NFL wind 10-14 mph under', 'nfl_wind_under_15plus': 'NFL wind 15+ mph under',
-         'nfl_side_gap4': 'NFL side lean (model gap 4+)', 'nfl_key_side': 'NFL key-number side (lean)', 'nfl_teaser_dog': 'NFL underdog teaser (2-team, +1.5/+2.5 to +7.5/+8.5)', 'nfl_teaser_leg': 'NFL teaser leg (graded at teased line)', 'nfl_early_dog': 'NFL weeks 1-2 underdog (lean)', 'nfl_mnf_under': 'NFL Monday night under (lean)', 'cfb_total68_under': 'CFB total 68+ under', 'cfb_letdown': 'CFB letdown fade (after beating a top team)', 'cfb_road_bounce28': 'CFB road team off a 28+ point loss', 'cfb_late_under': 'CFB late-night under (lean)'}
+         'nfl_side_gap4': 'NFL side lean (model gap 4+)', 'nfl_key_side': 'NFL key-number side (lean)', 'nfl_teaser_dog': 'NFL underdog teaser (2-team, +1.5/+2.5 to +7.5/+8.5)', 'nfl_teaser_leg': 'NFL teaser leg (graded at teased line)', 'nfl_early_dog': 'NFL weeks 1-2 underdog (lean)', 'nfl_mnf_under': 'NFL Monday night under (lean)', 'cfb_total68_under': 'CFB total 68+ under', 'cfb_letdown': 'CFB letdown fade (after beating a top team)', 'cfb_road_bounce28': 'CFB road team off a 28+ point loss', 'cfb_late_under': 'CFB late-night under (lean)', 'cfb_secb1g_road_bounce': 'SEC/Big Ten road team off a 21+ loss or 3+ game skid'}
 def read(name):
     f = f'{L}/{name}'
     return pd.read_csv(f, dtype=str).fillna('') if os.path.exists(f) else pd.DataFrame()
