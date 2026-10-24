@@ -149,6 +149,7 @@ a{color:var(--series)}
   table.cards tr.edit.open{display:block}
   table.cards tr.struck td.first{text-decoration:line-through}
   table.cmp td,table.cmp th{font-size:17px}
+  #live-tiles .tile{padding:8px 10px}#live-tiles .tile .v{font-size:22px;margin-top:2px}#live-tiles .tile .k{font-size:12px}
   .ftoggle{display:block;width:100%}
   .filters.shut{display:none}
 }
@@ -165,7 +166,7 @@ a{color:var(--series)}
   </header>
   <div class="tabs" id="tabs">
     <button data-t="week" class="on">Week</button>
-    <button data-t="live">Live</button>
+    <button data-t="live">Scores</button>
     <button data-t="track">Tracker</button>
     <button data-t="stats">Stats</button>
     <button data-t="rules">Rules</button>
@@ -198,13 +199,6 @@ a{color:var(--series)}
       <div id="mineboard"></div>
     </div>
     <div class="card">
-      <div class="cardhead"><div><h2>Scoreboard</h2></div>
-        <div style="display:flex;gap:8px;flex-wrap:wrap"><div class="seg" id="sb-lg"><button data-l="CFB" class="on">College</button><button data-l="NFL">NFL</button></div>
-        <div class="seg" id="sb-show"><button data-v="all" class="on">All</button><button data-v="live">Live</button><button data-v="top">Top 25</button><button data-v="mine">My bets</button></div></div></div>
-      <div class="filters" style="margin:8px 0 10px;padding:10px"><label class="f">Day<select id="sb-day"></select></label><label class="f">Conference<select id="sb-conf"></select></label><label class="f">Sort<select id="sb-sort"><option value="live">Live first</option><option value="kick">Kickoff</option><option value="conf">Conference</option></select></label><label class="f">Team<input id="sb-team" placeholder="any team"></label></div>
-      <div id="scoreboard"></div>
-    </div>
-    <div class="card">
       <div class="cardhead">
         <div><h2>Model games</h2></div>
         <div style="display:flex;gap:8px;flex-wrap:wrap">
@@ -228,10 +222,13 @@ a{color:var(--series)}
   </section>
 
   <section id="t-live" class="hide">
+    <div class="tiles" id="live-tiles"></div>
     <div class="card">
-      <div class="cardhead"><div><h2>Live bets</h2><div class="small" id="live-when"></div></div><button class="btn primary" id="live-refresh">Refresh scores</button></div>
-      <div class="tiles" id="live-tiles" style="margin-top:10px"></div>
-      <div id="live-list"></div>
+      <div class="cardhead"><div><h2>Scoreboard</h2><div class="small" id="live-when"></div></div>
+        <div style="display:flex;gap:8px;flex-wrap:wrap"><div class="seg" id="sb-lg"><button data-l="CFB" class="on">College</button><button data-l="NFL">NFL</button></div>
+        <div class="seg" id="sb-show"><button data-v="all" class="on">All</button><button data-v="live">Live</button><button data-v="top">Top 25</button><button data-v="mine">My bets</button><button data-v="settled">Settled</button></div></div></div>
+      <div class="filters" style="margin:8px 0 10px;padding:10px"><label class="f">Day<select id="sb-day"></select></label><label class="f">Conference<select id="sb-conf"></select></label><label class="f">Sort<select id="sb-sort"><option value="live">Live first</option><option value="kick">Kickoff</option><option value="conf">Conference</option></select></label><label class="f">Team<input id="sb-team" placeholder="any team"></label></div>
+      <div id="scoreboard"></div>
     </div>
   </section>
 
@@ -767,7 +764,7 @@ function renderWeek() {
   $$('#betboard [data-strike]').forEach(el => el.onclick = () => { if (confirmStrike(el.dataset.strike)) { ST.struck[el.dataset.strike] = Date.now(); usave(); recompute(); } });
   $$('#betboard [data-unstrike]').forEach(el => el.onclick = () => { delete ST.struck[el.dataset.unstrike]; usave(); recompute(); });
   $$('#betboard input[data-ov]').forEach(el => el.onchange = () => { const o = ST.ov[el.dataset.id] = ST.ov[el.dataset.id] || {}; if (el.value.trim() === '') delete o[el.dataset.ov]; else o[el.dataset.ov] = el.value.trim(); usave(); recompute(); });
-  renderMine(); renderScoreboard(); renderGames();
+  renderMine(); renderGames();
 }
 
 function qbChips(lg, g) {
@@ -1250,21 +1247,20 @@ function renderLive() {
   }).join('');
   $('#live-tiles').innerHTML = [['Winning', win, 'pos'], ['Losing', lose, 'neg'], ['Not started', pre, ''], ['If it ended now', (ifNow > 0 ? '+' : '') + fmt$(ifNow), ifNow > 0 ? 'pos' : ifNow < 0 ? 'neg' : '']]
     .map(([k, v, c]) => `<div class="tile"><div class="k">${k}</div><div class="v ${c}">${v}</div></div>`).join('');
-  $('#live-list').innerHTML = cards || '<div class="empty">No bets today or last night.</div>';
+  renderScoreboard();
   const ts = Math.max(0, ...Object.values(ST.slate).flatMap(d => Object.values(d).map(g => g.ts || 0)));
-  $('#live-when').textContent = ts ? 'Scores as of ' + new Date(ts).toLocaleTimeString([], {hour: 'numeric', minute: '2-digit'}) + (live ? ' · updates every minute' : '') : '';
+  $('#live-when').textContent = ts ? 'Updated ' + new Date(ts).toLocaleTimeString([], {hour: 'numeric', minute: '2-digit'}) + (live ? ' · updates every minute' : '') : '';
 }
 async function refreshLive() {
-  const btn = $('#live-refresh'); btn.disabled = true; btn.textContent = 'Refreshing…';
+
   const days = new Set(); liveBets().forEach(b => { days.add((b.league || 'CFB') + '|' + b.date); if (b.league === 'NFL') days.add('NFL|' + new Date(b.kick || b.date).toLocaleDateString('en-CA', {timeZone: 'America/New_York'})); });
   await Promise.allSettled([...days].map(k => { const [lg, d] = k.split('|'); return espnDay(lg, d); }));
   const cut = ctDate(new Date(Date.now() - 10 * 864e5).toISOString()); Object.keys(ST.slate).forEach(k => { if (k.split(':')[1] < cut) delete ST.slate[k]; });
-  save(); recompute(); btn.disabled = false; btn.textContent = 'Refresh scores';
+  await sbLoad(); save(); recompute();
 }
-$('#live-refresh').onclick = refreshLive;
 function scoreLine(g) { if (!g || !(g.state === 'in' || g.state === 'post' || g.done)) return '';
   return `<div class="sline ${g.state === 'in' ? 'in' : ''}">${g.as} – ${g.hs} <span class="small">${esc(g.detail || 'Final')}</span></div>`; }
-const PAGE_VER = "20261024130742";   // stamped by tracker.py; a newer published page reloads itself
+const PAGE_VER = "20261024130949";   // stamped by tracker.py; a newer published page reloads itself
 // ---------------- AUTO REFRESH (while the page is open) ----------------
 const busy = () => { const a = document.activeElement; return a && ['INPUT', 'SELECT', 'TEXTAREA'].includes(a.tagName) || $('#m-form').classList.contains('open'); };
 let tickN = 0;
@@ -1312,14 +1308,14 @@ function renderScoreboard() {
   csel.value = [...csel.options].some(o => o.value === SB.conf) ? SB.conf : ''; $('#sb-sort').value = SB.sort || 'live';
   const TM = $('#sb-team').value.trim().toLowerCase(), BG = betsByGame();
   let G = all.filter(g => ctDate(g.kick) === want && confMatch(cf(g), csel.value) && (!TM || [g.away, g.home].some(t => t.toLowerCase().includes(TM))));
-  if (SB.show === 'live') G = G.filter(g => g.state === 'in'); else if (SB.show === 'top') G = G.filter(g => g.ar || g.hr); else if (SB.show === 'mine') G = G.filter(g => BG[g.id]);
+  if (SB.show === 'live') G = G.filter(g => g.state === 'in'); else if (SB.show === 'top') G = G.filter(g => g.ar || g.hr); else if (SB.show === 'mine') G = G.filter(g => BG[g.id]); else if (SB.show === 'settled') G = G.filter(g => BG[g.id] && (g.done || g.state === 'post'));
   const rank = g => g.state === 'in' ? 0 : g.state === 'pre' || (!g.state && !g.done) ? 1 : 2;
   const cname = g => { const c = cf(g); return c.home_conf === c.away_conf ? c.home_conf || 'Other' : [c.away_conf, c.home_conf].filter(Boolean).sort().join(' vs ') || 'Other'; };
   const SO = SB.sort || 'live';
   G.sort((a, b) => (SO === 'conf' ? cname(a).localeCompare(cname(b)) : 0) || (SO !== 'kick' ? rank(a) - rank(b) : 0) || a.kick.localeCompare(b.kick) || a.away.localeCompare(b.away));
   const nLive = all.filter(g => ctDate(g.kick) === want && g.state === 'in').length;
   let lastC = null;
-  $('#scoreboard').innerHTML = (nLive ? `<div class="small" style="margin-bottom:8px">${nLive} live now · updates every minute</div>` : '') + (!G.length ? '<div class="empty">No games match.</div>' : '<div class="sb">' + G.map(g => {
+  $('#scoreboard').innerHTML = (nLive ? `<div class="small" style="margin-bottom:8px">${nLive} live now</div>` : '') + (!G.length ? '<div class="empty">No games match.</div>' : '<div class="sb">' + G.map(g => {
     const head = SO === 'conf' && cname(g) !== lastC ? `<div class="sbh">${esc(lastC = cname(g))}</div>` : '';
     const live = g.state === 'in', fin = g.done || g.state === 'post', pre = !live && !fin, aL = !pre && g.as > g.hs, hL = !pre && g.hs > g.as;
     const chips = (BG[g.id] || []).map(x => { let c = '', w = '';
