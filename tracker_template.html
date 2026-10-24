@@ -1,0 +1,1413 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Bet Tracker</title>
+<meta name="theme-color" content="#f7f7f5">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-title" content="Bet Tracker">
+<style>
+:root{
+  color-scheme: light;
+  --bg:#f7f7f5; --surface:#fcfcfb; --surface-2:#f0efec; --border:#e2e1dc;
+  --ink:#0b0b0b; --ink-2:#52514e; --ink-3:#8a8984;
+  --series:#2a78d6; --muted-bar:#b9b8b2;
+  --good-bg:#dff3df; --good-ink:#0a6e0a; --bad-bg:#f8dddd; --bad-ink:#a12a2a; --push-bg:#e9e8e4;
+  --warn-bg:#fdf0d2; --warn-ink:#7a5200; --chip:#e7f0fb; --chip-ink:#1c5cab;
+}
+:root[data-theme="dark"]{
+  --bg:#121211; --surface:#1a1a19; --surface-2:#242422; --border:#33332f;
+  --ink:#f0efec; --ink-2:#c3c2b7; --ink-3:#8f8e86; --series:#3987e5; --muted-bar:#55544f;
+  --good-bg:#173a17; --good-ink:#7fdc7f; --bad-bg:#432020; --bad-ink:#f2a0a0; --push-bg:#2c2c29;
+  --warn-bg:#3a2e12; --warn-ink:#f0c66a; --chip:#1c3a5e; --chip-ink:#a9cdf7; color-scheme: dark;
+}
+*{box-sizing:border-box}
+body{margin:0;background:var(--bg);color:var(--ink);font:16px/1.45 -apple-system,"Segoe UI",Roboto,Arial,sans-serif}
+.wrap{max-width:1180px;margin:0 auto;padding-block:18px 48px;padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px))}
+header{display:flex;flex-wrap:wrap;align-items:flex-end;justify-content:space-between;gap:12px;margin-bottom:12px}
+h1{font-size:30px;margin:0;letter-spacing:-.01em}
+h2{font-size:18px;margin:0 0 2px}
+.sub{color:var(--ink-2);font-size:15px;margin-top:2px}
+.tabs{display:flex;gap:4px;border-bottom:1px solid var(--border);margin-bottom:14px;overflow-x:auto}
+.tabs button{border:0;background:transparent;color:var(--ink-2);padding:10px 14px;font:inherit;font-weight:600;cursor:pointer;border-bottom:2px solid transparent;white-space:nowrap}
+.tabs button.on{color:var(--ink);border-bottom-color:var(--series)}
+.seg{display:inline-flex;background:var(--surface-2);border:1px solid var(--border);border-radius:10px;padding:3px}
+.seg button{border:0;background:transparent;color:var(--ink-2);padding:6px 11px;border-radius:8px;font:inherit;font-weight:600;cursor:pointer;font-size:15px}
+.seg button.on{background:var(--surface);color:var(--ink);box-shadow:0 1px 2px rgba(0,0,0,.12)}
+.btn{border:1px solid var(--border);background:var(--surface);color:var(--ink);border-radius:8px;padding:8px 14px;font:inherit;font-size:15px;cursor:pointer;font-weight:600}
+.btn.primary{background:var(--series);border-color:var(--series);color:#fff}
+.btn.small{padding:5px 11px;font-size:14px}
+.btn:disabled{opacity:.5;cursor:default}
+.filters{display:flex;flex-wrap:wrap;gap:8px;align-items:end;background:var(--surface);border:1px solid var(--border);border-radius:12px;padding:12px;margin-bottom:14px}
+label.f{display:flex;flex-direction:column;font-size:12px;color:var(--ink-3);font-weight:600;text-transform:uppercase;letter-spacing:.04em;gap:3px}
+select,input{max-width:100%;font:inherit;font-size:15px;color:var(--ink);background:var(--surface);border:1px solid var(--border);border-radius:8px;padding:6px 8px}
+input.num{width:64px;padding:4px 6px;text-align:right}
+.tiles{display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:10px;margin-bottom:14px}
+.tile{background:var(--surface);border:1px solid var(--border);border-radius:12px;padding:12px 14px}
+.tile .k{font-size:12px;color:var(--ink-3);font-weight:700;text-transform:uppercase;letter-spacing:.04em}
+.tile .v{font-size:28px;font-weight:700;margin-top:4px;font-variant-numeric:tabular-nums}
+.tile .n{font-size:14px;color:var(--ink-2);margin-top:2px}
+.pos{color:var(--good-ink)} .neg{color:var(--bad-ink)}
+.grid2{display:grid;grid-template-columns:1.25fr 1fr;gap:14px;margin-bottom:14px}
+@media (max-width:860px){.grid2{grid-template-columns:1fr}}
+.card{background:var(--surface);border:1px solid var(--border);border-radius:12px;padding:14px;margin-bottom:14px}
+.hint{color:var(--ink-3);font-size:14px;margin-bottom:8px}
+.cardhead{display:flex;justify-content:space-between;align-items:flex-start;gap:10px;flex-wrap:wrap}
+svg text{fill:var(--ink-2);font-size:13px}
+.tip{position:fixed;pointer-events:none;background:var(--ink);color:var(--surface);padding:7px 9px;border-radius:8px;font-size:14px;line-height:1.35;opacity:0;transition:opacity .08s;z-index:10;max-width:260px}
+table{width:100%;border-collapse:collapse;font-size:15px;font-variant-numeric:tabular-nums}
+th{text-align:left;font-size:12px;text-transform:uppercase;letter-spacing:.04em;color:var(--ink-3);padding:8px;border-bottom:1px solid var(--border);white-space:nowrap;user-select:none}
+th.sort{cursor:pointer}
+th.num,td.num{text-align:right}
+td{padding:8px;border-bottom:1px solid var(--border);vertical-align:top}
+tr:hover td{background:var(--surface-2)}
+tr.struck td{opacity:.45;text-decoration:line-through}
+tr.struck td.keep{text-decoration:none;opacity:1}
+.pill{display:inline-block;min-width:26px;text-align:center;padding:2px 8px;border-radius:999px;font-weight:700;font-size:14px}
+.W{background:var(--good-bg);color:var(--good-ink)} .L{background:var(--bad-bg);color:var(--bad-ink)} .P{background:var(--push-bg);color:var(--ink-2)} .O{color:var(--ink-3);border:1px dashed var(--border)}
+.chip{display:inline-block;background:var(--chip);color:var(--chip-ink);border-radius:6px;padding:2px 8px;font-size:13px;font-weight:600;margin:1px 4px 1px 0}
+.chip.lean{background:var(--surface-2);color:var(--ink-2)}
+.chip.no{background:var(--warn-bg);color:var(--warn-ink)}
+.tablewrap{overflow-x:auto}
+.small{font-size:14px;color:var(--ink-3)}
+.empty{padding:24px 10px;text-align:center;color:var(--ink-3)}
+.status{font-size:14px;color:var(--ink-2);display:flex;flex-wrap:wrap;gap:6px 14px;margin-bottom:12px}
+.status span b{color:var(--ink)}
+.dayhead{display:flex;justify-content:space-between;align-items:baseline;margin:14px 0 6px;font-weight:700;font-size:18px}
+.edit{display:none;background:var(--surface-2)}
+.edit.open{display:table-row}
+.edit td{padding:10px}
+.editgrid{display:flex;flex-wrap:wrap;gap:12px;align-items:end}
+.hide{display:none!important}
+.ftoggle{display:none}
+.rtext p{margin:6px 0 10px;color:var(--ink-2)}
+.sb{display:grid;grid-template-columns:repeat(auto-fill,minmax(260px,1fr));gap:10px}
+.sbg{border:1px solid var(--border);border-radius:12px;padding:10px 12px;background:var(--surface)}
+.sbg.live{border-color:var(--bad-ink)}
+.sbg .tm{display:flex;justify-content:space-between;gap:8px;font-size:17px;font-variant-numeric:tabular-nums}
+.sbg .tm.lead{font-weight:700}.sbg .tm .rk{color:var(--ink-3);font-size:13px;margin-right:4px}
+.sbg .st{display:flex;justify-content:space-between;gap:8px;margin-top:4px;font-size:14px;color:var(--ink-2)}
+.sbg .st.live{color:var(--bad-ink);font-weight:700}
+.sbg .bets{margin-top:6px}
+.rk{color:var(--ink-3);font-size:13px;font-weight:600}
+.sbg .mp{display:inline-block;min-width:44px;text-align:right;color:var(--ink-3);font-weight:400;font-size:15px}.sbg .sc{display:inline-block;min-width:40px;margin-left:12px;text-align:right}
+.sbg .tm.hd{font-size:11px;text-transform:uppercase;letter-spacing:.04em;color:var(--ink-3)}.sbg .tm.hd .mp,.sbg .tm.hd .sc{font-size:11px;color:var(--ink-3);font-weight:700}
+.sbg .ball{font-size:14px}.sbg .dd{font-size:14px;margin-top:2px;color:var(--ink-2)}.sbg .dd.rz{color:var(--bad-ink);font-weight:700}
+.sbg .mdl{margin-top:6px;font-size:14px;color:var(--ink-2);border-top:1px dashed var(--border);padding-top:6px}
+.sbh{grid-column:1/-1;font-weight:700;font-size:16px;margin-top:6px;color:var(--ink-2)}
+.sline{margin-top:3px;font-weight:700;font-variant-numeric:tabular-nums}.sline .small{font-weight:400}
+.sline.in::before{content:"";display:inline-block;width:8px;height:8px;border-radius:50%;background:var(--bad-ink);margin-right:6px;vertical-align:1px}
+.lv{border:1px solid var(--border);border-radius:12px;padding:12px 14px;margin-top:10px;background:var(--surface);border-left-width:6px}
+.lv.win{border-left-color:var(--good-ink)}.lv.lose{border-left-color:var(--bad-ink)}.lv.even{border-left-color:var(--ink-3)}.lv.pre{border-left-color:var(--border)}
+.lv .top{display:flex;justify-content:space-between;gap:10px;align-items:baseline}
+.lv .bet{font-weight:700;font-size:18px}
+.lv .score{display:flex;justify-content:space-between;gap:10px;margin-top:6px;font-size:17px;font-variant-numeric:tabular-nums}
+.lv .where{margin-top:6px;font-weight:700}
+.lv .tag{font-size:12px;font-weight:700;text-transform:uppercase;letter-spacing:.04em;color:var(--ink-3)}
+table.cmp{max-width:460px}table.cmp td:first-child{color:var(--ink-2)}
+.addform{display:none;background:var(--surface-2);border-radius:12px;padding:12px;margin-top:10px}
+.addform.open{display:block}
+.addform .editgrid label.f{flex:1 1 140px}
+.addform select,.addform input{width:100%}
+.rtext p b{color:var(--ink)}
+.note{background:var(--warn-bg);color:var(--warn-ink);border-radius:8px;padding:10px 12px;font-size:15px;margin-bottom:12px}
+a{color:var(--series)}
+@media (max-width:640px){
+  body{font-size:17px}
+  h1{font-size:28px}
+  h2{font-size:20px}
+  .hint,.small,.status{font-size:15px}
+  .tabs button{font-size:17px}
+  header{align-items:center}
+  header .btn{padding:7px 10px}
+  .tabs button{padding:10px 7px;font-size:15px!important}
+  .tiles{grid-template-columns:1fr 1fr;gap:8px}
+  .tile{padding:10px 12px}.tile .v{font-size:26px}.tile .k{font-size:13px}.tile .n{font-size:15px}
+  .filters{display:grid;grid-template-columns:1fr 1fr;gap:8px}
+  .filters label.f{min-width:0}
+  .filters select,.filters input{width:100%}
+  .filters .btn{grid-column:1/-1;margin-left:0!important}
+  .card{padding:12px}
+  .cardhead{flex-direction:column;align-items:stretch}
+  .seg{display:flex}.seg button{flex:1}
+  select,input,.btn{min-height:46px;font-size:17px}
+  label.f{font-size:13px}
+  input.num{width:100%;min-height:44px}
+  .btn.small{min-height:44px;padding:8px 14px;font-size:16px}
+  .pill{font-size:15px;padding:3px 10px}
+  .chip{font-size:14px}
+  table.cards,table.cards tbody,table.cards tr,table.cards td{display:block;width:auto}
+  table.cards thead{display:none}
+  table.cards tbody{display:flex;flex-direction:column;gap:10px}
+  table.cards tr{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:10px 12px;border:1px solid var(--border);border-radius:12px;padding:12px;background:var(--surface)}
+  table.cards tr:hover td{background:transparent}
+  table.cards td{border:0;padding:0;min-width:0;text-align:left!important;font-size:17px}
+  table.cards td[data-label]:not([data-label=""])::before{content:attr(data-label);display:block;font-size:12px;font-weight:700;text-transform:uppercase;letter-spacing:.05em;color:var(--ink-3);margin-bottom:2px}
+  table.cards td.full{grid-column:1/-1}
+  table.cards td.first{order:-2;font-size:20px;font-weight:700}
+  table.cards td.why{order:-1;font-size:16px;color:var(--ink-2)}
+  table.cards td.why::before{display:none!important}
+  table.cards td.keep{grid-column:1/-1}
+  table.cards td.keep .btn{width:100%}
+  table.cards tr.edit{display:none}
+  table.cards tr.edit.open{display:block}
+  table.cards tr.struck td.first{text-decoration:line-through}
+  table.cmp td,table.cmp th{font-size:17px}
+  #live-tiles .tile{padding:8px 10px}#live-tiles .tile .v{font-size:22px;margin-top:2px}#live-tiles .tile .k{font-size:12px}
+  .ftoggle{display:block;width:100%}
+  .filters.shut{display:none}
+}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <header>
+    <div><h1>Bet Tracker</h1><div class="sub" id="mini"></div></div>
+    <div style="display:flex;gap:8px;align-items:center">
+      <button class="btn" id="refresh">Refresh</button>
+      <button class="btn" id="theme">Dark</button>
+    </div>
+  </header>
+  <div class="tabs" id="tabs">
+    <button data-t="week" class="on">Week</button>
+    <button data-t="live">Scores</button>
+    <button data-t="track">Tracker</button>
+    <button data-t="stats">Stats</button>
+    <button data-t="rules">Rules</button>
+    <button data-t="settings">Settings</button>
+  </div>
+
+  <section id="t-week">
+    <div id="dsnote"></div>
+    <div class="card">
+      <div class="cardhead">
+        <div><h2>Bets</h2></div>
+      </div>
+      <div id="betboard"></div>
+    </div>
+    <div class="card">
+      <div class="cardhead"><div><h2>My own bets</h2></div><button class="btn primary" id="m-open">+ Add a bet</button></div>
+      <div class="addform" id="m-form">
+        <div class="editgrid">
+          <label class="f">League<select id="m-lg"><option value="CFB">College</option><option value="NFL">NFL</option></select></label>
+          <label class="f">Date<input type="date" id="m-date"></label>
+          <label class="f" style="flex-basis:100%">Game<select id="m-game"><option value="">loading games…</option></select></label>
+          <label class="f">Bet<select id="m-mkt"><option value="spread">Spread</option><option value="total">Total</option><option value="ml">Moneyline</option></select></label>
+          <label class="f">Pick<select id="m-side"></select></label>
+          <label class="f" id="m-linewrap">Line<input id="m-line" inputmode="decimal" placeholder="-3.5"></label>
+          <label class="f">Odds<input id="m-odds" inputmode="numeric" value="-110"></label>
+          <label class="f">Stake $<input id="m-stake" inputmode="decimal" placeholder="10"></label>
+        </div>
+        <div class="editgrid" style="margin-top:10px"><button class="btn primary" id="m-save">Save bet</button><button class="btn" id="m-cancel">Cancel</button><span class="small" id="m-msg"></span></div>
+      </div>
+      <div id="mineboard"></div>
+    </div>
+    <div class="card">
+      <div class="cardhead">
+        <div><h2>Model games</h2></div>
+        <div style="display:flex;gap:8px;flex-wrap:wrap">
+          <div class="seg" id="lg"><button data-l="CFB" class="on">College</button><button data-l="NFL">NFL</button></div>
+          <div class="seg" id="show"><button data-s="major" class="on">Major</button><button data-s="flag">Flagged</button><button data-s="lines">With lines</button><button data-s="all">All</button></div>
+        </div>
+      </div>
+      <button class="btn ftoggle" data-for="gfilters" style="margin-top:8px">Filter &amp; sort</button>
+      <div class="filters" style="margin:8px 0 10px;padding:10px" id="gfilters">
+        <label class="f">Conference<select id="g-conf"></select></label>
+        <label class="f">Team<input id="g-team" placeholder="any team" list="gteams"></label>
+        <label class="f">Sort by<select id="g-sort">
+          <option value="kick">Kickoff</option><option value="tgap">Biggest total gap (model vs line)</option><option value="sgap">Biggest side gap (model vs line)</option>
+          <option value="flags">Flagged first</option><option value="conf">Conference</option><option value="total">Highest model total</option><option value="margin">Biggest model margin</option>
+        </select></label>
+        <label class="f">Games<select id="g-when"><option value="all">All this week</option><option value="today">Today</option><option value="live">Live now</option><option value="upcoming">Not started</option></select></label>
+        <datalist id="gteams"></datalist>
+      </div>
+      <div class="tablewrap" id="games"></div>
+    </div>
+  </section>
+
+  <section id="t-live" class="hide">
+    <div class="tiles" id="live-tiles"></div>
+    <div class="card">
+      <div class="cardhead"><div><h2>Scoreboard</h2><div class="small" id="live-when"></div></div>
+        <div style="display:flex;gap:8px;flex-wrap:wrap"><div class="seg" id="sb-lg"><button data-l="CFB" class="on">College</button><button data-l="NFL">NFL</button></div>
+        <div class="seg" id="sb-show"><button data-v="all" class="on">All</button><button data-v="live">Live</button><button data-v="major">Major</button><button data-v="top">Top 25</button><button data-v="mine">My bets</button><button data-v="settled">Settled</button></div></div></div>
+      <div class="filters" style="margin:8px 0 10px;padding:10px"><label class="f">Day<select id="sb-day"></select></label><label class="f">Conference<select id="sb-conf"></select></label><label class="f">Sort<select id="sb-sort"><option value="live">Live first</option><option value="kick">Kickoff</option><option value="conf">Conference</option></select></label><label class="f">Team<input id="sb-team" placeholder="any team"></label></div>
+      <div id="scoreboard"></div>
+    </div>
+  </section>
+
+  <section id="t-track" class="hide">
+    <div style="display:flex;justify-content:space-between;gap:8px;flex-wrap:wrap;margin-bottom:10px">
+      <button class="btn ftoggle" data-for="filters">Filters</button>
+      <div class="seg" id="mode"><button data-m="bets" class="on">Model bets</button><button data-m="mine">My own bets</button><button data-m="picks">Every pick</button></div>
+    </div>
+    <div class="filters" id="filters">
+      <label class="f">League<select id="f-league"></select></label>
+      <label class="f">From<input type="date" id="f-from"></label>
+      <label class="f">To<input type="date" id="f-to"></label>
+      <label class="f">Rule<select id="f-rule"></select></label>
+      <label class="f">Conference / division<select id="f-conf"></select></label>
+      <label class="f">Team<input id="f-team" list="teams" placeholder="any team"></label>
+      <label class="f">Kickoff<select id="f-kick"></select></label>
+      <label class="f">Bet type<select id="f-type"></select></label>
+      <label class="f">Status<select id="f-status"><option value="">All</option><option value="settled">Settled</option><option value="open">Open</option></select></label>
+      <button class="btn" id="reset" style="margin-left:auto">Clear filters</button>
+      <datalist id="teams"></datalist>
+    </div>
+    <div class="card" id="compare"></div>
+    <div class="tiles" id="tiles"></div>
+    <div class="grid2">
+      <div class="card" style="margin:0">
+        <div class="cardhead">
+          <div><h2>Win rate by <span id="slicename"></span></h2></div>
+          <label class="small">Slice by <select id="slice"></select></label>
+        </div>
+        <div id="bars"></div>
+      </div>
+      <div class="card" style="margin:0">
+        <h2 id="runtitle">Running profit</h2>
+        <div id="run"></div>
+      </div>
+    </div>
+    <div class="card"><h2>Slice detail</h2><div class="tablewrap" id="slicetable"></div></div>
+    <div class="card"><h2 id="listtitle">Bets</h2><div class="tablewrap" id="list"></div></div>
+    <p class="small" id="foot"></p>
+  </section>
+
+  <section id="t-stats" class="hide">
+    <div class="tiles" id="livetiles"></div>
+    <div class="grid2">
+      <div class="card" style="margin:0" id="stat-cfb"></div>
+      <div class="card" style="margin:0" id="stat-nfl"></div>
+    </div>
+    <div class="card" id="stat-rules"></div>
+    <div class="grid2">
+      <div class="card" style="margin:0" id="w-cfb"></div>
+      <div class="card" style="margin:0" id="w-nfl"></div>
+    </div>
+  </section>
+
+  <section id="t-rules" class="hide">
+    <div class="card">
+      <h2>How bets are picked</h2>
+      <div class="rtext">
+        <p>A game gets flagged when it matches a rule that beat the closing line in past seasons. A flag becomes a bet only when that rule's backtest hit rate is at least <b>55% for college</b> or <b>53.5% for NFL</b> (52.4% breaks even at -110).</p>
+        <p>At most <b>5 bets a day</b>, best hit rates first, one per game. Each day's budget is split by edge (fractional Kelly on a shrunk hit rate, $5 minimum), so the more proven rules get bigger stakes.</p>
+        <p>The rules and their records are on the <b>Stats</b> tab.</p>
+      </div>
+    </div>
+    <div class="card">
+      <h2>Using the page</h2>
+      <div class="rtext">
+        <p><b>Strike</b> drops a bet. The rest of that day re-splits the budget and the next qualifying pick can move up. <b>Undo</b> brings it back. Striking a finished bet asks first, since it takes that result off your record.</p>
+        <p><b>Odds or stake:</b> type over them on a bet. A stake you type is locked; clear the box to let it auto-size again. Bets freeze at kickoff.</p>
+        <p><b>Games:</b> tap a game to type in a line, a QB change or the wind by hand. Typed values beat the automatic ones.</p>
+        <p><b>My own bets:</b> tap <b>+ Add a bet</b>, pick the game from ESPN's list for that day (every FBS and NFL game), then the bet, line, DraftKings odds and stake. They grade themselves from final scores and are tracked separately from the model, so the Tracker can compare the two. Enter the line as the number on your ticket for the team you picked (e.g. -3.5), or the total for over/under.</p>
+        <p><b>Model games:</b> Major (the default) shows every college game with a top-60 team by Elo rank (the #number by each team) or a Power 4 team (SEC, Big Ten, Big 12, ACC) or Notre Dame, and every NFL game. Every FBS-vs-FBS game is modeled; games against FCS teams are not. The Scores tab shows the model's score and lean on each modeled game. Flagged shows only games that match a rule; With lines shows every game that has a line; All shows everything.</p>
+      </div>
+    </div>
+    <div class="card">
+      <h2>Reading the Tracker</h2>
+      <div class="rtext">
+        <p><b>Model bets</b> is the money record of the bets the model chose. <b>My own bets</b> is the record of bets you added yourself. The box at the top compares the two with the same filters. <b>Every pick</b> grades every flag the model made, bet or not, to show which rules are really working.</p>
+        <p>On the win-rate chart the dashed line is the 52.4% break-even; gray bars have fewer than 5 settled bets, too few to read much into. Pick what to split by with <b>Slice by</b>.</p>
+      </div>
+    </div>
+    <div class="card">
+      <h2>Live data</h2>
+      <div class="small" id="sub" style="margin-bottom:8px"></div>
+      <div id="keynote"></div>
+      <div class="status" id="status" style="flex-direction:column;gap:6px"></div>
+    </div>
+  </section>
+
+  <section id="t-settings" class="hide">
+    <div class="card">
+      <h2>DraftKings lines (The Odds API)</h2>
+      <div class="hint">Free key from <a href="https://the-odds-api.com" target="_blank" rel="noopener">the-odds-api.com</a> (500 requests a month free; each refresh uses about 4). Without a key the page uses the lines ESPN lists, then the nflverse consensus for NFL.</div>
+      <div class="editgrid"><label class="f">API key<input id="s-key" style="width:320px" placeholder="paste key"></label>
+        <button class="btn primary" id="s-savekey">Save key</button><button class="btn" id="s-testkey">Test</button><span class="small" id="s-keymsg"></span></div>
+    </div>
+    <div class="card">
+      <h2>Budget</h2>
+      <div class="editgrid"><label class="f">Daily budget $<input id="s-budget" class="num" style="width:90px"></label><button class="btn" id="s-savebudget">Save</button>
+        <span class="small">Rules: CFB 55%+, NFL 53.5%+, top 5 bets per day, one per game, stakes split by edge (fractional Kelly), $5 minimum.</span></div>
+    </div>
+    <div class="card">
+      <h2>Sync with GitHub</h2>
+      <div class="hint">Strikes, edited odds and stakes, typed-in lines, your own bets and the bets this page makes are saved to <b>state.json</b> on the <b>sync</b> branch of your betting-model repository, so your phone and PC always match and nothing is lost if browser data is cleared. Every device reads it on open. To save changes, a device needs a GitHub key that can write only to betting-model (Contents: Read and write). The key stays on this device.</div>
+      <div class="editgrid"><label class="f">GitHub key<input id="s-gh" type="password" style="width:320px" placeholder="github_pat_…" autocomplete="off"></label>
+        <button class="btn primary" id="s-saveghkey">Save key</button><button class="btn" id="s-syncnow">Sync now</button><span class="small" id="s-syncmsg"></span></div>
+    </div>
+    <div class="card">
+      <h2>Save your changes to the official log</h2>
+      <div class="hint">Only needed if GitHub sync is off. Strikes, edited stakes and odds, and bets the page made are stored in this browser. Save them as <b>page_changes.json</b> into <b>Betting Model\betting_models\logs</b>. The Tuesday-morning refresh merges them into the log so every device and the weekly report see them.</div>
+      <div class="editgrid"><button class="btn primary" id="s-export">Save changes file</button><label class="btn">Load a changes file<input type="file" id="s-import" accept=".json" class="hide"></label>
+        <button class="btn" id="s-clear">Clear cached data</button><span class="small" id="s-msg"></span></div>
+    </div>
+    <div class="card small" id="s-about"></div>
+  </section>
+</div>
+<div class="tip" id="tip"></div>
+
+<script>
+const DATA = __DATA__;
+const SNAP = DATA.snapshot, RULES = SNAP.rules, BR = RULES.betting, BE = 0.524;
+const $ = s => document.querySelector(s), $$ = s => [...document.querySelectorAll(s)];
+const esc = s => String(s ?? '').replace(/[&<>"]/g, c => ({'&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;'}[c]));
+const fmt$ = v => (v < 0 ? '-$' : '$') + Math.abs(v).toFixed(2);
+const pct = v => (v * 100).toFixed(1) + '%';
+const sgn = v => v == null || isNaN(v) ? '–' : (v > 0 ? '+' : '') + (+v).toFixed(1).replace('.0', '');
+const lineTxt = v => v == null || isNaN(v) ? '–' : (v > 0 ? '+' : '') + (+v);
+const ctDate = iso => new Date(iso).toLocaleDateString('en-CA', {timeZone: 'America/Chicago'});
+const ctTime = iso => new Date(iso).toLocaleString('en-US', {timeZone: 'America/Chicago', weekday: 'short', hour: 'numeric', minute: '2-digit'});
+const ctHour = iso => { const p = new Date(iso).toLocaleString('en-US', {timeZone: 'America/Chicago', hour: 'numeric', minute: 'numeric', hour12: false}).split(':'); return (+p[0] % 24) + (+p[1]) / 60; };
+const etHour = iso => +new Date(iso).toLocaleString('en-US', {timeZone: 'America/New_York', hour: 'numeric', hour12: false}) % 24;
+const started = iso => Date.now() >= new Date(iso).getTime();
+const payout = o => o < 0 ? 100 / Math.abs(o) : o / 100;
+const dayLbl = d => new Date(d + 'T12:00:00').toLocaleDateString('en-US', {weekday: 'short', month: 'short', day: 'numeric'});
+const today = () => ctDate(new Date().toISOString());
+
+// ---------------- state ----------------
+const KEY = 'bt-state-v2';
+let ST = {key: '', budget: BR.daily_budget, struck: {}, ov: {}, frozen: {}, frozenPicks: {}, mine: {}, mineDel: {}, slate: {}, finals: {}, odds: {}, wx: {}, inputs: {}, espnOdds: {}, qbnews: {}, nflInj: null};
+try { Object.assign(ST, JSON.parse(localStorage.getItem(KEY) || '{}')); } catch (e) {}
+const save = () => { try { localStorage.setItem(KEY, JSON.stringify(ST)); } catch (e) {} };
+const usave = () => { ST.updated = Date.now(); save(); if (typeof syncMark === 'function') syncMark(); };   // a change you made: save and sync
+try { navigator.storage && navigator.storage.persist && navigator.storage.persist(); } catch (e) {}
+try { const t = localStorage.getItem('bt-theme'); if (t) document.documentElement.dataset.theme = t; } catch (e) {}
+const themeLbl = () => { $('#theme').textContent = document.documentElement.dataset.theme === 'dark' ? 'Light' : 'Dark'; };
+$('#theme').onclick = () => { setTimeout(themeLbl, 0); const r = document.documentElement, dark = r.dataset.theme === 'dark';
+  r.dataset.theme = dark ? 'light' : 'dark'; try { localStorage.setItem('bt-theme', r.dataset.theme); } catch (e) {} renderAll(); };
+
+// ---------------- names ----------------
+const norm = s => String(s || '').toLowerCase().normalize('NFD').replace(/[̀-ͯ]/g, '').replace(/&/g, ' and ').replace(/[^a-z0-9 ]/g, ' ').replace(/\s+/g, ' ').trim();
+const CFB_ALIAS = {'appalachian state': 'App State', 'louisiana monroe': 'UL Monroe', 'ul monroe': 'UL Monroe', 'southern mississippi': 'Southern Miss', 'massachusetts': 'UMass',
+  'connecticut': 'UConn', 'florida international': 'Florida International', 'fiu': 'Florida International', 'louisiana lafayette': 'Louisiana',
+  'texas san antonio': 'UTSA', 'central florida': 'UCF', 'brigham young': 'BYU', 'southern california': 'USC', 'mississippi': 'Ole Miss', 'sam houston state': 'Sam Houston',
+  'hawaii': "Hawai'i", 'san jose state': 'San José State', 'nc state': 'NC State', 'north carolina state': 'NC State'};
+const CFB_TEAMS = [...new Set(SNAP.cfb.games.flatMap(g => [g.away, g.home]))];
+const CFB_NORM = CFB_TEAMS.map(t => [norm(t), t]).sort((a, b) => b[0].length - a[0].length);
+function cfbTeam(name) {
+  const n = norm(name);
+  for (const [nt, t] of CFB_NORM) if (n === nt || n.startsWith(nt + ' ')) {
+    // prefer an alias when the alias is a longer match (e.g. "Mississippi State" vs "Mississippi")
+    return t;
+  }
+  for (const [a, t] of Object.entries(CFB_ALIAS)) if (n === a || n.startsWith(a + ' ')) return t;
+  return null;
+}
+const NFL_FULL = {'Arizona Cardinals': 'ARI', 'Atlanta Falcons': 'ATL', 'Baltimore Ravens': 'BAL', 'Buffalo Bills': 'BUF', 'Carolina Panthers': 'CAR', 'Chicago Bears': 'CHI',
+  'Cincinnati Bengals': 'CIN', 'Cleveland Browns': 'CLE', 'Dallas Cowboys': 'DAL', 'Denver Broncos': 'DEN', 'Detroit Lions': 'DET', 'Green Bay Packers': 'GB', 'Houston Texans': 'HOU',
+  'Indianapolis Colts': 'IND', 'Jacksonville Jaguars': 'JAX', 'Kansas City Chiefs': 'KC', 'Las Vegas Raiders': 'LV', 'Los Angeles Chargers': 'LAC', 'Los Angeles Rams': 'LA',
+  'Miami Dolphins': 'MIA', 'Minnesota Vikings': 'MIN', 'New England Patriots': 'NE', 'New Orleans Saints': 'NO', 'New York Giants': 'NYG', 'New York Jets': 'NYJ',
+  'Philadelphia Eagles': 'PHI', 'Pittsburgh Steelers': 'PIT', 'San Francisco 49ers': 'SF', 'Seattle Seahawks': 'SEA', 'Tampa Bay Buccaneers': 'TB', 'Tennessee Titans': 'TEN',
+  'Washington Commanders': 'WAS'};
+const ESPN_NFL = {WSH: 'WAS', LAR: 'LA', JAC: 'JAX'};
+const nflAbbr = a => ESPN_NFL[a] || a;
+
+// ---------------- fetchers ----------------
+let STATUS = {};
+const setStatus = (k, v) => { STATUS[k] = v; renderStatus(); };
+async function getJSON(url) { const r = await fetch(url); if (!r.ok) throw new Error(r.status + ' ' + r.statusText); return r.json(); }
+const ymd = d => d.replace(/-/g, '');
+const ESPN_CONF = {1: 'ACC', 4: 'Big 12', 5: 'Big Ten', 8: 'SEC', 9: 'Pac-12', 12: 'Conference USA', 15: 'MAC', 17: 'Mountain West', 18: 'FBS Independents', 37: 'Sun Belt', 151: 'American'};
+async function espnDay(lg, d) {
+  const base = lg === 'CFB' ? 'https://site.api.espn.com/apis/site/v2/sports/football/college-football/scoreboard?groups=80&limit=400&dates='
+                            : 'https://site.api.espn.com/apis/site/v2/sports/football/nfl/scoreboard?dates=';
+  const j = await getJSON(base + ymd(d));
+  for (const ev of j.events || []) {
+    const c = ev.competitions?.[0]; if (!c) continue;
+    const H = c.competitors.find(x => x.homeAway === 'home'), A = c.competitors.find(x => x.homeAway === 'away');
+    const edate = ev.date ? ctDate(ev.date) : d;
+    const rec = {lg, id: ev.id, date: edate, home: H.team.location, away: A.team.location, habbr: nflAbbr(H.team.abbreviation), aabbr: nflAbbr(A.team.abbreviation),
+                 hs: +H.score, as: +A.score, done: !!ev.status?.type?.completed};
+    if (rec.done) ST.finals[lg + ':' + ev.id] = rec;
+    (ST.slate[lg + ':' + d] = ST.slate[lg + ':' + d] || {})[ev.id] = {id: ev.id, kick: ev.date, away: A.team.location, home: H.team.location, aabbr: rec.aabbr, habbr: rec.habbr, done: rec.done, as: rec.as, hs: rec.hs, state: ev.status?.type?.state || '', detail: ev.status?.type?.shortDetail || '', ts: Date.now(),
+      ar: A.curatedRank?.current < 26 ? A.curatedRank.current : '', hr: H.curatedRank?.current < 26 ? H.curatedRank.current : '', tv: (c.broadcasts?.[0]?.names || []).join('/'), lg, ac: ESPN_CONF[A.team.conferenceId] || '', hc: ESPN_CONF[H.team.conferenceId] || '',
+      poss: c.situation?.possession ? (c.situation.possession === H.team.id ? 'h' : c.situation.possession === A.team.id ? 'a' : '') : '', dd: c.situation?.downDistanceText || '', rz: !!c.situation?.isRedZone};
+    const o = c.odds?.[0];
+    if (o && !rec.done) {
+      let sp = typeof o.spread === 'number' ? o.spread : null;
+      if (sp != null) { if (o.homeTeamOdds?.favorite) sp = -Math.abs(sp); else if (o.awayTeamOdds?.favorite) sp = Math.abs(sp); }
+      ST.espnOdds[lg + ':' + ev.id] = {spread: sp, total: o.overUnder ?? null, src: 'ESPN (' + (o.provider?.name || 'listed') + ')'};
+    }
+  }
+}
+function finalFor(lg, gameId, date, away, home) {
+  if (lg === 'CFB') return ST.finals['CFB:' + gameId];
+  const g = SNAP.nfl.games.find(x => x.id === gameId);
+  if (g && g.espn && ST.finals['NFL:' + g.espn]) return ST.finals['NFL:' + g.espn];
+  if (ST.finals['NFL:' + gameId]) return ST.finals['NFL:' + gameId];
+  return Object.values(ST.finals).find(f => f.lg === 'NFL' && f.aabbr === away && f.habbr === home && Math.abs(new Date(f.date) - new Date(date)) < 3 * 864e5);
+}
+async function refreshFinals() {
+  const t = today(), need = {CFB: new Set(), NFL: new Set()};
+  const add = (lg, d) => { if (d && d <= t) need[lg].add(d); };
+  [...DATA.bets, ...DATA.picks].forEach(r => { if (!r.result && !finalFor(r.league, r.game_id, r.date, r.away, r.home)) add(r.league, r.date); });
+  Object.values(ST.frozen).concat(Object.values(ST.frozenPicks)).forEach(r => { if (!finalFor(r.league, r.game_id, r.date, r.away, r.home)) add(r.league, r.date); });
+  DATA.predlog.forEach(r => { if (!finalFor(r.league, r.id, r.date, r.away, r.home)) add(r.league, r.date); });
+  Object.values(ST.mine).forEach(r => { if (!r.result && !finalFor(r.league, r.game_id, r.date, r.away, r.home)) add(r.league, r.date); });
+  // this week's dates (finals + ESPN-listed lines)
+  SNAP.cfb.games.forEach(g => need.CFB.add(ctDate(g.kick)));
+  SNAP.nfl.games.forEach(g => need.NFL.add(new Date(g.kick).toLocaleDateString('en-CA', {timeZone: 'America/New_York'})));
+  let n = 0, fail = 0;
+  const jobs = [];
+  for (const lg of ['CFB', 'NFL']) for (const d of need[lg]) jobs.push(espnDay(lg, d).then(() => n++, () => fail++));
+  await Promise.all(jobs);
+  save(); setStatus('scores', fail && !n ? '<b>Scores:</b> ESPN unreachable right now' : `<b>Scores:</b> ESPN (${n} day${n === 1 ? '' : 's'} checked)`);
+}
+async function refreshOdds(force) {
+  if (!ST.key) { setStatus('lines', '<b>Lines:</b> ESPN-listed / consensus (add an Odds API key in Settings for DraftKings)'); return; }
+  const sports = {CFB: 'americanfootball_ncaaf', NFL: 'americanfootball_nfl'};
+  let left = '';
+  for (const lg of ['CFB', 'NFL']) {
+    const c = ST.odds[lg]; if (!force && c && Date.now() - c.ts < 10 * 60e3) continue;
+    try {
+      const r = await fetch(`https://api.the-odds-api.com/v4/sports/${sports[lg]}/odds?apiKey=${encodeURIComponent(ST.key)}&regions=us&markets=spreads,totals&bookmakers=draftkings&oddsFormat=american`);
+      if (!r.ok) throw new Error(r.status === 401 ? 'key rejected' : r.status === 429 ? 'monthly limit reached' : 'error ' + r.status);
+      left = r.headers.get('x-requests-remaining') || left;
+      ST.odds[lg] = {ts: Date.now(), data: await r.json()};
+    } catch (e) { setStatus('lines', '<b>Lines:</b> Odds API ' + esc(e.message) + ', using ESPN/consensus'); save(); return; }
+  }
+  save();
+  const age = Math.round((Date.now() - Math.min(...['CFB', 'NFL'].map(l => ST.odds[l]?.ts || Date.now()))) / 60e3);
+  setStatus('lines', `<b>Lines:</b> DraftKings via Odds API (${age ? age + ' min old' : 'just now'}${left ? ', ' + left + ' requests left this month' : ''})`);
+}
+function dkLine(lg, g) {
+  const ev = (ST.odds[lg]?.data || []).find(e => lg === 'NFL' ? (NFL_FULL[e.home_team] === g.home && NFL_FULL[e.away_team] === g.away)
+    : ((cfbTeam(e.home_team) === g.home && cfbTeam(e.away_team) === g.away) || (g.neutral && cfbTeam(e.home_team) === g.away && cfbTeam(e.away_team) === g.home)));
+  const bk = ev?.bookmakers?.find(b => b.key === 'draftkings'); if (!bk) return null;
+  const out = {src: 'DraftKings'};
+  const sp = bk.markets.find(m => m.key === 'spreads'), to = bk.markets.find(m => m.key === 'totals');
+  const isHome = n => lg === 'NFL' ? NFL_FULL[n] === g.home : cfbTeam(n) === g.home;
+  if (sp) { const h = sp.outcomes.find(o => isHome(o.name)), a = sp.outcomes.find(o => !isHome(o.name)); if (h) { out.spread = h.point; out.homePrice = h.price; out.awayPrice = a?.price; } }
+  if (to) { const ov = to.outcomes.find(o => o.name === 'Over'), un = to.outcomes.find(o => o.name === 'Under'); if (ov) { out.total = ov.point; out.overPrice = ov.price; out.underPrice = un?.price; } }
+  return out;
+}
+async function refreshWeather(force) {
+  const games = [...SNAP.cfb.games.map(g => ['CFB', g]), ...SNAP.nfl.games.map(g => ['NFL', g])]
+    .filter(([lg, g]) => g.lat != null && !started(g.kick) && (lg === 'NFL' ? g.outdoor : !g.dome) && new Date(g.kick) - Date.now() < 15 * 864e5);
+  const todo = games.filter(([lg, g]) => force || !ST.wx[lg + ':' + g.id] || Date.now() - ST.wx[lg + ':' + g.id].ts > 60 * 60e3);
+  if (!todo.length) { setStatus('wx', '<b>Weather:</b> Open-Meteo kickoff forecasts'); return; }
+  try {
+    for (let i = 0; i < todo.length; i += 50) {
+      const chunk = todo.slice(i, i + 50);
+      const url = `https://api.open-meteo.com/v1/forecast?latitude=${chunk.map(([, g]) => g.lat).join(',')}&longitude=${chunk.map(([, g]) => g.lon).join(',')}` +
+        '&hourly=temperature_2m,wind_speed_10m,wind_gusts_10m,precipitation_probability&wind_speed_unit=mph&temperature_unit=fahrenheit&timezone=GMT&forecast_days=16';
+      let j = await getJSON(url); if (!Array.isArray(j)) j = [j];
+      chunk.forEach(([lg, g], k) => {
+        const h = j[k].hourly, t = new Date(g.kick); t.setUTCMinutes(0, 0, 0);
+        const ix = h.time.indexOf(t.toISOString().slice(0, 13) + ':00');
+        if (ix >= 0) ST.wx[lg + ':' + g.id] = {ts: Date.now(), wind: Math.round(h.wind_speed_10m[ix]), gust: Math.round(h.wind_gusts_10m[ix]), rain: h.precipitation_probability[ix] ?? 0, temp: Math.round(h.temperature_2m[ix])};
+      });
+    }
+    save(); setStatus('wx', `<b>Weather:</b> Open-Meteo kickoff forecasts (${todo.length} games updated)`);
+  } catch (e) { setStatus('wx', '<b>Weather:</b> Open-Meteo unreachable, enter wind by hand'); }
+}
+
+
+// ---------------- QB status (injury reports + news) ----------------
+const NFL_ID = {ARI: 22, ATL: 1, BAL: 33, BUF: 2, CAR: 29, CHI: 3, CIN: 4, CLE: 5, DAL: 6, DEN: 7, DET: 8, GB: 9, HOU: 34, IND: 11, JAX: 30, KC: 12, LV: 13, LAC: 24, LA: 14,
+  MIA: 15, MIN: 16, NE: 17, NO: 18, NYG: 19, NYJ: 20, PHI: 21, PIT: 23, SF: 25, SEA: 26, TB: 27, TEN: 10, WAS: 28};
+const QB_VAL = 5;   // college: points between a team's established starter and a backup
+const PAT = {
+  out: /\b(ruled out|will not (play|start|suit up|dress)|won'?t (play|start)|not expected to (play|start)|out (for|against|vs\.?|this|sunday|saturday|monday|thursday|friday|indefinitely|several|multiple)|is out\b|(placed|lands?|going|goes|put|moved) (him )?on (ir|injured reserve)|season[- ]ending|torn (acl|achilles)|underwent surgery|out for the (year|season)|sidelined)/i,
+  doubt: /\b(doubtful|unlikely to (play|start|go))/i,
+  quest: /\b(questionable|game[- ]time decision|day[- ]to[- ]day|limited in practice|did not practice|uncertain|status (is )?(unclear|uncertain)|banged up)/i,
+  start: /\b(will start|to start|set to start|expected to start|in line to start|named (the )?starter|gets the (nod|start)|draws? the start|making (his )?(first |second |third )?(career )?start|will get the start)/i,
+  back: /\b(returns?|returning|back (at|under|for|in)|cleared|activated|good to go|full participant|practic(ed|ing) (fully|in full)|expected to play|will play|on track to play|set to return)/i
+};
+let QBX = {};
+const lastName = n => String(n || '').replace(/\s+(jr|sr|ii|iii|iv)\.?$/i, '').trim().split(/[\s.]+/).pop();
+function sentences(a) { return (a.h + '. ' + (a.d || '')).split(/(?<=[.!?])\s+/); }
+function newsStatus(articles, name) {   // most recent article that says something about this QB
+  const ln = lastName(name); if (!ln || ln.length < 3) return null;
+  const re = new RegExp('\\b' + ln.replace(/[.*+?^${}()|[\]\\]/g, '\\$&') + '\\b', 'i'), first = String(name).split(/[\s.]+/)[0];
+  for (const a of articles) {
+    const tagged = (a.ath || []).some(x => lastName(x).toLowerCase() === ln.toLowerCase());
+    const sents = sentences(a).filter(s => re.test(s)); if (!sents.length && !tagged) continue;
+    const txt = (sents.length ? sents : [a.h]).join(' ');
+    if (!sents.length && !re.test(a.h + ' ' + a.d)) continue;
+    if (first && first.length > 2 && !new RegExp('\\b' + first[0], 'i').test(a.h + ' ' + a.d)) { /* last name only, keep but weaker */ }
+    for (const k of ['out', 'doubt', 'start', 'back', 'quest']) if (PAT[k].test(txt)) return {kind: k, a, txt: txt.slice(0, 220)};
+  }
+  return null;
+}
+function startedNamed(articles, candidates) {   // "X will start" for any known QB
+  for (const a of articles) for (const s of sentences(a)) if (PAT.start.test(s)) {
+    for (const c of candidates) { const ln = lastName(c); if (ln && new RegExp('\\b' + ln + '\\b', 'i').test(s) && !PAT.out.test(s) && !/\bnot\b/i.test(s)) return {name: c, a, txt: s.slice(0, 220)}; }
+  }
+  return null;
+}
+async function newsFor(lg, teamId) {
+  const k = lg + ':' + teamId, c = ST.qbnews[k];
+  if (c && Date.now() - c.ts < 3 * 3600e3) return c.articles;
+  const url = `https://site.api.espn.com/apis/site/v2/sports/football/${lg === 'CFB' ? 'college-football' : 'nfl'}/news?team=${teamId}&limit=25`;
+  const j = await getJSON(url), cut = Date.now() - 9 * 864e5;
+  const articles = (j.articles || []).filter(a => new Date(a.published) >= cut).sort((a, b) => b.published.localeCompare(a.published))
+    .map(a => ({h: a.headline || '', d: a.description || '', date: a.published, link: a.links?.web?.href || '', ath: (a.categories || []).filter(x => x.type === 'athlete').map(x => x.description || x.athlete?.displayName || '')}));
+  ST.qbnews[k] = {ts: Date.now(), articles}; return articles;
+}
+async function refreshQB(force) {
+  if (force) ST.qbnews = {};
+  const soon = g => !started(g.kick) && new Date(g.kick) - Date.now() < 7 * 864e5;
+  const jobs = [];
+  // NFL official injury report (one call)
+  if (force || !ST.nflInj || Date.now() - ST.nflInj.ts > 2 * 3600e3) jobs.push(getJSON('https://site.api.espn.com/apis/site/v2/sports/football/nfl/injuries').then(j => {
+    const by = {};
+    (j.injuries || []).forEach(t => (t.injuries || []).forEach(x => { const a = x.athlete || {}; if ((a.position?.abbreviation || '') !== 'QB') return;
+      const ab = nflAbbr(a.team?.abbreviation || ''); (by[ab] = by[ab] || []).push({name: a.displayName, short: (a.shortName || '').replace(/\.\s+/, '.'), status: x.status, comment: x.shortComment || x.longComment || '', date: x.date}); }));
+    ST.nflInj = {ts: Date.now(), by};
+  }));
+  const teams = [];
+  SNAP.nfl.games.filter(soon).forEach(g => teams.push(['NFL', NFL_ID[g.away]], ['NFL', NFL_ID[g.home]]));
+  SNAP.cfb.games.filter(soon).forEach(g => { if (g.espn_a) teams.push(['CFB', g.espn_a]); if (g.espn_h) teams.push(['CFB', g.espn_h]); });
+  let ok = 0, bad = 0, i = 0;
+  const worker = async () => { while (i < teams.length) { const [lg, id] = teams[i++]; try { await newsFor(lg, id); ok++; } catch (e) { bad++; } } };
+  jobs.push(...Array.from({length: 6}, worker));
+  await Promise.allSettled(jobs); save();
+  setStatus('qb', bad && !ok ? '<b>QB news:</b> ESPN news unreachable' : `<b>QB news:</b> ESPN injury report + team news (${teams.length} teams)`);
+}
+function computeQB() {
+  QBX = {};
+  const cfbId = {}; SNAP.cfb.games.forEach(g => { cfbId[g.away] = g.espn_a; cfbId[g.home] = g.espn_h; });
+  for (const g of SNAP.cfb.games) for (const t of [g.away, g.home]) {
+    const q = SNAP.cfb.qbs?.[t]; if (!q || QBX['CFB:' + t]) continue;
+    const arts = ST.qbnews['CFB:' + cfbId[t]]?.articles || [];
+    let exp = q.last, why = [], link = '', status = 'ok';
+    const named = startedNamed(arts, [q.primary, q.last]);
+    const sp = q.primary !== q.last ? newsStatus(arts, q.primary) : null;
+    if (named) { exp = named.name; why.push(`news: ${named.txt}`); link = named.a.link; }
+    else if (sp && sp.kind === 'back') { exp = q.primary; why.push(`${q.primary} may return: ${sp.txt}`); link = sp.a.link; status = 'check'; }
+    const se = newsStatus(arts, exp);
+    let isPrimary = exp === q.primary;
+    if (se && (se.kind === 'out' || se.kind === 'doubt')) { why.push(`${exp} ${se.kind === 'out' ? 'out' : 'doubtful'}: ${se.txt}`); link = se.a.link; status = se.kind; isPrimary = false; exp = 'backup'; }
+    else if (se && se.kind === 'quest') { why.push(`${exp} questionable: ${se.txt}`); link = link || se.a.link; status = 'quest'; }
+    // healthy season starter still starting: stats already reflect him (no adjustment)
+    const delta = isPrimary && exp === q.last ? 0 : Math.round(QB_VAL * ((isPrimary ? 1 : 0) - q.share_primary) * 10) / 10;
+    const lbl = exp === 'backup' ? `backup for ${q.last}` : exp + (exp !== q.primary ? ` (season starter ${q.primary})` : '');
+    QBX['CFB:' + t] = {team: t, qb: exp, label: lbl, delta, status, why: why.join(' · '), link};
+  }
+  const inj = ST.nflInj?.by || {};
+  for (const g of SNAP.nfl.games) for (const [t, dflt] of [[g.away, g.qa], [g.home, g.qh]]) {
+    const prim = SNAP.nfl.primary?.[t] || dflt, arts = ST.qbnews['NFL:' + NFL_ID[t]]?.articles || [];
+    const injOf = n => (inj[t] || []).find(x => x.short.toLowerCase() === String(n).toLowerCase() || lastName(x.name).toLowerCase() === lastName(n).toLowerCase());
+    const cands = [...new Set([prim, dflt, ...(SNAP.nfl.team_qbs?.[t] || []), ...Object.keys(SNAP.nfl.qbs)])];
+    let exp = prim, why = [], link = '', status = 'ok';
+    const others = new Set(Object.entries(SNAP.nfl.primary || {}).filter(([tt]) => tt !== t).map(([, n]) => n).concat(SNAP.nfl.games.flatMap(x => [x.away === t ? null : x.qa, x.home === t ? null : x.qh]).filter(Boolean)));
+    const named = startedNamed(arts, cands.filter(c => !others.has(c) || (SNAP.nfl.team_qbs?.[t] || []).includes(c)));
+    const pi = injOf(prim), pn = newsStatus(arts, prim);
+    const primOut = (pi && /out|injured reserve|doubtful|suspen|physically unable|non-football/i.test(pi.status)) || (pn && (pn.kind === 'out' || pn.kind === 'doubt'));
+    if (named && named.name !== prim) { exp = named.name; why.push(`news: ${named.txt}`); link = named.a.link; }
+    else if (primOut) {
+      exp = dflt !== prim ? dflt : ((SNAP.nfl.team_qbs?.[t] || []).find(n => n !== prim) || 'backup');
+      why.push(`${prim} ${pi ? pi.status.toLowerCase() : pn.kind}${pi?.comment ? ': ' + pi.comment : pn ? ': ' + pn.txt : ''}`); link = pn?.a.link || ''; status = 'out';
+    }
+    const ei = injOf(exp), en = newsStatus(arts, exp);
+    if (exp !== 'backup' && ((ei && /questionable/i.test(ei.status)) || (en && en.kind === 'quest'))) { status = status === 'ok' ? 'quest' : status; why.push(`${exp} questionable${ei?.comment ? ': ' + ei.comment : en ? ': ' + en.txt : ''}`); link = link || en?.a.link || ''; }
+    QBX['NFL:' + t] = {team: t, qb: exp === 'backup' ? '' : exp, label: exp, status, why: why.join(' · '), link, changed: exp !== dflt};
+  }
+}
+
+// ---------------- model ----------------
+function cfbWx(w, gust, rain) { const R = RULES.cfb.wx_total_adj; let a = 0; R.wind.forEach(([lo, hi, v]) => { if (w >= lo && w < hi) a += v; }); if (gust >= 25) a += R.gust25; if (rain >= 40) a += R.rain40; return a; }
+function inputsOf(lg, g) { return ST.inputs[lg + ':' + g.id] || {}; }
+function lineFor(lg, g) {
+  const inp = inputsOf(lg, g), dk = ST.key ? dkLine(lg, g) : null;
+  const espn = lg === 'CFB' ? ST.espnOdds['CFB:' + g.id] : (g.espn ? ST.espnOdds['NFL:' + g.espn] : null);
+  let spread = null, total = null, src = '', prices = {};
+  if (dk) { spread = dk.spread ?? null; total = dk.total ?? null; src = 'DraftKings'; prices = dk; }
+  if (spread == null && espn?.spread != null) { spread = espn.spread; src = src || espn.src; }
+  if (total == null && espn?.total != null) { total = espn.total; src = src || espn.src; }
+  if (lg === 'NFL') { if (spread == null && g.line_spread != null) { spread = g.line_spread; src = src || 'consensus'; } if (total == null && g.line_total != null) { total = g.line_total; src = src || 'consensus'; } }
+  if (inp.spread !== undefined) { spread = +inp.spread; src = 'entered'; }
+  if (inp.total !== undefined) { total = +inp.total; src = 'entered'; }
+  return {spread, total, src, prices};
+}
+function predict(lg, g) {
+  const inp = inputsOf(lg, g), wx = ST.wx[lg + ':' + g.id];
+  let wind = inp.wind !== undefined ? +inp.wind : wx?.wind, gust = wx?.gust || 0, rain = wx?.rain || 0;
+  let pa = g.pa, ph = g.ph; const notes = [];
+  if (lg === 'CFB') {
+    const AA = QBX['CFB:' + g.away], AH = QBX['CFB:' + g.home];
+    const qa = inp.qa !== undefined ? +inp.qa : (AA?.delta || 0), qh = inp.qh !== undefined ? +inp.qh : (AH?.delta || 0), [s1, s2] = RULES.cfb.qb_split;
+    pa += s1 * qa - s2 * qh; ph += s1 * qh - s2 * qa;
+    if (qa) notes.push(`${g.away} QB ${inp.qa !== undefined ? '(entered)' : (AA?.label || '')} ${sgn(qa)}`); if (qh) notes.push(`${g.home} QB ${inp.qh !== undefined ? '(entered)' : (AH?.label || '')} ${sgn(qh)}`);
+    if (g.dome) wind = null;
+    const wa = g.dome ? 0 : cfbWx(wind || 0, gust, rain); pa += wa / 2; ph += wa / 2;
+  } else {
+    const C = SNAP.nfl.coef, Q = SNAP.nfl.qbs, dflt = SNAP.nfl.qb_default;
+    if (!g.outdoor) wind = null;
+    const w = g.outdoor ? (wind ?? 8) : 0; pa += C.wind * w; ph += C.wind * w;
+    const NA = QBX['NFL:' + g.away], NH = QBX['NFL:' + g.home];
+    const qbA = inp.qbA || (NA?.changed ? (NA.qb || '?') : ''), qbH = inp.qbH || (NH?.changed ? (NH.qb || '?') : '');
+    const va = qbA ? (Q[qbA] ?? dflt) : g.qa0, vh = qbH ? (Q[qbH] ?? dflt) : g.qh0;
+    pa += C.qb_own * (va - g.qa0) + C.qb_opp * (vh - g.qh0); ph += C.qb_own * (vh - g.qh0) + C.qb_opp * (va - g.qa0);
+    if (qbA) notes.push(`${g.away} QB ${qbA === '?' ? 'backup' : qbA}${inp.qbA ? ' (entered)' : ' (auto)'}`); if (qbH) notes.push(`${g.home} QB ${qbH === '?' ? 'backup' : qbH}${inp.qbH ? ' (entered)' : ' (auto)'}`);
+  }
+  return {pa, ph, total: pa + ph, hs: pa - ph, wind: wind == null || isNaN(wind) ? null : wind, wxd: wx, notes};
+}
+// ---------- key-number score distributions (keys.json, fitted on historical finals) ----------
+const KEYS = SNAP.keys || null;
+const npdf = (x, m, s) => Math.exp(-0.5 * ((x - m) / s) ** 2);
+function coverProb(lg, kind, model, line, b) {   // kind m: P(home covers) with line = market home margin; kind t: P(over)
+  const K = KEYS && KEYS[lg]; if (!K || line == null || model == null) return null;
+  const par = K[kind], bb = b == null ? par.b : b, mu = line + bb * (model - line); let win = 0, push = 0, tot = 0;
+  if (kind === 'm') for (let k = -80; k <= 80; k++) { if (k === 0 && !K.ties) continue; const p = npdf(k, mu, par.sd) * K.wm[Math.abs(k)]; tot += p; if (k > line) win += p; else if (k === line) push += p; }
+  else for (let k = 0; k <= 140; k++) { const p = npdf(k, mu, par.sd) * K.wt[k]; tot += p; if (k > line) win += p; else if (k === line) push += p; }
+  return {win: win / tot, push: push / tot, lose: 1 - (win + push) / tot};
+}
+function likelyScore(lg, pa, ph) {   // most likely real football score near the model's averages
+  const K = KEYS && KEYS[lg]; if (!K) return null; let best = null, bv = -1;
+  for (let a = 0; a <= 70; a++) { const va = npdf(a, pa, 4) * K.wp[a]; for (let h = 0; h <= 70; h++) { if (a === h) continue; const v = va * npdf(h, ph, 4) * K.wp[h]; if (v > bv) { bv = v; best = [a, h]; } } }
+  return best;
+}
+function sideProb(lg, b) {   // cover probability of the bet's side at its line (spread: line is the HOME line; total: the total)
+  const g = (lg === 'CFB' ? SNAP.cfb.games : SNAP.nfl.games).find(x => x.id === b.game_id || x.espn === b.game_id); const x = BOARD.find(y => y.lg === lg && y.g === g);
+  if (!x) return null; const P = x.P;
+  const r = b.market === 'total' ? coverProb(lg, 't', P.total, +b.line) : coverProb(lg, 'm', P.ph - P.pa, -(+b.line));
+  if (!r) return null; const w = b.market === 'total' ? (b.side === 'over' ? r.win : r.lose) : (b.side === 'home' ? r.win : r.lose);
+  return {win: w, push: r.push};
+}
+function flagsFor(lg, g, P, L) {
+  const out = [];
+  if (lg === 'CFB') {
+    if (L.total != null && Math.abs(P.total - L.total) >= RULES.cfb.total_gap_min)
+      out.push({rule: 'cfb_total_gap7', market: 'total', side: P.total > L.total ? 'over' : 'under', line: L.total, text: `${P.total > L.total ? 'Over' : 'Under'} ${L.total}, model ${P.total.toFixed(1)}`});
+    if (!g.neutral && g.tz_home != null && g.tz_away != null && g.tz_home - g.tz_away <= -RULES.cfb.tz_spot.min_tz_west && L.spread != null) {
+      const late = etHour(g.kick) >= 22, agree = (P.ph - P.pa) + L.spread > 0;
+      out.push({rule: 'cfb_tz_home' + (late ? '_late' : '') + (agree ? '' : '_model_disagrees'), market: 'spread', side: 'home', line: L.spread, text: `${g.home} ${lineTxt(L.spread)}, east team flying west${agree ? '' : ' (model disagrees)'}`});
+    }
+    if (P.wind != null && P.wind >= RULES.cfb.wind_under_mph && L.total != null)
+      out.push({rule: 'cfb_wind_under', market: 'total', side: 'under', line: L.total, text: `Under ${L.total}, wind ${P.wind} mph`});
+  } else {
+    if (g.outdoor && P.wind != null && P.wind >= RULES.nfl.wind_under_mph && L.total != null)
+      out.push({rule: P.wind < 15 ? 'nfl_wind_under_10_14' : 'nfl_wind_under_15plus', market: 'total', side: 'under', line: L.total, text: `Under ${L.total}, wind ${P.wind} mph`});
+    if (L.spread != null && KEYS) {   // key-number side: the half-point that crosses 3 / 7 / 10 / 14
+      const r = coverProb('NFL', 'm', P.ph - P.pa, -L.spread, 0), hp = r.win / (1 - r.push), ap = r.lose / (1 - r.push);
+      if (Math.max(hp, ap) >= 0.534) { const home = hp >= ap;
+        out.push({rule: 'nfl_key_side', market: 'spread', side: home ? 'home' : 'away', line: L.spread, text: `${home ? g.home : g.away} ${lineTxt(home ? L.spread : -L.spread)}, key number (${pct(Math.max(hp, ap))} to cover)`}); }
+    }
+    if (L.spread != null && Math.abs(P.hs - L.spread) >= RULES.nfl.side_gap_lean) {
+      const away = P.hs - L.spread > 0;
+      out.push({rule: 'nfl_side_gap4', market: 'spread', side: away ? 'away' : 'home', line: L.spread, text: `${away ? g.away : g.home} ${lineTxt(away ? -L.spread : L.spread)}, lean only (gap ${Math.abs(P.hs - L.spread).toFixed(1)})`});
+    }
+  }
+  return out;
+}
+function legText(l) { return l.market === 'total' ? `${String(l.side).toUpperCase() === 'OVER' ? 'Over' : 'Under'} ${l.line} (${l.away}/${l.home})` : betText(l); }
+function betText(r) {
+  if (r.market === 'parlay') return `${(r.legs || []).length}-leg parlay`;
+  if (r.market === 'ml') return `${r.side === 'home' ? r.home : r.away} moneyline`;
+  if (r.market === 'total') return `${r.away}/${r.home} ${String(r.side).toUpperCase()} ${r.line}`;
+  const ln = r.side === 'home' ? +r.line : -r.line; return `${r.side === 'home' ? r.home : r.away} ${ln > 0 ? '+' : ''}${ln}`;
+}
+function RNAME(r) { const base = String(r).replace('_model_disagrees', ''); return (DATA.names[base] || base) + (String(r).endsWith('_model_disagrees') ? ', model disagreed' : ''); }
+
+// ---------------- board -> bets & picks ----------------
+let BOARD = [], BETS = [], PICKS = [];
+function buildBoard() {
+  computeQB();
+  BOARD = [];
+  for (const lg of ['CFB', 'NFL']) for (const g of SNAP[lg.toLowerCase()].games) { const L = lineFor(lg, g), P = predict(lg, g); BOARD.push({lg, g, L, P, F: flagsFor(lg, g, P, L)}); }
+}
+function kellyOf(b) { const r = BR.rules[b.rule] || {p: +b.hit_rate, n: +b.n || 50}; const ps = (r.p * r.n + 0.5 * BR.shrink_k) / (r.n + BR.shrink_k); return Math.max(ps - (1 - ps) / payout(+b.odds || -110), 0.001); }
+function buildBets() {
+  const cands = [], picks = [];
+  for (const {lg, g, L, P, F} of BOARD) for (const f of F) {
+    const base = {date: ctDate(g.kick), kick: g.kick, league: lg, week: SNAP[lg.toLowerCase()].week, game_id: g.id, game: `${g.away} @ ${g.home}`, away: g.away, home: g.home,
+      away_conf: g.away_conf, home_conf: g.home_conf, kick_hour: ctHour(g.kick), wind: P.wind ?? '', line_spread: L.spread ?? '', line_total: L.total ?? '',
+      model_total: P.total.toFixed(1), model_home_spread: P.hs.toFixed(1), rule: f.rule, market: f.market, side: f.side, line: f.line, src: 'model', result: ''};
+    base.id = base.date + '|' + base.game_id + '|' + base.rule;
+    picks.push(Object.assign({}, base));
+    const r = BR.rules[f.rule]; if (!r || r.lean_only || r.p < (lg === 'CFB' ? BR.cfb_min_hit : BR.nfl_min_hit)) continue;
+    const price = f.market === 'total' ? (f.side === 'over' ? L.prices.overPrice : L.prices.underPrice) : (f.side === 'home' ? L.prices.homePrice : L.prices.awayPrice);
+    cands.push(Object.assign(base, {hit_rate: r.p, n: r.n, odds: price || BR.default_odds}));
+  }
+  const kickOf = {}; BOARD.forEach(x => kickOf[x.g.id] = x.g.kick);
+  const byId = {};
+  DATA.bets.forEach(b => { const id = b.date + '|' + b.game_id + '|' + b.rule; byId[id] = Object.assign({}, b, {id, src: 'log', kick: kickOf[b.game_id] || b.date + 'T23:59:00-05:00'}); });
+  Object.values(ST.frozen).forEach(b => { if (!byId[b.id]) byId[b.id] = Object.assign({}, b); });
+  const fresh = cands.filter(b => !started(b.kick)).sort((a, b) => b.hit_rate - a.hit_rate || kellyOf(b) - kellyOf(a));
+  const live = () => Object.values(byId).filter(b => !ST.struck[b.id]);
+  for (const b of fresh) {
+    if (byId[b.id]) { const o = byId[b.id]; if (o.src !== 'log') { o.line = b.line; o.odds = b.odds; } continue; }
+    if (ST.struck[b.id]) { byId[b.id] = b; continue; }   // keep it visible (struck) so it can be undone
+    const L = live();
+    if (L.some(x => x.date === b.date && x.game_id === b.game_id)) continue;
+    if (L.filter(x => x.date === b.date).length >= BR.max_bets_per_day) continue;
+    byId[b.id] = b;
+  }
+  const all = Object.values(byId);
+  all.forEach(b => { const o = ST.ov[b.id] || {}; b.locked = false;
+    if (o.odds !== undefined && o.odds !== '') b.odds = +o.odds; if (o.stake !== undefined && o.stake !== '') { b.stake = +o.stake; b.locked = true; } if (o.line !== undefined && o.line !== '') b.line = +o.line;
+    b.odds = +b.odds || -110; b.hit_rate = +b.hit_rate || (BR.rules[b.rule] || {}).p || 0; b.bet = betText(b); });
+  const days = {}; all.filter(b => !ST.struck[b.id]).forEach(b => (days[b.date] = days[b.date] || []).push(b));
+  for (const list of Object.values(days)) {
+    const liveL = list.filter(b => !started(b.kick) && !b.locked); if (!liveL.length) continue;
+    const fixed = list.filter(b => started(b.kick) || b.locked).reduce((s, b) => s + (+b.stake || 0), 0);
+    const room = Math.max(Math.round(+ST.budget - fixed), 0), ks = liveL.map(kellyOf), sum = ks.reduce((a, c) => a + c, 0);
+    const st = liveL.map((b, i) => Math.max(BR.min_stake, Math.round(room * ks[i] / sum)));
+    if (room > 0) st[st.indexOf(Math.max(...st))] += room - st.reduce((a, c) => a + c, 0);
+    liveL.forEach((b, i) => b.stake = room > 0 ? Math.max(st[i], 0) : 0);
+  }
+  all.forEach(b => { b.to_win = (+b.stake || 0) * payout(b.odds);
+    if (!b.result) { const f = finalFor(b.league, b.game_id, b.date, b.away, b.home); if (f) b.result = grade(b, f); }
+    if (b.src === 'model' && started(b.kick) && !ST.frozen[b.id] && !ST.struck[b.id]) ST.frozen[b.id] = Object.assign({}, b); });
+  BETS = all;
+  const pk = {};
+  DATA.picks.forEach(p => { const id = p.date + '|' + p.game_id + '|' + p.rule; pk[id] = Object.assign({}, p, {id}); });
+  Object.values(ST.frozenPicks).forEach(p => { if (!pk[p.id]) pk[p.id] = p; });
+  picks.forEach(p => { if (!pk[p.id]) pk[p.id] = p; else if (!started(p.kick)) pk[p.id].line = p.line;
+    if (started(p.kick) && !ST.frozenPicks[p.id] && !DATA.picks.some(q => q.date + '|' + q.game_id + '|' + q.rule === p.id)) ST.frozenPicks[p.id] = p; });
+  PICKS = Object.values(pk).map(p => { if (!p.result) { const f = finalFor(p.league, p.game_id, p.date, p.away, p.home); if (f) p.result = grade(p, f); } return p; });
+  save();
+}
+function grade(b, f) {
+  const line = +b.line; let d;
+  if (b.market === 'total') { d = f.hs + f.as - line; if (b.side === 'under') d = -d; } else if (b.market === 'ml') { d = f.hs - f.as; if (b.side === 'away') d = -d; } else { d = f.hs - f.as + line; if (b.side === 'away') d = -d; }
+  return d > 0 ? 'W' : d < 0 ? 'L' : 'P';
+}
+
+// ---------------- THIS WEEK ----------------
+let LG = 'CFB', SHOW = 'major';
+const P4C = ['SEC', 'Big Ten', 'Big 12', 'ACC'];
+const isMajor = (lg, g) => lg === 'NFL' || (g.away_rank && g.away_rank <= 60) || (g.home_rank && g.home_rank <= 60) || P4C.includes(g.away_conf) || P4C.includes(g.home_conf) || [g.away, g.home].includes('Notre Dame');
+const rk = (r, lg) => lg === 'CFB' && r ? `<span class="rk" title="Elo rank">#${r}</span> ` : '';
+function renderStatus() { $('#status').innerHTML = Object.values(STATUS).map(s => `<span>${s}</span>`).join('');
+  const vals = Object.values(STATUS).join(' '), loading = /loading/.test(vals), bad = /unreachable|could not|not synced|offline|rejected/i.test(vals);
+  $('#mini').innerHTML = loading ? 'Loading live data…' : bad ? '<span class="neg">Some live data is offline</span> · see Rules' : 'Live · updated ' + new Date().toLocaleTimeString([], {hour: 'numeric', minute: '2-digit'}); }
+function renderWeek() {
+  const cut = ctDate(new Date(Date.now() - 2 * 864e5).toISOString()), dates = {};
+  BETS.filter(b => b.date >= cut).forEach(b => (dates[b.date] = dates[b.date] || []).push(b));
+  const days = Object.keys(dates).sort();
+  $('#keynote').innerHTML = ST.key ? '' : '<div class="note">No Odds API key yet. Lines come from ESPN\'s listing (and the nflverse consensus for NFL). Add a free key in Settings to price everything off DraftKings.</div>';
+  $('#betboard').innerHTML = !days.length ? '<div class="empty">No qualifying bets right now. They appear once lines and weather are in.</div>' : days.map(d => {
+    const list = dates[d].sort((a, b) => (!!ST.struck[a.id]) - (!!ST.struck[b.id]) || (+b.stake || 0) - (+a.stake || 0));
+    const live = list.filter(b => !ST.struck[b.id]), tot = live.reduce((s, b) => s + (+b.stake || 0), 0);
+    return `<div class="dayhead"><span>${dayLbl(d)}</span><span class="small">$${tot.toFixed(0)} of $${(+ST.budget).toFixed(0)} · ${live.length} bet${live.length === 1 ? '' : 's'}</span></div>
+    <div class="tablewrap"><table class="cards"><thead><tr><th>Kick</th><th>Bet</th><th class="why">Why</th><th class="num">Backtest</th><th class="num">Odds</th><th class="num">Stake $</th><th class="num">To win</th><th>Result</th><th></th></tr></thead><tbody>` +
+    list.map(b => { const s = !!ST.struck[b.id], go = started(b.kick);
+      return `<tr class="${s ? 'struck' : ''}"><td data-label="Kick">${ctTime(b.kick)}</td><td class="full first" data-label=""><b>${esc(b.bet)}</b><div class="small">${esc(b.game)}</div>${(() => { const qs = [b.away, b.home].map(t => QBX[b.league + ':' + t]).filter(q => q && ['quest', 'out', 'doubt', 'check'].includes(q.status)); return qs.map(q => `<span class="chip no" title="${esc(q.why)}">QB: ${esc(q.team)} ${q.status === 'quest' ? 'questionable' : q.status === 'check' ? 'check' : 'starter out'}</span>`).join(''); })()}</td><td class="why full" data-label="Why">${esc(RNAME(b.rule))}</td>
+      <td class="num" data-label="Backtest">${pct(+b.hit_rate)}${(() => { const c = sideProb(b.league, b); return c && c.push >= 0.02 ? `<div class="small">${pct(c.push)} push chance</div>` : ''; })()}</td>
+      <td class="num" data-label="Odds">${go || s ? (b.odds > 0 ? '+' : '') + b.odds : `<input class="num" data-ov="odds" data-id="${esc(b.id)}" value="${b.odds}">`}</td>
+      <td class="num" data-label="Stake $">${go || s ? '$' + (+b.stake || 0).toFixed(0) : `<input class="num" data-ov="stake" data-id="${esc(b.id)}" value="${(+b.stake || 0).toFixed(0)}"${b.locked ? ' title="Locked. Clear the box to let it auto-size."' : ''}>`}</td>
+      <td class="num" data-label="To win">${s ? '–' : fmt$(b.to_win)}</td><td data-label="Result">${b.result ? `<span class="pill ${b.result}">${b.result}</span>` : go ? '<span class="pill O">live</span>' : ''}</td>
+      <td class="keep" data-label="">${s ? `<button class="btn small" data-unstrike="${esc(b.id)}">Undo</button>` : `<button class="btn small" data-strike="${esc(b.id)}">Strike</button>`}</td></tr>`; }).join('') + '</tbody></table></div>';
+  }).join('');
+  $$('#betboard [data-strike]').forEach(el => el.onclick = () => { if (confirmStrike(el.dataset.strike)) { ST.struck[el.dataset.strike] = Date.now(); usave(); recompute(); } });
+  $$('#betboard [data-unstrike]').forEach(el => el.onclick = () => { delete ST.struck[el.dataset.unstrike]; usave(); recompute(); });
+  $$('#betboard input[data-ov]').forEach(el => el.onchange = () => { const o = ST.ov[el.dataset.id] = ST.ov[el.dataset.id] || {}; if (el.value.trim() === '') delete o[el.dataset.ov]; else o[el.dataset.ov] = el.value.trim(); usave(); recompute(); });
+  renderMine(); renderGames();
+}
+
+function qbChips(lg, g) {
+  const out = [];
+  for (const t of [g.away, g.home]) {
+    const q = QBX[lg + ':' + t]; if (!q) continue;
+    const manual = lg === 'CFB' ? inputsOf(lg, g)[t === g.away ? 'qa' : 'qh'] !== undefined : !!inputsOf(lg, g)[t === g.away ? 'qbA' : 'qbH'];
+    const show = q.status !== 'ok' || (lg === 'CFB' ? Math.abs(q.delta) >= 0.5 : q.changed);
+    if (!show) continue;
+    const cls = q.status === 'quest' || q.status === 'check' ? 'no' : q.status === 'out' || q.status === 'doubt' ? 'no' : 'lean';
+    const txt = lg === 'CFB' ? `${t}: ${q.label}${Math.abs(q.delta) >= 0.5 ? ` (${sgn(q.delta)})` : ''}${q.status === 'quest' ? ', questionable' : q.status === 'check' ? ', check' : ''}`
+                             : `${t}: ${q.status === 'quest' ? q.label + ' questionable' : (q.qb ? q.qb + ' starting' : 'backup starting')}`;
+    out.push(`<span class="chip ${cls}" title="${esc(q.why || 'from play-by-play: season starter vs last starter')}">${esc(txt)}${manual ? ' · overridden' : ''}</span>${q.link ? ` <a class="small" href="${esc(q.link)}" target="_blank" rel="noopener">news</a>` : ''}`);
+  }
+  return out.join(' ');
+}
+
+const P4 = ['SEC', 'Big Ten', 'Big 12', 'ACC'];
+function confMatch(g, c) {
+  if (!c) return true;
+  const cs = [g.away_conf, g.home_conf], ind = [g.away, g.home].includes('Notre Dame');
+  if (c === 'Power 4 (+ Notre Dame)') return cs.some(x => P4.includes(x)) || ind;
+  if (c === 'SEC + Big Ten + Notre Dame') return cs.some(x => x === 'SEC' || x === 'Big Ten') || ind;
+  if (c === 'Group of 5') return cs.every(x => x && !P4.includes(x) && x !== 'FBS Independents');
+  if (c === 'AFC' || c === 'NFC') return cs.some(x => String(x).startsWith(c));
+  return cs.includes(c);
+}
+function initGameFilters() {
+  const sel = $('#g-conf'), cur = sel.value, isN = LG === 'NFL';
+  const confs = [...new Set(SNAP[LG.toLowerCase()].games.flatMap(g => [g.away_conf, g.home_conf]).filter(Boolean))].sort();
+  const groups = isN ? ['AFC', 'NFC'] : ['SEC + Big Ten + Notre Dame', 'Power 4 (+ Notre Dame)', 'Group of 5'];
+  sel.innerHTML = '<option value="">All</option>' + groups.map(c => `<option>${esc(c)}</option>`).join('') + '<option disabled>──────</option>' + confs.map(c => `<option>${esc(c)}</option>`).join('');
+  sel.value = [...sel.options].some(o => o.value === cur) ? cur : '';
+  $('#gteams').innerHTML = [...new Set(SNAP[LG.toLowerCase()].games.flatMap(g => [g.away, g.home]))].sort().map(t => `<option value="${esc(t)}">`).join('');
+}
+['g-conf', 'g-team', 'g-sort', 'g-when'].forEach(id => document.getElementById(id).addEventListener('input', () => { try { localStorage.setItem('bt-' + id + '-' + LG, document.getElementById(id).value); } catch (e) {} renderGames(); }));
+function renderGames() {
+  initGameFilters();
+  let rows = BOARD.filter(x => x.lg === LG);
+  if (SHOW === 'major') rows = rows.filter(x => isMajor(x.lg, x.g)); else if (SHOW === 'flag') rows = rows.filter(x => x.F.length); else if (SHOW === 'lines') rows = rows.filter(x => x.L.spread != null || x.L.total != null);
+  const C = $('#g-conf').value, TM = $('#g-team').value.trim().toLowerCase(), SO = $('#g-sort').value, WH = $('#g-when').value;
+  rows = rows.filter(x => confMatch(x.g, C) && (!TM || [x.g.away, x.g.home].some(t => t.toLowerCase().includes(TM))));
+  const LI = liveIndex(), lgame = x => LI[x.lg === 'NFL' ? x.g.espn : x.g.id];
+  if (WH === 'upcoming') rows = rows.filter(x => !started(x.g.kick)); else if (WH === 'today') rows = rows.filter(x => ctDate(x.g.kick) === today()); else if (WH === 'live') rows = rows.filter(x => (lgame(x) || {}).state === 'in');
+  const tg = x => x.L.total == null ? -1 : Math.abs(x.P.total - x.L.total), sg = x => x.L.spread == null ? -1 : Math.abs(x.P.hs - x.L.spread);
+  const sorters = {kick: (a, b) => a.g.kick.localeCompare(b.g.kick), tgap: (a, b) => tg(b) - tg(a), sgap: (a, b) => sg(b) - sg(a),
+    flags: (a, b) => b.F.length - a.F.length || a.g.kick.localeCompare(b.g.kick), conf: (a, b) => (a.g.home_conf || '').localeCompare(b.g.home_conf || '') || a.g.kick.localeCompare(b.g.kick),
+    total: (a, b) => b.P.total - a.P.total, margin: (a, b) => Math.abs(b.P.hs) - Math.abs(a.P.hs)};
+  rows = rows.slice().sort(sorters[SO] || sorters.kick);
+  if (!rows.length) { $('#games').innerHTML = `<div class="empty">${SHOW === 'flag' ? 'No flagged games yet. Flags need lines and weather, so refresh or switch to All.' : 'No games.'}</div>`; return; }
+  const isN = LG === 'NFL', val = (x, k) => esc(inputsOf(x.lg, x.g)[k] ?? '');
+  $('#games').innerHTML = `<table class="cards"><thead><tr><th>Kick (CT)</th><th>Game</th><th class="num">Model score</th><th class="num">Line</th><th class="num">Model likes</th><th class="num">Wind</th><th>Flags</th></tr></thead><tbody>` +
+    rows.map((x, i) => { const {g, L, P, F} = x, fin = finalFor(x.lg, g.id, ctDate(g.kick), g.away, g.home);
+      const gapT = L.total != null ? P.total - L.total : null, gapS = L.spread != null ? P.hs - L.spread : null;
+      const wx = P.wind == null ? ((isN && !g.outdoor) || (!isN && g.dome) ? 'indoors' : '–') : P.wind + (P.wxd?.gust >= 20 ? ` (g${P.wxd.gust})` : '');
+      return `<tr data-row="${i}" style="cursor:pointer"><td data-label="Kick (CT)">${ctTime(g.kick)}${g.neutral ? '<div class="small">neutral</div>' : ''}</td>
+        <td class="full first" data-label="">${rk(g.away_rank, x.lg)}<b>${esc(g.away)}</b> @ ${rk(g.home_rank, x.lg)}<b>${esc(g.home)}</b>${scoreLine(lgame(x))}<div class="small">${esc(g.away_conf === g.home_conf ? g.home_conf : (g.away_conf || '?') + ' vs ' + (g.home_conf || '?'))}</div>${isN ? `<div class="small">QBs ${esc(inputsOf('NFL', g).qbA || (QBX['NFL:' + g.away]?.changed ? QBX['NFL:' + g.away].qb || 'backup' : g.qa))} / ${esc(inputsOf('NFL', g).qbH || (QBX['NFL:' + g.home]?.changed ? QBX['NFL:' + g.home].qb || 'backup' : g.qh))}</div>` : ''}<div>${qbChips(x.lg, g)}</div>${fin ? `<div class="small"><b>Final ${fin.as}-${fin.hs}</b></div>` : ''}</td>
+        <td class="num" data-label="Model score">${P.pa.toFixed(1)} - ${P.ph.toFixed(1)}<div class="small">total ${P.total.toFixed(1)}${(() => { const s = likelyScore(x.lg, P.pa, P.ph); return s ? ` · likely ${s[0]}-${s[1]}` : ''; })()}</div></td>
+        <td class="num" data-label="Line">${L.spread == null ? '–' : 'home ' + lineTxt(L.spread)}<div class="small">O/U ${L.total ?? '–'} · ${esc(L.src || 'no line')}</div></td>
+        <td class="num" data-label="Model likes">${gapS == null ? '–' : (gapS < 0 ? esc(g.home) : esc(g.away)) + ' +' + Math.abs(gapS).toFixed(1)}${(() => { if (L.spread == null) return ''; const r = coverProb(x.lg, 'm', P.ph - P.pa, -L.spread); if (!r) return ''; const pc = Math.max(r.win, r.lose) / (1 - r.push); return `<div class="small">${pct(pc)} to cover${r.push >= 0.02 ? ` · ${pct(r.push)} push` : ''}</div>`; })()}<div class="small">${gapT == null ? '' : 'total ' + sgn(gapT)}</div></td>
+        <td class="num" data-label="Wind">${wx}</td>
+        <td class="full" data-label="Flags">${F.map(f => `<span class="chip ${f.rule === 'nfl_side_gap4' ? 'lean' : f.rule.endsWith('disagrees') ? 'no' : ''}">${esc(f.text)}</span>`).join('') || '<span class="small">–</span>'}</td></tr>
+        <tr class="edit" data-edit="${i}"><td colspan="7"><div class="editgrid">
+          <label class="f">Home line (− = home fav)<input class="num" data-in="spread" value="${val(x, 'spread')}" placeholder="${L.spread ?? ''}"></label>
+          <label class="f">Total<input class="num" data-in="total" value="${val(x, 'total')}" placeholder="${L.total ?? ''}"></label>
+          <label class="f">Wind mph<input class="num" data-in="wind" value="${val(x, 'wind')}" placeholder="${P.wind ?? ''}"></label>
+          ${isN ? `<label class="f">${esc(g.away)} QB<input data-in="qbA" list="qbl" value="${val(x, 'qbA')}" placeholder="${esc(g.qa)}"></label>
+                   <label class="f">${esc(g.home)} QB<input data-in="qbH" list="qbl" value="${val(x, 'qbH')}" placeholder="${esc(g.qh)}"></label>`
+                : `<label class="f">${esc(g.away)} QB/injury pts<input class="num" data-in="qa" value="${val(x, 'qa')}" placeholder="0"></label>
+                   <label class="f">${esc(g.home)} QB/injury pts<input class="num" data-in="qh" value="${val(x, 'qh')}" placeholder="0"></label>`}
+          <button class="btn small" data-clear="${i}">Clear</button><span class="small">${isN ? 'QB names as in play-by-play, e.g. T.Huntley' : 'Backup QB is about −3 to −7'}${P.wxd ? ` · forecast ${P.wxd.temp}°F, wind ${P.wxd.wind}, gusts ${P.wxd.gust}, rain ${P.wxd.rain}%` : ''}</span>
+        </div></td></tr>`; }).join('') + `</tbody></table><datalist id="qbl">${Object.keys(SNAP.nfl.qbs).sort().map(q => `<option value="${esc(q)}">`).join('')}</datalist>`;
+  $$('#games tr[data-row]').forEach(tr => tr.onclick = () => $(`#games tr[data-edit="${tr.dataset.row}"]`).classList.toggle('open'));
+  $$('#games tr.edit').forEach(tr => {
+    const x = rows[+tr.dataset.edit], key = x.lg + ':' + x.g.id;
+    tr.querySelectorAll('input[data-in]').forEach(el => el.onchange = () => { const o = ST.inputs[key] = ST.inputs[key] || {}; const v = el.value.trim(); if (v === '') delete o[el.dataset.in]; else o[el.dataset.in] = v; usave(); recompute(true); });
+    tr.querySelector('[data-clear]').onclick = () => { delete ST.inputs[key]; usave(); recompute(); };
+  });
+}
+function restoreGF() { initGameFilters(); ['g-conf', 'g-team', 'g-sort', 'g-when'].forEach(id => { try { const v = localStorage.getItem('bt-' + id + '-' + LG); document.getElementById(id).value = v ?? (id === 'g-sort' ? 'kick' : id === 'g-when' ? 'all' : ''); } catch (e) {} }); }
+$$('#lg button').forEach(b => b.onclick = () => { LG = b.dataset.l; $$('#lg button').forEach(x => x.classList.toggle('on', x === b)); restoreGF(); renderGames(); });
+$$('#show button').forEach(b => b.onclick = () => { SHOW = b.dataset.s; $$('#show button').forEach(x => x.classList.toggle('on', x === b)); renderGames(); });
+function confirmStrike(id) { const b = BETS.find(x => x.id === id); return !b || !b.result || window.confirm(`Strike ${b.bet}? It already has a result (${b.result}), so striking removes it from your record.`); }
+
+// ---------------- TRACKER ----------------
+let MODE = 'bets', SORT = {k: 'date', dir: -1};
+function enrich(r, isBet) {
+  const o = Object.assign({}, r);
+  o.odds = +r.odds || -110; o.stake = isBet ? (+r.stake || 0) : 1; o.result = r.result || '';
+  o.profit = o.result === 'W' ? o.stake * payout(o.odds) : o.result === 'L' ? -o.stake : 0;
+  const h = +r.kick_hour || 0;
+  o.kickw = h < 13 ? 'Early (before 1 pm CT)' : h < 17 ? 'Afternoon (1-5 pm CT)' : 'Night (5 pm CT or later)';
+  const d = new Date(r.date + 'T12:00:00'); o.dow = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'][d.getDay()]; o.month = d.toLocaleString('en-US', {month: 'long'});
+  const line = +r.line;
+  if (r.market === 'parlay') { o.type = 'Parlay'; o.size = 'Parlay'; o.gap = 'n/a'; }
+  else if (r.market === 'ml') { o.type = o.odds < 0 ? 'Favorite' : 'Underdog'; o.size = 'Moneyline'; o.gap = 'n/a'; }
+  else if (r.market === 'total') { o.type = r.side === 'over' ? 'Over' : 'Under'; o.size = line < 42 ? 'Total under 42' : line < 50 ? 'Total 42-49.5' : line < 58 ? 'Total 50-57.5' : 'Total 58+';
+    const g = Math.abs(+r.model_total - (r.line_total === '' || r.line_total == null ? line : +r.line_total)); o.gap = isNaN(g) ? 'n/a' : g < 3 ? 'Model gap under 3' : g < 5 ? 'Model gap 3-5' : g < 7 ? 'Model gap 5-7' : 'Model gap 7+'; }
+  else { const sl = r.side === 'home' ? line : -line; o.type = sl < 0 ? 'Favorite' : sl > 0 ? 'Underdog' : "Pick 'em"; const a = Math.abs(line);
+    o.size = a <= 3 ? 'Spread 0-3' : a <= 7 ? 'Spread 3.5-7' : a <= 14 ? 'Spread 7.5-14' : 'Spread 14+';
+    const g = Math.abs(+r.model_home_spread - (r.line_spread === '' || r.line_spread == null ? line : +r.line_spread)); o.gap = isNaN(g) ? 'n/a' : g < 3 ? 'Model gap under 3' : g < 5 ? 'Model gap 3-5' : g < 7 ? 'Model gap 5-7' : 'Model gap 7+'; }
+  o.homeaway = r.market === 'parlay' ? 'Parlay' : r.market === 'total' ? 'Total (no side)' : (r.side === 'home' ? 'Home team' : 'Road team');
+  const w = r.wind === '' || r.wind == null ? NaN : +r.wind; o.windband = isNaN(w) ? 'No forecast' : w < 10 ? 'Wind under 10 mph' : w < 15 ? 'Wind 10-14 mph' : 'Wind 15+ mph';
+  o.confs = [...new Set([r.away_conf, r.home_conf].filter(Boolean))]; o.confgame = r.away_conf && r.away_conf === r.home_conf ? 'Same conference / division' : 'Cross conference';
+  o.teams = [r.away, r.home].filter(Boolean);
+  const hr = +r.hit_rate || (BR.rules[r.rule] || {}).p || 0; o.hit = hr;
+  o.tier = !hr ? 'n/a' : hr >= 0.6 ? 'Backtest 60%+' : hr >= 0.57 ? 'Backtest 57-59.9%' : hr >= 0.55 ? 'Backtest 55-56.9%' : 'Backtest under 55%';
+  o.stakeband = !isBet ? '' : o.stake < 20 ? 'Stake under $20' : o.stake < 50 ? 'Stake $20-49' : 'Stake $50+';
+  o.rulename = RNAME(r.rule); o.weeklbl = r.week ? r.league + ' week ' + r.week : 'n/a'; o.bettext = r.bet || betText(r);
+  o.betlbl = isBet ? 'Bet' : (BETS.some(b => b.id === r.id && !ST.struck[b.id]) ? 'Bet' : (r.skipped === 'Y' ? 'Passed on purpose' : 'Not bet'));
+  return o;
+}
+const SLICES = [['rulename', 'Rule'], ['league', 'League'], ['conf', 'Conference / division'], ['team', 'Team'], ['kickw', 'Kickoff window'], ['dow', 'Day of week'],
+  ['type', 'Bet type'], ['homeaway', 'Home vs road'], ['size', 'Line size'], ['gap', 'Model vs line gap'], ['windband', 'Wind'], ['tier', 'Backtest hit rate'],
+  ['confgame', 'Conference game?'], ['weeklbl', 'Week'], ['month', 'Month'], ['stakeband', 'Stake size'], ['betlbl', 'Bet or not']];
+function mineRows() { return MINE.map(b => enrich(b, true)); }
+function modelRows() { return BETS.filter(b => !ST.struck[b.id]).map(b => enrich(b, true)); }
+function trackerRows(m) { m = m || MODE; return m === 'bets' ? modelRows() : m === 'mine' ? mineRows() : PICKS.map(p => enrich(p, false)); }
+function initFilters() {
+  const opts = (sel, vals, lbl) => { const cur = sel.value; sel.innerHTML = `<option value="">${lbl}</option>` + vals.map(v => `<option>${esc(v)}</option>`).join(''); sel.value = cur; };
+  const all = BETS.map(b => enrich(b, true)).concat(PICKS.map(p => enrich(p, false)), mineRows());
+  const u = f => [...new Set(all.flatMap(f))].filter(Boolean).sort();
+  opts($('#f-league'), u(r => [r.league]), 'All'); opts($('#f-rule'), u(r => [r.rulename]), 'All rules'); opts($('#f-conf'), u(r => r.confs), 'All');
+  opts($('#f-kick'), ['Early (before 1 pm CT)', 'Afternoon (1-5 pm CT)', 'Night (5 pm CT or later)'], 'Any time'); opts($('#f-type'), ['Over', 'Under', 'Favorite', 'Underdog'], 'All types');
+  $('#teams').innerHTML = u(r => r.teams).map(t => `<option value="${esc(t)}">`).join('');
+  const sl = $('#slice'); if (!sl.options.length) { sl.innerHTML = SLICES.map(([k, n]) => `<option value="${k}">${n}</option>`).join(''); try { const s = localStorage.getItem('bt-slice'); if (s) sl.value = s; } catch (e) {} }
+}
+$$('#filters select,#filters input,#slice').forEach(el => el.addEventListener('input', () => { try { localStorage.setItem('bt-slice', $('#slice').value); } catch (e) {} renderTracker(); }));
+$('#reset').onclick = () => { $$('#filters select,#filters input').forEach(el => el.value = ''); renderTracker(); };
+$$('#mode button').forEach(b => b.onclick = () => { MODE = b.dataset.m; $$('#mode button').forEach(x => x.classList.toggle('on', x === b)); renderTracker(); });
+function filtered(m) {
+  const L = $('#f-league').value, F = $('#f-from').value, T = $('#f-to').value, R = $('#f-rule').value, C = $('#f-conf').value, TM = $('#f-team').value.trim().toLowerCase(),
+        K = $('#f-kick').value, TY = $('#f-type').value, S = $('#f-status').value;
+  return trackerRows(m).filter(r => (!L || r.league === L) && (!F || r.date >= F) && (!T || r.date <= T) && (!R || r.rulename === R) && (!C || r.confs.includes(C)) &&
+    (!TM || r.teams.some(t => t.toLowerCase().includes(TM))) && (!K || r.kickw === K) && (!TY || r.type === TY) && (!S || (S === 'settled' ? r.result : !r.result)));
+}
+function stats(list) {
+  const s = {n: list.length, W: 0, L: 0, P: 0, open: 0, staked: 0, profit: 0, won: 0, lost: 0, risk: 0};
+  list.forEach(r => { if (!r.result) { s.open++; s.risk += r.stake; return; } s[r.result]++; s.staked += r.stake; s.profit += r.profit; if (r.profit > 0) s.won += r.profit; else s.lost -= r.profit; });
+  s.winrate = s.W + s.L ? s.W / (s.W + s.L) : null; s.roi = s.staked ? s.profit / s.staked : null;
+  let run = 0, peak = 0, dd = 0, st = 0, worst = 0;
+  list.filter(r => r.result).sort((a, b) => a.date.localeCompare(b.date)).forEach(r => { run += r.profit; peak = Math.max(peak, run); dd = Math.min(dd, run - peak);
+    st = r.result === 'L' ? st + 1 : r.result === 'W' ? 0 : st; worst = Math.max(worst, st); });
+  s.dd = dd; s.streak = worst; return s;
+}
+const money = v => MODE !== 'picks' ? fmt$(v) : (v > 0 ? '+' : '') + v.toFixed(2) + 'u';
+const tip = $('#tip');
+const showTip = (e, h) => { tip.innerHTML = h; tip.style.opacity = 1; tip.style.left = Math.min(e.clientX + 14, innerWidth - 270) + 'px'; tip.style.top = (e.clientY + 14) + 'px'; };
+const hideTip = () => tip.style.opacity = 0;
+function renderTracker() {
+  initFilters();
+  const list = filtered(), s = stats(list), isB = MODE !== 'picks', cls = v => v > 0 ? 'pos' : v < 0 ? 'neg' : '';
+  const T = [['Record', `${s.W}-${s.L}-${s.P}`, s.open ? `${s.open} still open` : 'W-L-P', ''],
+    ['Win rate', s.winrate == null ? '–' : pct(s.winrate), s.winrate == null ? 'nothing settled yet' : (s.winrate >= BE ? 'above' : 'below') + ' 52.4% break-even', s.winrate == null ? '' : s.winrate >= BE ? 'pos' : 'neg'],
+    ['Net', money(s.profit), isB ? 'after losses' : 'units at -110', cls(s.profit)], ['ROI', s.roi == null ? '–' : (s.roi > 0 ? '+' : '') + pct(s.roi), isB ? `on ${fmt$(s.staked)} settled` : 'per unit risked', cls(s.roi || 0)],
+    [isB ? 'Money won' : 'Units won', money(s.won), 'winning bets', s.won ? 'pos' : ''], [isB ? 'Money lost' : 'Units lost', isB ? '$' + s.lost.toFixed(2) : s.lost.toFixed(2) + 'u', 'losing bets', s.lost ? 'neg' : ''],
+    ['Worst drop', money(s.dd), 'from the high point', cls(s.dd)], ['Losing streak', s.streak, 'longest in a row', '']];
+  if (isB) T.push(['Open', `${s.open}`, `${fmt$(s.risk)} at risk`, '']);
+  drawCompare();
+  $('#tiles').innerHTML = T.map(([k, v, n, c]) => `<div class="tile"><div class="k">${k}</div><div class="v ${c}">${v}</div><div class="n">${n}</div></div>`).join('');
+  const key = $('#slice').value || 'rulename'; $('#slicename').textContent = SLICES.find(x => x[0] === key)[1].toLowerCase();
+  const groups = {}; list.forEach(r => (key === 'conf' ? r.confs : key === 'team' ? r.teams : [r[key] || 'n/a']).forEach(g => (groups[g] = groups[g] || []).push(r)));
+  const G = Object.entries(groups).map(([g, l]) => Object.assign({g}, stats(l))).sort((a, b) => (b.W + b.L) - (a.W + a.L) || b.n - a.n || a.g.localeCompare(b.g));
+  drawBars(G); drawSliceTable(G, key); drawRun(list); drawList(list);
+  $('#foot').textContent = key === 'team' || key === 'conf' ? 'Team and conference slices count a bet for both teams (or conferences) in the game, so groups add up to more than the total.' : '';
+}
+function drawCompare() {
+  const a = stats(filtered('bets')), b = stats(filtered('mine'));
+  const row = (n, f) => `<tr><td>${n}</td><td class="num">${f(a)}</td><td class="num">${f(b)}</td></tr>`;
+  const wr = x => x.winrate == null ? '–' : `<span class="${x.winrate >= BE ? 'pos' : 'neg'}">${pct(x.winrate)}</span>`;
+  const nt = x => `<span class="${x.profit > 0 ? 'pos' : x.profit < 0 ? 'neg' : ''}">${fmt$(x.profit)}</span>`;
+  $('#compare').innerHTML = `<h2>Model vs my own bets</h2><table class="cmp"><thead><tr><th></th><th class="num">Model</th><th class="num">Mine</th></tr></thead><tbody>` +
+    row('Record', x => `${x.W}-${x.L}-${x.P}`) + row('Win rate', wr) + row('Net', nt) + row('ROI', x => x.roi == null ? '–' : (x.roi > 0 ? '+' : '') + pct(x.roi)) +
+    row('Staked', x => fmt$(x.staked)) + row('Open', x => `${x.open}`) + '</tbody></table>';
+}
+function drawBars(G) {
+  const el = $('#bars'), shown = G.slice(0, 18);
+  if (!shown.length) { el.innerHTML = '<div class="empty">Nothing matches these filters.</div>'; return; }
+  const W = Math.max(el.clientWidth, 280), compact = W < 600, rowH = compact ? 46 : 30, left = compact ? 6 : 190, right = compact ? 10 : 150, H = shown.length * rowH + 30, pw = W - left - right, x = v => left + v * pw;
+  let svg = `<svg width="${W}" height="${H}" role="img" aria-label="Win rate by group">`;
+  [0, .25, .5, .75, 1].forEach(t => svg += `<line x1="${x(t)}" x2="${x(t)}" y1="6" y2="${H - 22}" stroke="var(--border)"/><text x="${x(t)}" y="${H - 6}" text-anchor="${t === 0 ? 'start' : t === 1 ? 'end' : 'middle'}">${t * 100}%</text>`);
+  shown.forEach((g, i) => {
+    const y = 8 + i * rowH, small = g.W + g.L < 5, wr = g.winrate, maxc = compact ? 30 : 28, label = esc(g.g.length > maxc ? g.g.slice(0, maxc - 1) + '…' : g.g);
+    const val = wr == null ? `${g.open} open, no results yet` : `${pct(wr)} · ${g.W}-${g.L}${g.P ? '-' + g.P : ''}${g.open ? ` · ${g.open} open` : ''}`, by = compact ? y + 20 : y + 4;
+    svg += compact ? `<text x="${left}" y="${y + 12}" style="fill:var(--ink)">${label}</text><text x="${W - right}" y="${y + 12}" text-anchor="end">${val}</text>`
+                   : `<text x="${left - 8}" y="${y + 15}" text-anchor="end" style="fill:var(--ink)">${label}</text><text x="${left + pw + 8}" y="${y + 15}">${val}</text>`;
+    if (wr) { const w = Math.max(wr * pw, 6); svg += `<path d="M${left},${by} h${w - 4} a4,4 0 0 1 4,4 v8 a4,4 0 0 1 -4,4 h-${w - 4} z" fill="${small ? 'var(--muted-bar)' : 'var(--series)'}"/>`; }
+    else svg += `<line x1="${left}" x2="${left}" y1="${by}" y2="${by + 16}" stroke="var(--ink-3)" stroke-width="2"/>`;
+    svg += `<rect x="0" y="${y}" width="${W}" height="${rowH}" fill="transparent" data-i="${i}"/>`;
+  });
+  el.innerHTML = svg + `<line x1="${x(BE)}" x2="${x(BE)}" y1="4" y2="${H - 22}" stroke="var(--ink-2)" stroke-dasharray="4 3" stroke-width="1.5"/></svg>`;
+  el.querySelectorAll('rect[data-i]').forEach(r => { const g = shown[+r.dataset.i];
+    r.onmousemove = e => showTip(e, `<b>${esc(g.g)}</b><br>${g.W}-${g.L}-${g.P} (${g.winrate == null ? 'no results' : pct(g.winrate)})<br>Net ${money(g.profit)}${g.roi != null ? ' · ROI ' + pct(g.roi) : ''}<br>${g.open} open`); r.onmouseleave = hideTip; });
+}
+function drawSliceTable(G, key) {
+  $('#slicetable').innerHTML = `<table><thead><tr><th>${SLICES.find(x => x[0] === key)[1]}</th><th class="num">Bets</th><th class="num">W</th><th class="num">L</th><th class="num">P</th><th class="num">Open</th><th class="num">Win rate</th><th class="num">${MODE === 'bets' ? 'Staked' : 'Units'}</th><th class="num">Net</th><th class="num">ROI</th></tr></thead><tbody>` +
+    G.map(g => `<tr><td>${esc(g.g)}</td><td class="num">${g.n}</td><td class="num">${g.W}</td><td class="num">${g.L}</td><td class="num">${g.P}</td><td class="num">${g.open}</td>
+      <td class="num ${g.winrate == null ? '' : g.winrate >= BE ? 'pos' : 'neg'}">${g.winrate == null ? '–' : pct(g.winrate)}</td><td class="num">${MODE !== 'picks' ? fmt$(g.staked) : g.staked.toFixed(0)}</td>
+      <td class="num ${g.profit > 0 ? 'pos' : g.profit < 0 ? 'neg' : ''}">${money(g.profit)}</td><td class="num">${g.roi == null ? '–' : pct(g.roi)}</td></tr>`).join('') + '</tbody></table>';
+}
+function drawRun(list) {
+  const el = $('#run'), days = {}; $('#runtitle').textContent = MODE !== 'picks' ? 'Running profit ($)' : 'Running result (units)';
+  list.filter(r => r.result).forEach(r => (days[r.date] = days[r.date] || []).push(r));
+  const D = Object.keys(days).sort();
+  if (!D.length) { el.innerHTML = '<div class="empty">Nothing settled yet.<br>Results fill in automatically from ESPN once games go final.</div>'; return; }
+  let run = 0; const pts = D.map(d => { const s = stats(days[d]); run += s.profit; return {d, day: s.profit, run, s}; });
+  const W = Math.max(el.clientWidth, 280), H = 240, l = 56, r = 30, t = 12, b = 30, ys = pts.map(p => p.run).concat([0]), lo = Math.min(...ys), hi = Math.max(...ys), pad = (hi - lo) * 0.12 || 10;
+  const y = v => t + (hi + pad - v) / ((hi + pad) - (lo - pad)) * (H - t - b), x = i => pts.length === 1 ? (l + W - r) / 2 : l + i * (W - l - r) / (pts.length - 1);
+  let svg = `<svg width="${W}" height="${H}" role="img" aria-label="Running profit">`;
+  for (let k = 0; k <= 4; k++) { const v = lo - pad + k * ((hi + pad) - (lo - pad)) / 4; svg += `<line x1="${l}" x2="${W - r}" y1="${y(v)}" y2="${y(v)}" stroke="var(--border)"/><text x="${l - 6}" y="${y(v) + 4}" text-anchor="end">${MODE === 'bets' ? (Math.round(v) < 0 ? '-$' : '$') + Math.abs(Math.round(v)) : v.toFixed(1)}</text>`; }
+  svg += `<line x1="${l}" x2="${W - r}" y1="${y(0)}" y2="${y(0)}" stroke="var(--ink-3)"/><path d="${pts.map((p, i) => (i ? 'L' : 'M') + x(i) + ',' + y(p.run)).join(' ')}" fill="none" stroke="var(--series)" stroke-width="2"/>`;
+  pts.forEach((p, i) => { svg += `<circle cx="${x(i)}" cy="${y(p.run)}" r="4.5" fill="var(--series)" stroke="var(--surface)" stroke-width="2"/>`;
+    if (pts.length <= 12 || i % Math.ceil(pts.length / 8) === 0) svg += `<text x="${x(i)}" y="${H - 10}" text-anchor="${pts.length > 1 && i === pts.length - 1 ? 'end' : i === 0 && pts.length > 1 ? 'start' : 'middle'}">${new Date(p.d + 'T12:00:00').toLocaleDateString('en-US', {month: 'short', day: 'numeric'})}</text>`;
+    svg += `<rect x="${x(i) - 14}" y="${t}" width="28" height="${H - t - b}" fill="transparent" data-i="${i}"/>`; });
+  el.innerHTML = svg + '</svg>';
+  el.querySelectorAll('rect[data-i]').forEach(rc => { const p = pts[+rc.dataset.i]; rc.onmousemove = e => showTip(e, `<b>${dayLbl(p.d)}</b><br>Day: ${money(p.day)} (${p.s.W}-${p.s.L}-${p.s.P})<br>Running: ${money(p.run)}`); rc.onmouseleave = hideTip; });
+}
+function drawList(list) {
+  const isB = MODE !== 'picks', isM = MODE === 'mine'; $('#listtitle').textContent = isM ? 'My own bets' : isB ? 'Model bets' : 'Every flagged pick';
+  const cols = isM ? [['date', 'Date'], ['league', 'Lg'], ['game', 'Game'], ['bettext', 'Bet'], ['odds', 'Odds', 'num'], ['stake', 'Stake', 'num'], ['result', 'Result'], ['profit', 'Profit', 'num'], ['x', '']] : isB ? [['date', 'Date'], ['league', 'Lg'], ['game', 'Game'], ['bettext', 'Bet'], ['rulename', 'Rule'], ['hit', 'Backtest', 'num'], ['odds', 'Odds', 'num'], ['stake', 'Stake', 'num'], ['result', 'Result'], ['profit', 'Profit', 'num'], ['x', '']]
+                   : [['date', 'Date'], ['league', 'Lg'], ['game', 'Game'], ['bettext', 'Pick'], ['rulename', 'Rule'], ['betlbl', 'Bet?'], ['result', 'Result'], ['profit', 'Units', 'num']];
+  const sorted = list.slice().sort((a, b) => { const A = a[SORT.k], B = b[SORT.k]; return (A > B ? 1 : A < B ? -1 : 0) * SORT.dir; });
+  const cell = (r, k) => k === 'result' ? `<span class="pill ${r.result || 'O'}">${r.result || 'open'}</span>` : k === 'profit' ? (r.result ? `<span class="${r.profit > 0 ? 'pos' : r.profit < 0 ? 'neg' : ''}">${money(r.profit)}</span>` : '<span class="small">–</span>')
+    : k === 'stake' ? fmt$(r.stake) : k === 'hit' ? (r.hit ? pct(r.hit) : '–') : k === 'odds' ? (r.odds > 0 ? '+' : '') + r.odds : k === 'date' ? dayLbl(r.date) : k === 'bettext' ? `<b>${esc(r.bettext)}</b>`
+    : k === 'x' ? (isM ? `<button class="btn small" data-delmine="${esc(r.id)}">Delete</button>` : `<button class="btn small" data-strike="${esc(r.id)}">Strike</button>`) : esc(r[k] ?? '');
+  const struckList = isB && !isM ? BETS.filter(b => ST.struck[b.id]) : [];
+  $('#list').innerHTML = (!sorted.length ? '<div class="empty">Nothing matches these filters.</div>' :
+    `<table class="cards"><thead><tr>${cols.map(([k, n, c]) => `<th class="sort ${c || ''}" data-k="${k}">${n}${SORT.k === k ? (SORT.dir > 0 ? ' ▲' : ' ▼') : ''}</th>`).join('')}</tr></thead><tbody>` +
+    sorted.map(r => `<tr>${cols.map(([k, n, c]) => `<td class="${c || ''}${k === 'bettext' ? ' full first' : ['game', 'rulename'].includes(k) ? ' full' : k === 'x' ? ' keep' : ''}" data-label="${k === 'bettext' || k === 'x' ? '' : n}">${cell(r, k)}</td>`).join('')}</tr>`).join('') + '</tbody></table>') +
+    (struckList.length ? `<div class="small" style="margin-top:10px">Struck: ${struckList.map(b => `${esc(b.bet)} (${dayLbl(b.date)}) <button class="btn small" data-unstrike="${esc(b.id)}">Undo</button>`).join(' · ')}</div>` : '');
+  $$('#list th.sort').forEach(th => th.onclick = () => { const k = th.dataset.k; if (k === 'x') return; SORT = {k, dir: SORT.k === k ? -SORT.dir : -1}; drawList(filtered()); });
+  $$('#list [data-strike]').forEach(el => el.onclick = () => { if (confirmStrike(el.dataset.strike)) { ST.struck[el.dataset.strike] = Date.now(); usave(); recompute(); } });
+  $$('#list [data-unstrike]').forEach(el => el.onclick = () => { delete ST.struck[el.dataset.unstrike]; usave(); recompute(); });
+  $$('#list [data-delmine]').forEach(el => el.onclick = () => delMine(el.dataset.delmine));
+}
+
+// ---------------- STATS ----------------
+const WNAME = {ppg: 'points per game', epa: 'EPA per play', success: 'success rate', expl: 'explosive plays', pts_per_opp: 'points per trip inside 40', to_pp: 'turnovers per play',
+  plays: 'plays (pace)', pass_rate: 'pass rate', pass_epa: 'pass EPA', rush_epa: 'rush EPA', pass_oe: 'pass rate over expected', sack_rate: 'sack rate', fum_rate: 'fumble rate',
+  pts_drive: 'points per drive', points: 'points', epa_all: 'EPA (all plays)', home: 'home field', rating: 'Elo rating gap', home_fans: 'home field', home_covid: 'home field in 2020',
+  wind: 'wind', div: 'division game', tz_trav: 'time zones traveled', qb_val: 'QB value', qb_delta: 'QB change vs usual', opp_qb_val: 'opponent QB value', west_early: 'West team, 1pm ET kick'};
+const wname = k => /^o_/.test(k) ? 'Offense: ' + (WNAME[k.slice(2)] || k) : /^d_/.test(k) ? 'Opp. defense: ' + (WNAME[k.slice(2)] || k) : (WNAME[k] || k).replace(/^./, c => c.toUpperCase());
+function renderStats() {
+  const live = {CFB: [], NFL: []};
+  DATA.predlog.forEach(p => { const f = finalFor(p.league, p.id, p.date, p.away, p.home);
+    if (f) live[p.league].push({et: Math.abs(+p.pred_away + +p.pred_home - f.as - f.hs), wrong: Math.sign(+p.pred_home - +p.pred_away) !== Math.sign(f.hs - f.as)}); });
+  const avg = a => a.length ? a.reduce((s, v) => s + v, 0) / a.length : null, T = [];
+  for (const lg of ['CFB', 'NFL']) { const L = live[lg];
+    T.push([`${lg} games graded`, L.length, 'predicted before kickoff, scored by ESPN finals']);
+    T.push([`${lg} total miss`, L.length ? avg(L.map(x => x.et)).toFixed(1) + ' pts' : '–', 'average miss on the game total this season']);
+    T.push([`${lg} winner right`, L.length ? pct(1 - avg(L.map(x => x.wrong ? 1 : 0))) : '–', 'straight up, this season']); }
+  $('#livetiles').innerHTML = T.map(([k, v, n]) => `<div class="tile"><div class="k">${k}</div><div class="v">${v}</div><div class="n">${n}</div></div>`).join('');
+  for (const lg of ['cfb', 'nfl']) { const S = SNAP.stats[lg];
+    $('#stat-' + lg).innerHTML = `<h2>${lg.toUpperCase()} model: backtest</h2><div class="hint">${esc(S.model)}<br>${esc(S.test)}</div><table><thead><tr><th>Measure</th><th class="num">Model</th><th>Note</th></tr></thead><tbody>` +
+      S.rows.map(r => `<tr><td>${esc(r[0])}</td><td class="num">${esc(r[1])}</td><td class="small">${esc(r[2])}</td></tr>`).join('') + '</tbody></table>' +
+      (S.spots ? `<h2 style="margin-top:12px">Situational spots</h2><table><tbody>${S.spots.map(r => `<tr><td>${esc(r[0])}</td><td class="num">${esc(r[1])}</td><td class="small">${esc(r[2])}</td></tr>`).join('')}</tbody></table>` : '');
+    const W = (S.weights || []).slice(0, 14), mx = Math.max(...W.map(w => Math.abs(w[1])), 1);
+    $('#w-' + lg).innerHTML = `<h2>${lg.toUpperCase()}: what moves the predicted score</h2><div class="hint">Points added per one standard deviation of each input. Faded bars push the score down.</div><table><tbody>` +
+      W.map(([k, v]) => `<tr><td>${esc(wname(k))}</td><td style="width:42%"><div style="height:10px;border-radius:0 4px 4px 0;background:var(--series);width:${Math.abs(v) / mx * 100}%;opacity:${v < 0 ? .4 : 1}"></div></td><td class="num">${v > 0 ? '+' : ''}${v.toFixed(2)}</td></tr>`).join('') + '</tbody></table>';
+  }
+  const rec = r => { const l = PICKS.filter(p => p.rule === r && p.result); return [l.filter(p => p.result === 'W').length, l.filter(p => p.result === 'L').length]; };
+  $('#stat-rules').innerHTML = `<h2>Betting rules: backtest vs this season</h2><div class="hint">A rule bets when its backtest hit rate clears the bar (CFB ${pct(BR.cfb_min_hit)}, NFL ${pct(BR.nfl_min_hit)}). The live record counts every flagged pick, bet or not.</div>
+    <table><thead><tr><th>Rule</th><th class="num">Backtest</th><th class="num">Games</th><th>Source</th><th class="num">This season</th><th class="num">Live win rate</th></tr></thead><tbody>` +
+    Object.entries(BR.rules).map(([k, r]) => { const [w, l] = rec(k); return `<tr><td>${esc(RNAME(k))}${r.lean_only || r.p < (k.startsWith('cfb') ? BR.cfb_min_hit : BR.nfl_min_hit) ? ' <span class="chip lean">lean only</span>' : ''}</td><td class="num">${pct(r.p)}</td><td class="num">${r.n}</td><td class="small">${esc(r.src)}</td><td class="num">${w}-${l}</td><td class="num ${w + l ? (w / (w + l) >= BE ? 'pos' : 'neg') : ''}">${w + l ? pct(w / (w + l)) : '–'}</td></tr>`; }).join('') + '</tbody></table>';
+}
+
+// ---------------- SETTINGS ----------------
+$('#s-key').value = ST.key || ''; $('#s-budget').value = ST.budget;
+$('#s-savekey').onclick = () => { ST.key = $('#s-key').value.trim(); ST.odds = {}; save(); $('#s-keymsg').textContent = 'Saved.'; refreshAll(true); };
+$('#s-testkey').onclick = async () => { $('#s-keymsg').textContent = 'Testing…';
+  try { const r = await fetch(`https://api.the-odds-api.com/v4/sports?apiKey=${encodeURIComponent($('#s-key').value.trim())}`); $('#s-keymsg').textContent = r.ok ? `Key works. ${r.headers.get('x-requests-remaining') || '?'} requests left this month.` : 'Key rejected (' + r.status + ').'; }
+  catch (e) { $('#s-keymsg').textContent = 'Could not reach the Odds API: ' + e.message; } };
+$('#s-savebudget').onclick = () => { const v = +$('#s-budget').value; if (v > 0) { ST.budget = v; usave(); recompute(); } };
+function changes() {
+  return {exported: new Date().toISOString(), built: SNAP.built, budget: ST.budget, struck: Object.keys(ST.struck), overrides: ST.ov, inputs: ST.inputs,
+          bets: BETS.filter(b => !ST.struck[b.id] && (b.src !== 'log' || ST.ov[b.id])).map(b => { const o = Object.assign({}, b); delete o.locked; return o; }),
+          picks: Object.values(ST.frozenPicks), mine: Object.values(ST.mine)};
+}
+$('#s-export').onclick = async () => {
+  const blob = new Blob([JSON.stringify(changes(), null, 1)], {type: 'application/json'});
+  try {
+    if (window.showSaveFilePicker) { const h = await showSaveFilePicker({suggestedName: 'page_changes.json', id: 'betlogs', types: [{description: 'JSON', accept: {'application/json': ['.json']}}]});
+      const w = await h.createWritable(); await w.write(blob); await w.close(); $('#s-msg').textContent = 'Saved. Make sure it is in Betting Model\\betting_models\\logs.'; return; }
+  } catch (e) { if (e.name === 'AbortError') return; }
+  const a = document.createElement('a'); a.href = URL.createObjectURL(blob); a.download = 'page_changes.json'; a.click();
+  $('#s-msg').textContent = 'Downloaded page_changes.json. Move it into Betting Model\\betting_models\\logs.';
+};
+$('#s-import').onchange = async e => { const f = e.target.files[0]; if (!f) return;
+  try { const j = JSON.parse(await f.text()); (j.struck || []).forEach(id => ST.struck[id] = ST.struck[id] || Date.now()); Object.assign(ST.ov, j.overrides || {}); Object.assign(ST.inputs, j.inputs || {});
+    (j.bets || []).forEach(b => { if (started(b.kick)) ST.frozen[b.id] = ST.frozen[b.id] || b; }); (j.picks || []).forEach(p => ST.frozenPicks[p.id] = ST.frozenPicks[p.id] || p);
+    if (j.budget) ST.budget = j.budget; usave(); recompute(); $('#s-msg').textContent = 'Loaded.'; } catch (err) { $('#s-msg').textContent = 'Could not read that file.'; } };
+$('#s-clear').onclick = () => { ST.finals = {}; ST.odds = {}; ST.wx = {}; ST.espnOdds = {}; save(); $('#s-msg').textContent = 'Cache cleared. Strikes and edits kept.'; refreshAll(true); };
+$('#s-about').innerHTML = `Model snapshot built ${new Date(SNAP.built).toLocaleString()}: CFB week ${SNAP.cfb.week} (${SNAP.cfb.games.length} games), NFL week ${SNAP.nfl.week} (${SNAP.nfl.games.length} games). Team ratings refresh every Tuesday morning from play-by-play data. Scores, lines, weather and bets refresh live on this page. Sources: ESPN scoreboard (scores, listed lines), The Odds API (DraftKings), Open-Meteo (weather).`;
+
+// ---------------- GITHUB SYNC ----------------
+const GH = {owner: 'Dan2Duper', repo: 'betting-model', branch: 'sync', path: 'state.json'};
+const SYNCED = ['struck', 'ov', 'inputs', 'frozen', 'frozenPicks', 'budget', 'mine', 'mineDel'];
+let syncSha = null, syncLast = null, syncTimer = null, syncBusy = false, syncApplying = false;
+function syncMark() { ST.syncPending = true; save(); clearTimeout(syncTimer); syncTimer = setTimeout(() => { ST.syncPending = false; syncPush(); }, 2500); }
+const b64e = s => btoa(unescape(encodeURIComponent(s)));
+const b64d = s => decodeURIComponent(escape(atob(s.replace(/\s/g, ''))));
+function ghHead() { const h = {Accept: 'application/vnd.github+json'}; if (ST.gh) h.Authorization = 'Bearer ' + ST.gh; return h; }
+const ghUrl = p => `https://api.github.com/repos/${GH.owner}/${GH.repo}/${p}`;
+function syncMsg(t) { const el = document.getElementById('s-syncmsg'); if (el) el.textContent = t; setStatus('sync', '<b>Sync:</b> ' + esc(t)); }
+async function syncPull() {
+  try {
+    const r = await fetch(ghUrl(`contents/${GH.path}?ref=${GH.branch}&t=${Date.now()}`), {headers: ghHead(), cache: 'no-store'});
+    if (r.status === 404) { syncSha = null; return null; }
+    if (!r.ok) throw new Error('GitHub said ' + r.status);
+    const j = await r.json(); syncSha = j.sha;
+    const rem = JSON.parse(b64d(j.content));
+    syncRemoteUpdated = rem.updated || 0;
+    if ((rem.updated || 0) > (ST.updated || 0)) {
+      syncApplying = true;
+      const localFrozen = ST.frozen || {};
+      SYNCED.forEach(k => { if (rem.state && rem.state[k] !== undefined) ST[k] = rem.state[k]; });
+      ST.frozen = Object.assign({}, localFrozen, ST.frozen || {});
+      ST.updated = rem.updated;
+      try { localStorage.setItem(KEY, JSON.stringify(ST)); } catch (e) {}
+      syncApplying = false; syncLast = Date.now();
+      return 'pulled';
+    }
+    syncLast = Date.now(); return 'same';
+  } catch (e) { syncApplying = false; syncMsg(navigator.onLine === false ? 'offline, changes kept on this device' : 'could not reach GitHub (' + e.message + ')'); return 'error'; }
+}
+async function ensureBranch() {
+  const r = await fetch(ghUrl(`git/ref/heads/${GH.branch}`), {headers: ghHead(), cache: 'no-store'});
+  if (r.ok) return;
+  const m = await (await fetch(ghUrl('git/ref/heads/main'), {headers: ghHead(), cache: 'no-store'})).json();
+  const c = await fetch(ghUrl('git/refs'), {method: 'POST', headers: ghHead(), body: JSON.stringify({ref: 'refs/heads/' + GH.branch, sha: m.object.sha})});
+  if (!c.ok && c.status !== 422) throw new Error('could not create the sync branch (' + c.status + ')');
+}
+async function syncPush(retry) {
+  if (!ST.gh) { syncMsg('saved on this device only (no GitHub key)'); return; }
+  if (syncBusy) { clearTimeout(syncTimer); syncTimer = setTimeout(() => syncPush(), 2000); return; }
+  syncBusy = true;
+  try {
+    if (!syncSha) { await ensureBranch(); const g = await fetch(ghUrl(`contents/${GH.path}?ref=${GH.branch}&t=${Date.now()}`), {headers: ghHead(), cache: 'no-store'}); if (g.ok) syncSha = (await g.json()).sha; }
+    const body = {updated: ST.updated || Date.now(), device: navigator.userAgent.slice(0, 80), state: Object.fromEntries(SYNCED.map(k => [k, ST[k]])), changes: changes()};
+    const r = await fetch(ghUrl(`contents/${GH.path}`), {method: 'PUT', headers: ghHead(),
+      body: JSON.stringify({message: 'Sync bet tracker changes', branch: GH.branch, content: b64e(JSON.stringify(body)), ...(syncSha ? {sha: syncSha} : {})})});
+    if ((r.status === 409 || r.status === 422) && !retry) { syncSha = null; syncBusy = false; return syncPush(true); }
+    if (r.status === 401 || r.status === 403) throw new Error('key rejected or missing write access');
+    if (!r.ok) throw new Error('GitHub said ' + r.status);
+    syncSha = (await r.json()).content.sha; syncLast = Date.now();
+    syncMsg('synced ' + new Date(syncLast).toLocaleTimeString([], {hour: 'numeric', minute: '2-digit'}));
+  } catch (e) { syncMsg('not synced: ' + e.message + '. Changes are kept on this device and retried next time.'); ST.syncPending = true; }
+  syncBusy = false;
+}
+async function syncCycle() {
+  const res = await syncPull();
+  if (res === 'pulled') { recompute(); syncMsg('updated from your other device'); }
+  else if (res !== 'error') {
+    if (ST.gh && (res === null || ST.syncPending || syncNeedsPush())) { ST.syncPending = false; await syncPush(); }
+    else syncMsg(ST.gh ? 'up to date' : 'reading from GitHub (add a key to save changes)');
+  }
+}
+let syncRemoteUpdated = 0;
+function syncNeedsPush() { return (ST.updated || 0) > syncRemoteUpdated; }
+$('#s-gh').value = ST.gh || '';
+$('#s-saveghkey').onclick = async () => { ST.gh = $('#s-gh').value.trim(); try { localStorage.setItem(KEY, JSON.stringify(ST)); } catch (e) {}
+  syncMsg('checking key…'); syncSha = null; ST.syncPending = true; await syncCycle(); };
+$('#s-syncnow').onclick = () => { syncMsg('syncing…'); syncCycle(); };
+document.addEventListener('visibilitychange', () => { if (document.visibilityState === 'visible') syncCycle(); });
+
+// ---------------- MY OWN BETS ----------------
+let MINE = [];
+function buildMine() {
+  (DATA.mine || []).forEach(b => { if (!ST.mine[b.id] && !ST.mineDel[b.id]) ST.mine[b.id] = b; });
+  MINE = Object.values(ST.mine).filter(b => !ST.mineDel[b.id]).map(b => {
+    if (!b.result && b.market === 'parlay') { const R = (b.legs || []).map(l => { const f = finalFor(l.league, l.game_id, b.date, l.away, l.home); return f ? grade(l, f) : ''; });
+      if (R.includes('L')) b.result = 'L'; else if (R.length && R.every(Boolean)) b.result = R.every(r => r === 'P') ? 'P' : 'W'; if (b.result) ST.mine[b.id].result = b.result; }
+    else if (!b.result) { const f = finalFor(b.league, b.game_id, b.date, b.away, b.home); if (f) { b.result = grade(b, f); ST.mine[b.id].result = b.result; } }
+    const o = Object.assign({}, b); o.odds = +o.odds || -110; o.stake = +o.stake || 0; o.to_win = o.stake * payout(o.odds); o.bet = betText(o); return o; });
+}
+function delMine(id) { const b = ST.mine[id]; if (!b) return;
+  if (!window.confirm(`Delete ${betText(b)}?${b.result ? ' It already has a result, so this takes it off your record.' : ''}`)) return;
+  delete ST.mine[id]; ST.mineDel[id] = Date.now(); usave(); recompute(); }
+function renderMine() {
+  const cut = ctDate(new Date(Date.now() - 2 * 864e5).toISOString()), list = MINE.filter(b => b.date >= cut).sort((a, b) => a.kick < b.kick ? -1 : 1);
+  $('#mineboard').innerHTML = !list.length ? '<div class="empty">None this week.</div>' :
+    `<table class="cards"><thead><tr><th>Kick</th><th>Bet</th><th class="num">Odds</th><th class="num">Stake $</th><th class="num">To win</th><th>Result</th><th></th></tr></thead><tbody>` +
+    list.map(b => `<tr><td data-label="Kick">${ctTime(b.kick)}</td><td class="full first" data-label=""><b>${esc(b.bet)}</b><div class="small">${b.market === 'parlay' ? (b.legs || []).map(legText).map(esc).join(' · ') : esc(b.away) + ' @ ' + esc(b.home)}</div></td>
+      <td class="num" data-label="Odds">${b.odds > 0 ? '+' : ''}${b.odds}</td><td class="num" data-label="Stake $">${fmt$(b.stake)}</td><td class="num" data-label="To win">${fmt$(b.to_win)}</td>
+      <td data-label="Result">${b.result ? `<span class="pill ${b.result}">${b.result}</span>` : started(b.kick) ? '<span class="pill O">live</span>' : ''}</td>
+      <td class="keep" data-label=""><button class="btn small" data-delmine="${esc(b.id)}">Delete</button></td></tr>`).join('') + '</tbody></table>';
+  $$('#mineboard [data-delmine]').forEach(el => el.onclick = () => delMine(el.dataset.delmine));
+}
+const mGames = () => Object.values(ST.slate[$('#m-lg').value + ':' + $('#m-date').value] || {}).sort((a, b) => a.kick < b.kick ? -1 : a.kick > b.kick ? 1 : a.away.localeCompare(b.away));
+function mFillGames() {
+  const G = mGames(), sel = $('#m-game'), cur = sel.value;
+  sel.innerHTML = G.length ? '<option value="">Choose the game</option>' + G.map(g => `<option value="${esc(g.id)}">${esc(g.away)} @ ${esc(g.home)} · ${ctTime(g.kick)}${g.done ? ' (final)' : ''}</option>`).join('') : '<option value="">No games found for that day</option>';
+  sel.value = G.some(g => g.id === cur) ? cur : ''; mFillSide();
+}
+async function mLoadDay() { const k = $('#m-lg').value + ':' + $('#m-date').value;
+  if (!ST.slate[k]) { $('#m-game').innerHTML = '<option value="">loading games…</option>'; try { await espnDay($('#m-lg').value, $('#m-date').value); } catch (e) { $('#m-msg').textContent = 'Could not reach ESPN for the game list.'; } }
+  mFillGames(); }
+function mFillSide() {
+  const g = mGames().find(x => x.id === $('#m-game').value), m = $('#m-mkt').value, sel = $('#m-side');
+  sel.innerHTML = m === 'total' ? '<option value="over">Over</option><option value="under">Under</option>'
+    : g ? `<option value="away">${esc(g.away)}</option><option value="home">${esc(g.home)}</option>` : '<option value="">pick a game first</option>';
+  $('#m-linewrap').classList.toggle('hide', m === 'ml'); mPrefill();
+}
+function mPrefill() {
+  const lg = $('#m-lg').value, id = $('#m-game').value, m = $('#m-mkt').value, side = $('#m-side').value; if (!id || m === 'ml') return;
+  const o = ST.espnOdds[lg + ':' + id]; let sp = o?.spread, tot = o?.total;
+  const sg = (lg === 'CFB' ? SNAP.cfb.games.find(x => x.id === id) : SNAP.nfl.games.find(x => x.espn === id));
+  if (sg) { const L = lineFor(lg, sg); if (L.spread != null) sp = L.spread; if (L.total != null) tot = L.total; }
+  const v = m === 'total' ? tot : sp == null ? null : (side === 'away' ? -sp : sp);
+  if (v != null) $('#m-line').value = (m !== 'total' && v > 0 ? '+' : '') + v;
+}
+$('#m-open').onclick = () => { const f = $('#m-form'); f.classList.toggle('open'); if (f.classList.contains('open')) { if (!$('#m-date').value) $('#m-date').value = today(); $('#m-msg').textContent = ''; mLoadDay(); } };
+$('#m-cancel').onclick = () => $('#m-form').classList.remove('open');
+$('#m-lg').onchange = mLoadDay; $('#m-date').onchange = mLoadDay;
+$('#m-game').onchange = mFillSide; $('#m-mkt').onchange = mFillSide; $('#m-side').onchange = mPrefill;
+$('#m-save').onclick = () => {
+  const lg = $('#m-lg').value, d = $('#m-date').value, g = mGames().find(x => x.id === $('#m-game').value), m = $('#m-mkt').value, side = $('#m-side').value;
+  const odds = parseFloat($('#m-odds').value), stake = parseFloat($('#m-stake').value), ln = parseFloat($('#m-line').value);
+  if (!g) return $('#m-msg').textContent = 'Pick the game.';
+  if (m !== 'ml' && isNaN(ln)) return $('#m-msg').textContent = 'Enter the line.';
+  if (isNaN(odds) || Math.abs(odds) < 100) return $('#m-msg').textContent = 'Odds look off (e.g. -110 or +150).';
+  if (!(stake > 0)) return $('#m-msg').textContent = 'Enter the stake.';
+  const sg = lg === 'CFB' ? SNAP.cfb.games.find(x => x.id === g.id) : SNAP.nfl.games.find(x => x.espn === g.id);
+  const kh = ctHour(g.kick);
+  const b = {id: `mine|${lg}|${g.id}|${m}|${side}|${Date.now()}`, src: 'mine', rule: 'mine', date: ctDate(g.kick), kick: g.kick, league: lg, week: sg ? (lg === 'CFB' ? SNAP.cfb.week : SNAP.nfl.week) : '',
+    game_id: g.id, game: `${g.away} @ ${g.home}`, away: lg === 'NFL' ? g.aabbr : g.away, home: lg === 'NFL' ? g.habbr : g.home, market: m, side,
+    line: m === 'ml' ? '' : m === 'total' ? ln : (side === 'away' ? -ln : ln), odds, stake, result: '', kick_hour: kh,
+    away_conf: sg ? (sg.away_conf || sg.away_div || '') : '', home_conf: sg ? (sg.home_conf || sg.home_div || '') : ''};
+  if (g.done) b.result = grade(b, {hs: g.hs, as: g.as});
+  ST.mine[b.id] = b; usave(); recompute(); $('#m-form').classList.remove('open'); $('#m-stake').value = '';
+};
+
+// ---------------- LIVE BETS ----------------
+function liveIndex() { const I = {}; Object.values(ST.slate).forEach(day => Object.values(day).forEach(g => { const lg = g.aabbr && g.aabbr.length <= 3 && SNAP.nfl.games.some(x => x.espn === g.id) ? 'NFL' : null; I[g.id] = g; })); return I; }
+function liveGameFor(b, I) {
+  if (b.league === 'NFL') { const sg = SNAP.nfl.games.find(x => x.id === b.game_id); if (sg && sg.espn && I[sg.espn]) return I[sg.espn];
+    return I[b.game_id] || Object.values(I).find(g => g.aabbr === b.away && g.habbr === b.home && Math.abs(new Date(g.kick) - new Date(b.kick || b.date)) < 3 * 864e5); }
+  return I[b.game_id];
+}
+function standing(b, g) {   // >0 winning, <0 losing, 0 push, from the current score
+  const line = +b.line;
+  if (b.market === 'total') { const t = g.hs + g.as; return {m: b.side === 'under' ? line - t : t - line, txt: `Total ${t} vs ${line}`}; }
+  if (b.market === 'ml') { const d = g.hs - g.as; return {m: b.side === 'away' ? -d : d, txt: ''}; }
+  const d = g.hs - g.as + line; return {m: b.side === 'away' ? -d : d, txt: ''};
+}
+function liveBets() {
+  const from = ctDate(new Date(Date.now() - 864e5).toISOString()), to = today();
+  return BETS.filter(b => !ST.struck[b.id]).map(b => Object.assign({}, b, {who: 'Model'})).concat(MINE.map(b => Object.assign({}, b, {who: 'Mine'})))
+    .filter(b => b.date >= from && b.date <= to);
+}
+function renderLive() {
+  const I = liveIndex(), L = liveBets().map(b => { const g = liveGameFor(b, I); return {b, g}; });
+  const rank = x => !x.g ? 3 : x.g.state === 'in' ? 0 : x.g.state === 'pre' ? 2 : 1;
+  L.sort((x, y) => rank(x) - rank(y) || String(x.b.kick).localeCompare(String(y.b.kick)));
+  let win = 0, lose = 0, pre = 0, done = 0, ifNow = 0, live = 0;
+  const cards = L.map(({b, g}) => {
+    const stake = +b.stake || 0, tw = stake * payout(+b.odds || -110);
+    if (b.market === 'parlay') {
+      const legs = (b.legs || []).map(l => { const lg = I[l.game_id]; if (!lg || lg.state === 'pre' || (!lg.state && !lg.done)) return {l, s: 'pre', g: lg}; const st = standing(l, lg); return {l, g: lg, s: st.m > 0 ? 'win' : st.m < 0 ? 'lose' : 'even', fin: lg.done || lg.state === 'post'}; });
+      const lostLeg = legs.some(x => x.s === 'lose' && x.fin), anyLose = legs.some(x => x.s === 'lose'), allWin = legs.every(x => x.s === 'win');
+      const cls = lostLeg ? 'lose' : allWin ? 'win' : legs.some(x => x.s !== 'pre') ? (anyLose ? 'lose' : 'even') : 'pre';
+      if (cls === 'pre') pre++; else if (cls === 'win') win++; else if (cls === 'lose') lose++;
+      ifNow += cls === 'win' ? tw : cls === 'lose' ? -stake : 0;
+      return `<div class="lv ${cls}"><div class="top"><span class="bet">${esc(b.bet || betText(b))}</span><span class="tag">${b.who}</span></div>
+        <div class="small">$${stake.toFixed(2)} to win ${fmt$(tw)}</div>` + legs.map(x => `<div class="score"><span>${x.s === 'win' ? '✓' : x.s === 'lose' ? '✗' : x.s === 'even' ? '=' : '·'} ${esc(legText(x.l))}</span><span class="small">${x.g ? esc(x.g.away + ' ' + x.g.as + ' · ' + x.g.home + ' ' + x.g.hs + ' · ' + (x.g.detail || '')) : ''}</span></div>`).join('') +
+        `<div class="where ${cls === 'win' ? 'pos' : cls === 'lose' ? 'neg' : ''}">${lostLeg ? 'Lost (a leg missed)' : allWin && legs.every(x => x.fin) ? `Won ${fmt$(tw)}` : `${legs.filter(x => x.s === 'win').length} of ${legs.length} legs winning`}</div></div>`;
+    }
+    if (!g || g.state === 'pre' || (!g.state && !g.done)) { pre++;
+      return `<div class="lv pre"><div class="top"><span class="bet">${esc(b.bet || betText(b))}</span><span class="tag">${b.who}</span></div><div class="small">${esc(b.game || (b.away + ' @ ' + b.home))}</div><div class="where small">Kicks ${ctTime(b.kick || (g && g.kick))} · ${fmt$(stake)} to win ${fmt$(tw)}</div></div>`; }
+    const st = standing(b, g), fin = g.done || g.state === 'post', cls = st.m > 0 ? 'win' : st.m < 0 ? 'lose' : 'even';
+    const pl = st.m > 0 ? tw : st.m < 0 ? -stake : 0; ifNow += pl;
+    if (fin) done++; else live++;
+    if (st.m > 0) win++; else if (st.m < 0) lose++;
+    const by = Math.abs(st.m), unit = b.market === 'ml' ? (by === 0 ? 'Tied' : '') : '';
+    const where = fin ? (st.m > 0 ? `Won ${fmt$(tw)}` : st.m < 0 ? `Lost $${stake.toFixed(0)}` : 'Push, stake back')
+      : st.m === 0 ? (b.market === 'ml' ? 'Tied right now' : 'Push right now') : `${st.m > 0 ? 'Winning' : 'Losing'} by ${by % 1 ? by.toFixed(1) : by}${b.market === 'ml' ? '' : ' vs the line'}`;
+    return `<div class="lv ${cls}"><div class="top"><span class="bet">${esc(b.bet || betText(b))}</span><span class="tag">${b.who}</span></div>
+      <div class="score"><span>${esc(g.away)} <b>${g.as}</b> · ${esc(g.home)} <b>${g.hs}</b></span><span class="small">${esc(g.detail || (fin ? 'Final' : ''))}</span></div>
+      <div class="where ${cls === 'win' ? 'pos' : cls === 'lose' ? 'neg' : ''}">${where}${st.txt ? ` <span class="small">(${esc(st.txt)})</span>` : ''}</div></div>`;
+  }).join('');
+  $('#live-tiles').innerHTML = [['Winning', win, 'pos'], ['Losing', lose, 'neg'], ['Not started', pre, ''], ['If it ended now', (ifNow > 0 ? '+' : '') + fmt$(ifNow), ifNow > 0 ? 'pos' : ifNow < 0 ? 'neg' : '']]
+    .map(([k, v, c]) => `<div class="tile"><div class="k">${k}</div><div class="v ${c}">${v}</div></div>`).join('');
+  renderScoreboard();
+  const ts = Math.max(0, ...Object.values(ST.slate).flatMap(d => Object.values(d).map(g => g.ts || 0)));
+  $('#live-when').textContent = ts ? 'Updated ' + new Date(ts).toLocaleTimeString([], {hour: 'numeric', minute: '2-digit'}) + (live ? ' · updates every minute' : '') : '';
+}
+async function refreshLive() {
+
+  const days = new Set(); liveBets().forEach(b => { days.add((b.league || 'CFB') + '|' + b.date); if (b.league === 'NFL') days.add('NFL|' + new Date(b.kick || b.date).toLocaleDateString('en-CA', {timeZone: 'America/New_York'})); });
+  await Promise.allSettled([...days].map(k => { const [lg, d] = k.split('|'); return espnDay(lg, d); }));
+  const cut = ctDate(new Date(Date.now() - 10 * 864e5).toISOString()); Object.keys(ST.slate).forEach(k => { if (k.split(':')[1] < cut) delete ST.slate[k]; });
+  await sbLoad(); save(); recompute();
+}
+function scoreLine(g) { if (!g || !(g.state === 'in' || g.state === 'post' || g.done)) return '';
+  return `<div class="sline ${g.state === 'in' ? 'in' : ''}">${g.as} – ${g.hs} <span class="small">${esc(g.detail || 'Final')}</span></div>`; }
+const PAGE_VER = "__PAGEVER__";   // stamped by tracker.py; a newer published page reloads itself
+// ---------------- AUTO REFRESH (while the page is open) ----------------
+const busy = () => { const a = document.activeElement; return a && ['INPUT', 'SELECT', 'TEXTAREA'].includes(a.tagName) || $('#m-form').classList.contains('open'); };
+let tickN = 0;
+async function tick() {
+  if (document.visibilityState !== 'visible') return;
+  tickN++;
+  const cfbDays = new Set([today()]), nflDays = new Set([new Date().toLocaleDateString('en-CA', {timeZone: 'America/New_York'})]);
+  if (new Date().getHours() < 4) cfbDays.add(ctDate(new Date(Date.now() - 864e5).toISOString()));   // late games past midnight
+  if (SB.day && SB.day !== today()) (SB.lg === 'CFB' ? cfbDays : nflDays).add(SB.day);
+  await Promise.allSettled([...[...cfbDays].map(d => espnDay('CFB', d)), ...[...nflDays].map(d => espnDay('NFL', d))]);
+  save();
+  if (tickN % 5 === 0) syncCycle();
+  if (tickN % 30 === 0) refreshAll(false);
+  if (tickN % 5 === 0 && location.protocol.startsWith('http')) checkNewWeek();
+  if (!busy()) recompute(true);
+}
+async function checkNewWeek() {   // the Tuesday update publishes a new page; load it on its own
+  try { const t = await (await fetch(location.pathname + '?v=' + Date.now(), {cache: 'no-store'})).text();
+    const m = t.match(/const PAGE_VER = "([^"]+)"/); if (m && m[1] !== PAGE_VER && !busy()) location.reload(); } catch (e) {}
+}
+setInterval(tick, 60e3);
+document.addEventListener('visibilitychange', () => { if (document.visibilityState === 'visible') { tick(); checkNewWeek(); } });
+
+// ---------------- SCOREBOARD ----------------
+let SB = {lg: 'CFB', show: 'all'};
+try { Object.assign(SB, JSON.parse(localStorage.getItem('bt-sb') || '{}')); } catch (e) {}
+const sbSave = () => { try { localStorage.setItem('bt-sb', JSON.stringify(SB)); } catch (e) {} };
+function sbGames(lg) { const out = {}; Object.entries(ST.slate).forEach(([k, day]) => { if (!k.startsWith(lg + ':')) return; Object.values(day).forEach(g => out[g.id] = g); }); return Object.values(out); }
+function betsByGame() {   // every bet this week keyed by ESPN game id, with how it stands
+  const M = {}, add = (id, b, who, t) => (M[id] = M[id] || []).push({b, who, t});
+  BETS.filter(b => !ST.struck[b.id]).forEach(b => { const id = b.league === 'NFL' ? (SNAP.nfl.games.find(x => x.id === b.game_id) || {}).espn || b.game_id : b.game_id; add(id, b, 'Model', b.bet || betText(b)); });
+  MINE.forEach(b => { if (b.market === 'parlay') (b.legs || []).forEach(l => add(l.game_id, l, 'Parlay leg', legText(l))); else add(b.game_id, b, 'Mine', b.bet || betText(b)); });
+  return M;
+}
+function renderScoreboard() {
+  $$('#sb-lg button').forEach(x => x.classList.toggle('on', x.dataset.l === SB.lg)); $$('#sb-show button').forEach(x => x.classList.toggle('on', x.dataset.v === SB.show));
+  const all = sbGames(SB.lg), days = [...new Set(all.map(g => ctDate(g.kick)))].sort(), sel = $('#sb-day');
+  const want = SB.day && days.includes(SB.day) ? SB.day : days.includes(today()) ? today() : days.find(d => d >= today()) || days[days.length - 1] || '';
+  sel.innerHTML = days.map(d => `<option value="${d}">${dayLbl(d)}${d === today() ? ' (today)' : ''}</option>`).join('') || '<option>no games loaded yet</option>'; sel.value = want;
+  const nflConf = {}; SNAP.nfl.games.forEach(x => { nflConf[x.away] = x.away_conf; nflConf[x.home] = x.home_conf; });
+  const cf = g => SB.lg === 'NFL' ? {away_conf: nflConf[g.aabbr] || '', home_conf: nflConf[g.habbr] || '', away: g.away, home: g.home} : {away_conf: g.ac, home_conf: g.hc, away: g.away, home: g.home};
+  const csel = $('#sb-conf'), confs = [...new Set(all.flatMap(g => { const c = cf(g); return [c.away_conf, c.home_conf]; }).filter(Boolean))].sort();
+  const groups = SB.lg === 'NFL' ? ['AFC', 'NFC'] : ['SEC + Big Ten + Notre Dame', 'Power 4 (+ Notre Dame)', 'Group of 5'];
+  csel.innerHTML = '<option value="">All</option>' + groups.map(c => `<option>${esc(c)}</option>`).join('') + '<option disabled>──────</option>' + confs.map(c => `<option>${esc(c)}</option>`).join('');
+  csel.value = [...csel.options].some(o => o.value === SB.conf) ? SB.conf : ''; $('#sb-sort').value = SB.sort || 'live';
+  const TM = $('#sb-team').value.trim().toLowerCase(), BG = betsByGame(), BIX = {}; BOARD.filter(x => x.lg === SB.lg).forEach(x => BIX[x.lg === 'NFL' ? x.g.espn : x.g.id] = x);
+  let G = all.filter(g => ctDate(g.kick) === want && confMatch(cf(g), csel.value) && (!TM || [g.away, g.home].some(t => t.toLowerCase().includes(TM))));
+  if (SB.show === 'live') G = G.filter(g => g.state === 'in'); else if (SB.show === 'top') G = G.filter(g => g.ar || g.hr); else if (SB.show === 'major') G = G.filter(g => BIX[g.id] ? isMajor(SB.lg, BIX[g.id].g) : SB.lg === 'NFL'); else if (SB.show === 'mine') G = G.filter(g => BG[g.id]); else if (SB.show === 'settled') G = G.filter(g => BG[g.id] && (g.done || g.state === 'post'));
+  const rank = g => g.state === 'in' ? 0 : g.state === 'pre' || (!g.state && !g.done) ? 1 : 2;
+  const cname = g => { const c = cf(g); return c.home_conf === c.away_conf ? c.home_conf || 'Other' : [c.away_conf, c.home_conf].filter(Boolean).sort().join(' vs ') || 'Other'; };
+  const SO = SB.sort || 'live';
+  G.sort((a, b) => (SO === 'conf' ? cname(a).localeCompare(cname(b)) : 0) || (SO !== 'kick' ? rank(a) - rank(b) : 0) || a.kick.localeCompare(b.kick) || a.away.localeCompare(b.away));
+  const nLive = all.filter(g => ctDate(g.kick) === want && g.state === 'in').length;
+  let lastC = null;
+  $('#scoreboard').innerHTML = (nLive ? `<div class="small" style="margin-bottom:8px">${nLive} live now</div>` : '') + (!G.length ? '<div class="empty">No games match.</div>' : '<div class="sb">' + G.map(g => {
+    const head = SO === 'conf' && cname(g) !== lastC ? `<div class="sbh">${esc(lastC = cname(g))}</div>` : '';
+    const live = g.state === 'in', fin = g.done || g.state === 'post', pre = !live && !fin, aL = !pre && g.as > g.hs, hL = !pre && g.hs > g.as;
+    const bx = BIX[g.id]; let mdl = ''; const LS = bx ? (likelyScore(SB.lg, bx.P.pa, bx.P.ph) || [Math.round(bx.P.pa), Math.round(bx.P.ph)]) : null;
+    if (bx) { const P = bx.P, L = bx.L, gS = L.spread != null ? P.hs - L.spread : null, gT = L.total != null ? P.total - L.total : null;
+      mdl = `<div class="mdl"><b>Model</b> avg ${P.pa.toFixed(1)}-${P.ph.toFixed(1)}, total ${P.total.toFixed(1)}${!pre ? ` (real ${g.as + g.hs})` : ''}` +
+        (gS != null ? ` · likes <b>${esc(gS < 0 ? bx.g.home : bx.g.away)}</b> by ${Math.abs(gS).toFixed(1)} vs line` : '') + (gT != null && Math.abs(gT) >= 3 ? ` · ${gT > 0 ? 'over' : 'under'} by ${Math.abs(gT).toFixed(1)}` : '') +
+        (bx.F.length ? ` · ${bx.F.map(f => `<span class="chip">${esc(f.text)}</span>`).join('')}` : '') + '</div>'; }
+    const chips = (BG[g.id] || []).map(x => { let c = '', w = '';
+      if (!pre) { const st = standing(x.b, g); c = st.m > 0 ? 'pos' : st.m < 0 ? 'neg' : ''; w = fin ? (st.m > 0 ? ' · won' : st.m < 0 ? ' · lost' : ' · push') : st.m > 0 ? ' · winning' : st.m < 0 ? ' · losing' : ' · even'; }
+      return `<span class="chip ${c === 'neg' ? 'no' : ''}"><span class="${c}">${esc(x.who === 'Model' ? 'Model: ' : x.who === 'Parlay leg' ? 'Parlay: ' : 'Mine: ')}${esc(x.t)}${w}</span></span>`; }).join('');
+    return `<div class="sbg ${live ? 'live' : ''}">
+      ${bx ? '<div class="tm hd"><span></span><span><span class="mp">model</span><span class="sc">score</span></span></div>' : ''}
+      <div class="tm ${aL ? 'lead' : ''}"><span>${g.ar ? `<span class="rk">${g.ar}</span>` : ''}${esc(g.away)}${live && g.poss === 'a' ? ' <span class="ball" title="Has the ball">🏈</span>' : ''}</span><span>${bx ? `<span class="mp">${LS[0]}</span>` : ''}<span class="sc">${pre ? '' : g.as}</span></span></div>
+      <div class="tm ${hL ? 'lead' : ''}"><span>${g.hr ? `<span class="rk">${g.hr}</span>` : ''}${esc(g.home)}${live && g.poss === 'h' ? ' <span class="ball" title="Has the ball">🏈</span>' : ''}</span><span>${bx ? `<span class="mp">${LS[1]}</span>` : ''}<span class="sc">${pre ? '' : g.hs}</span></span></div>
+      <div class="st ${live ? 'live' : ''}"><span>${pre ? ctTime(g.kick) : esc(g.detail || (fin ? 'Final' : ''))}</span><span class="small">${esc(g.tv || '')}</span></div>
+      ${live && g.dd ? `<div class="dd ${g.rz ? 'rz' : ''}">${esc(g.dd)}${g.rz ? ' · red zone' : ''}</div>` : ''}
+      ${chips ? `<div class="bets">${chips}</div>` : ''}${mdl}</div>`.replace(/^/, head); }).join('') + '</div>');
+}
+$$('#sb-lg button').forEach(b => b.onclick = () => { SB.lg = b.dataset.l; SB.day = ''; sbSave(); renderScoreboard(); sbLoad(); });
+$$('#sb-show button').forEach(b => b.onclick = () => { SB.show = b.dataset.v; sbSave(); renderScoreboard(); });
+$('#sb-day').onchange = () => { SB.day = $('#sb-day').value; sbSave(); renderScoreboard(); sbLoad(); };
+$('#sb-team').oninput = renderScoreboard;
+$('#sb-conf').onchange = () => { SB.conf = $('#sb-conf').value; sbSave(); renderScoreboard(); };
+$('#sb-sort').onchange = () => { SB.sort = $('#sb-sort').value; sbSave(); renderScoreboard(); };
+async function sbLoad() {   // make sure the chosen day's full slate is loaded
+  const d = SB.day || today(); const k = SB.lg + ':' + d;
+  if (!ST.slate[k] || Date.now() - Math.max(0, ...Object.values(ST.slate[k]).map(g => g.ts || 0)) > 90e3) { try { await espnDay(SB.lg, SB.lg === 'NFL' ? d : d); save(); renderScoreboard(); } catch (e) {} }
+}
+
+// ---------------- filter toggles (phone) ----------------
+$$('.ftoggle').forEach(b => { const box = document.getElementById(b.dataset.for); let open = false;
+  try { open = localStorage.getItem('bt-open-' + b.dataset.for) === '1'; } catch (e) {}
+  const label = b.textContent;
+  const set = () => { box.classList.toggle('shut', !open); const n = [...box.querySelectorAll('select,input')].filter(x => x.value && !['kick', 'all'].includes(x.value)).length;
+    b.textContent = (open ? 'Hide ' + label.toLowerCase() : label) + (n && !open ? ` (${n} on)` : ''); };
+  b.onclick = () => { open = !open; try { localStorage.setItem('bt-open-' + b.dataset.for, open ? '1' : '0'); } catch (e) {} set(); };
+  b._set = set; box.addEventListener('input', set); box.addEventListener('click', () => setTimeout(set, 0)); set(); });
+
+// ---------------- boot ----------------
+let TAB = 'week';
+$$('#tabs button').forEach(b => b.onclick = () => { TAB = b.dataset.t; if (TAB === 'live') setTimeout(refreshLive, 0); $$('#tabs button').forEach(x => x.classList.toggle('on', x === b)); ['week', 'live', 'track', 'stats', 'rules', 'settings'].forEach(t => $('#t-' + t).classList.toggle('hide', t !== TAB)); renderAll(); });
+function recompute(keepOpen) { const open = keepOpen ? $$('#games tr.edit.open').map(t => t.dataset.edit) : []; buildBoard(); buildBets(); buildMine(); renderAll(); open.forEach(i => $(`#games tr[data-edit="${i}"]`)?.classList.add('open')); }
+function renderAll() {
+  $('#sub').textContent = `Ratings through CFB week ${SNAP.cfb.week - 1} and NFL week ${SNAP.nfl.week - 1} · $${(+ST.budget).toFixed(0)} a day`;
+  if (TAB === 'week') renderWeek(); else if (TAB === 'live') renderLive(); else if (TAB === 'track') renderTracker(); else if (TAB === 'stats') renderStats();
+}
+async function refreshAll(force) {
+  $('#refresh').disabled = true; $('#refresh').textContent = 'Refreshing…';
+  await Promise.allSettled([refreshFinals(), refreshOdds(force), refreshWeather(force), refreshQB(force)]);
+  recompute(); $('#refresh').disabled = false; $('#refresh').textContent = 'Refresh';
+}
+$('#refresh').onclick = () => { refreshAll(true); syncCycle(); };
+setStatus('scores', '<b>Scores:</b> loading…'); setStatus('lines', '<b>Lines:</b> loading…'); setStatus('wx', '<b>Weather:</b> loading…'); setStatus('qb', '<b>QB news:</b> loading…');
+themeLbl(); sbLoad(); restoreGF(); $$('.ftoggle').forEach(b => b._set && b._set()); recompute(); refreshAll(false); syncCycle();
+if (screen.width <= 700 && innerWidth >= 900) $('#dsnote').innerHTML = '<div class="note">Your phone is showing the desktop version, so everything is tiny. In Chrome tap <b>⋮</b> and uncheck <b>Desktop site</b>.</div>';
+let rt; addEventListener('resize', () => { clearTimeout(rt); rt = setTimeout(renderAll, 150); });
+</script>
+</body>
+</html>

@@ -1,0 +1,111 @@
+{
+ "_note": "Betting rules backed by backtests against closing lines. Edit these when weekly grading says so.",
+ "cfb": {
+  "total_gap_min": 7.0,
+  "total_gap_hit": "60% (55 games, 2025 test)",
+  "tz_spot": {
+   "min_tz_west": 2,
+   "hit": "55% overall (129), 59% since 2021; 62% if kickoff 10pm ET or later (69)"
+  },
+  "wind_under_mph": 13,
+  "wind_under_hit": "~57% (published CFB studies since 2005)",
+  "qb_split": [
+   0.6,
+   0.4
+  ],
+  "wx_total_adj": {
+   "wind": [
+    [
+     0,
+     10,
+     0
+    ],
+    [
+     10,
+     15,
+     -1.5
+    ],
+    [
+     15,
+     20,
+     -2.5
+    ],
+    [
+     20,
+     100,
+     -3.5
+    ]
+   ],
+   "gust25": -1.0,
+   "rain40": -1.5
+  }
+ },
+ "nfl": {
+  "wind_under_mph": 10,
+  "wind_under_hit": "59% at 10-14 mph (465 games), 55% at 15+ (234), 2014-25",
+  "side_gap_lean": 4.0,
+  "side_note": "no proven edge vs closing line; small-stake leans only, key numbers 3/7",
+  "qb_split": [
+   0.7,
+   0.3
+  ]
+ },
+ "break_even": 0.524,
+ "betting": {
+  "_note": "Which picks become bets and how $ are split. p = backtest hit rate vs closing line, n = games behind it.",
+  "cfb_min_hit": 0.55,
+  "nfl_min_hit": 0.535,
+  "max_bets_per_day": 5,
+  "daily_budget": 130,
+  "min_stake": 5,
+  "default_odds": -110,
+  "shrink_k": 100,
+  "_stake_method": "fractional Kelly on a shrunk hit rate (p*n + 0.5*k)/(n + k), scaled so each day's stakes add to the budget",
+  "rules": {
+   "cfb_total_gap7": {
+    "p": 0.505,
+    "n": 182,
+    "src": "leave-one-season-out 2023-25 vs closing totals (2023 44.7%/94, 2024 52.9%/34, 2025 59.3%/54); was 60%/55 on 2025 alone",
+    "lean_only": true
+   },
+   "cfb_tz_home": {
+    "p": 0.55,
+    "n": 129,
+    "src": "our 2015-25 CFB backtest"
+   },
+   "cfb_tz_home_late": {
+    "p": 0.623,
+    "n": 69,
+    "src": "our 2015-25 CFB backtest (kick 10pm ET+)"
+   },
+   "cfb_wind_under": {
+    "p": 0.57,
+    "n": 150,
+    "src": "published CFB wind studies (n discounted - not our data)"
+   },
+   "nfl_wind_under_10_14": {
+    "p": 0.591,
+    "n": 465,
+    "src": "our 2014-25 NFL backtest"
+   },
+   "nfl_wind_under_15plus": {
+    "p": 0.547,
+    "n": 234,
+    "src": "our 2014-25 NFL backtest"
+   },
+   "nfl_side_gap4": {
+    "p": 0.529,
+    "n": 68,
+    "src": "our 2025 NFL test (below threshold - lean only)"
+   },
+   "nfl_key_side": {
+    "p": 0.614,
+    "n": 57,
+    "src": "key-number cover probability (Normal around the closing line x historical margin frequencies), edge >= 1 pt over the price, walk-forward 2023-25 at actual closing odds: 35-22, +21% ROI; small sample",
+    "lean_only": true
+   }
+  },
+  "excluded": "time-zone spots where the model disagrees; any game passed with --skip",
+  "_lean_note": "lean_only rules are shown and graded on the report card but never become bets until their live record earns it"
+ }
+}
