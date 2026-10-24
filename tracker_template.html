@@ -294,7 +294,8 @@ a{color:var(--series)}
       <div class="rtext">
         <p>A game gets flagged when it matches a rule that beat the closing line in past seasons. A flag becomes a bet only when that rule's backtest hit rate is at least <b>55% for college</b> or <b>53.5% for NFL</b> (52.4% breaks even at -110).</p>
         <p>At most <b>5 bets a day</b>, best hit rates first, one per game. Each day's budget is split by edge (fractional Kelly on a shrunk hit rate, $5 minimum), so the more proven rules get bigger stakes.</p>
-        <p>The rules and their records are on the <b>Stats</b> tab.</p>
+        <p><b>Current bet rules</b> (backtested against closing lines, Oct 2026 review): NFL wind unders, NFL 2-team underdog teasers (+1.5/+2.5 teased to +7.5/+8.5 when the total is 49 or less, paired automatically at DraftKings' −120), CFB east team flying west, CFB wind unders, CFB totals of 68+ under, CFB road team off a 28+ point loss, and CFB letdown fades (half stakes). Leans are tracked but not bet.</p>
+        <p><b>Kill switch:</b> after 50 live bets a rule is retired if it falls below 52.4% (teaser legs below 73.9%); a lean is promoted after 50 live picks at 55% or better. Records are on the <b>Stats</b> tab.</p>
       </div>
     </div>
     <div class="card">
@@ -680,11 +681,29 @@ function flagsFor(lg, g, P, L) {
       const late = etHour(g.kick) >= 22, agree = (P.ph - P.pa) + L.spread > 0;
       out.push({rule: 'cfb_tz_home' + (late ? '_late' : '') + (agree ? '' : '_model_disagrees'), market: 'spread', side: 'home', line: L.spread, text: `${g.home} ${lineTxt(L.spread)}, east team flying west${agree ? '' : ' (model disagrees)'}`});
     }
+    if (L.total != null && L.total >= 68)
+      out.push({rule: 'cfb_total68_under', market: 'total', side: 'under', line: L.total, text: `Under ${L.total}, total 68+`});
+    if (L.spread != null && (g.home_prev_beat_top || g.away_prev_beat_top) && !(g.home_prev_beat_top && g.away_prev_beat_top)) {
+      const homeLet = !!g.home_prev_beat_top;
+      out.push({rule: 'cfb_letdown', market: 'spread', side: homeLet ? 'away' : 'home', line: L.spread, text: `${homeLet ? g.away : g.home} ${lineTxt(homeLet ? -L.spread : L.spread)}, ${homeLet ? g.home : g.away} off a big win`});
+    }
+    if (L.spread != null && !g.neutral && g.away_prev_mar != null && g.away_prev_mar <= -28)
+      out.push({rule: 'cfb_road_bounce28', market: 'spread', side: 'away', line: L.spread, text: `${g.away} ${lineTxt(-L.spread)}, off a ${-g.away_prev_mar}-pt loss`});
+    if (L.total != null && etHour(g.kick) >= 22)
+      out.push({rule: 'cfb_late_under', market: 'total', side: 'under', line: L.total, text: `Under ${L.total}, late kick`});
     if (P.wind != null && P.wind >= RULES.cfb.wind_under_mph && L.total != null)
       out.push({rule: 'cfb_wind_under', market: 'total', side: 'under', line: L.total, text: `Under ${L.total}, wind ${P.wind} mph`});
   } else {
     if (g.outdoor && P.wind != null && P.wind >= RULES.nfl.wind_under_mph && L.total != null)
       out.push({rule: P.wind < 15 ? 'nfl_wind_under_10_14' : 'nfl_wind_under_15plus', market: 'total', side: 'under', line: L.total, text: `Under ${L.total}, wind ${P.wind} mph`});
+    if (L.spread != null && L.total != null && L.total <= 49 && Math.abs(L.spread) >= 1.5 && Math.abs(L.spread) <= 2.5) {   // underdog teaser leg (+1.5/+2.5 -> +7.5/+8.5)
+      const home = L.spread > 0;
+      out.push({rule: 'nfl_teaser_leg', market: 'spread', side: home ? 'home' : 'away', line: home ? L.spread + 6 : L.spread - 6, text: `Teaser leg: ${home ? g.home : g.away} ${lineTxt(Math.abs(L.spread))} → +${Math.abs(L.spread) + 6}`});
+    }
+    if (L.spread != null && L.spread !== 0 && SNAP.nfl.week <= 2)
+      out.push({rule: 'nfl_early_dog', market: 'spread', side: L.spread > 0 ? 'home' : 'away', line: L.spread, text: `${L.spread > 0 ? g.home : g.away} +${Math.abs(L.spread)}, early-season dog (lean)`});
+    if (L.total != null && new Date(g.kick).toLocaleDateString('en-US', {timeZone: 'America/New_York', weekday: 'long'}) === 'Monday')
+      out.push({rule: 'nfl_mnf_under', market: 'total', side: 'under', line: L.total, text: `Under ${L.total}, Monday night (lean)`});
     if (L.spread != null && KEYS) {   // key-number side: the half-point that crosses 3 / 7 / 10 / 14
       const r = coverProb('NFL', 'm', P.ph - P.pa, -L.spread, 0), hp = r.win / (1 - r.push), ap = r.lose / (1 - r.push);
       if (Math.max(hp, ap) >= 0.534) { const home = hp >= ap;
@@ -700,6 +719,7 @@ function flagsFor(lg, g, P, L) {
 function legText(l) { return l.market === 'total' ? `${String(l.side).toUpperCase() === 'OVER' ? 'Over' : 'Under'} ${l.line} (${l.away}/${l.home})` : betText(l); }
 function betText(r) {
   if (r.market === 'parlay') return `${(r.legs || []).length}-leg parlay`;
+  if (r.market === 'teaser') return 'Teaser: ' + (r.legs || []).map(l => `${l.side === 'home' ? l.home : l.away} +${Math.abs(l.line)}`).join(' & ');
   if (r.market === 'ml') return `${r.side === 'home' ? r.home : r.away} moneyline`;
   if (r.market === 'total') return `${r.away}/${r.home} ${String(r.side).toUpperCase()} ${r.line}`;
   const ln = r.side === 'home' ? +r.line : -r.line; return `${r.side === 'home' ? r.home : r.away} ${ln > 0 ? '+' : ''}${ln}`;
@@ -713,7 +733,7 @@ function buildBoard() {
   BOARD = [];
   for (const lg of ['CFB', 'NFL']) for (const g of SNAP[lg.toLowerCase()].games) { const L = lineFor(lg, g), P = predict(lg, g); BOARD.push({lg, g, L, P, F: flagsFor(lg, g, P, L)}); }
 }
-function kellyOf(b) { const r = BR.rules[b.rule] || {p: +b.hit_rate, n: +b.n || 50}; const ps = (r.p * r.n + 0.5 * BR.shrink_k) / (r.n + BR.shrink_k); return Math.max(ps - (1 - ps) / payout(+b.odds || -110), 0.001); }
+function kellyOf(b) { const r = BR.rules[b.rule] || {p: +b.hit_rate, n: +b.n || 50}; const ps = (r.p * r.n + 0.5 * BR.shrink_k) / (r.n + BR.shrink_k); return Math.max(ps - (1 - ps) / payout(+b.odds || -110), 0.001) * (r.stake_mult || 1); }
 function buildBets() {
   const cands = [], picks = [];
   for (const {lg, g, L, P, F} of BOARD) for (const f of F) {
@@ -726,9 +746,16 @@ function buildBets() {
     const price = f.market === 'total' ? (f.side === 'over' ? L.prices.overPrice : L.prices.underPrice) : (f.side === 'home' ? L.prices.homePrice : L.prices.awayPrice);
     cands.push(Object.assign(base, {hit_rate: r.p, n: r.n, odds: price || BR.default_odds}));
   }
+  const tr = BR.rules.nfl_teaser_dog, legs = picks.filter(p => p.rule === 'nfl_teaser_leg' && !started(p.kick)).sort((a, b) => a.kick.localeCompare(b.kick));
+  if (tr && !tr.lean_only) { const byDay = {}; legs.forEach(l => (byDay[l.date] = byDay[l.date] || []).push(l));
+    for (const [d, L2] of Object.entries(byDay)) for (let i = 0; i + 1 < L2.length; i += 2) { const a = L2[i], b = L2[i + 1];
+      const lg2 = [a, b].map(x => { const sg = SNAP.nfl.games.find(y => y.id === x.game_id) || {}; return {league: 'NFL', game_id: x.game_id, espn: sg.espn ? String(sg.espn) : '', away: x.away, home: x.home, market: 'spread', side: x.side, line: x.line}; });
+      const t = {date: d, kick: a.kick, league: 'NFL', week: SNAP.nfl.week, game_id: 'T:' + a.game_id + '+' + b.game_id, game: `${a.game} + ${b.game}`, away: a.away, home: a.home, rule: 'nfl_teaser_dog', market: 'teaser',
+        side: '', line: '', legs: lg2, src: 'model', result: '', hit_rate: tr.p, n: tr.n, odds: tr.odds || -120};
+      t.id = t.date + '|' + t.game_id + '|' + t.rule; cands.push(t); } }
   const kickOf = {}; BOARD.forEach(x => kickOf[x.g.id] = x.g.kick);
   const byId = {};
-  DATA.bets.forEach(b => { const id = b.date + '|' + b.game_id + '|' + b.rule; byId[id] = Object.assign({}, b, {id, src: 'log', kick: kickOf[b.game_id] || b.date + 'T23:59:00-05:00'}); });
+  DATA.bets.forEach(b => { const id = b.date + '|' + b.game_id + '|' + b.rule; byId[id] = Object.assign({}, b, {id, src: 'log', kick: kickOf[b.game_id] || kickOf[String(b.game_id).replace(/^T:/, '').split('+')[0]] || b.date + 'T23:59:00-05:00'}); if (typeof byId[id].legs === 'string' && byId[id].legs) try { byId[id].legs = JSON.parse(byId[id].legs); } catch (e) {} });
   Object.values(ST.frozen).forEach(b => { if (!byId[b.id]) byId[b.id] = Object.assign({}, b); });
   const fresh = cands.filter(b => !started(b.kick)).sort((a, b) => b.hit_rate - a.hit_rate || kellyOf(b) - kellyOf(a));
   const live = () => Object.values(byId).filter(b => !ST.struck[b.id]);
@@ -754,7 +781,8 @@ function buildBets() {
     liveL.forEach((b, i) => b.stake = room > 0 ? Math.max(st[i], 0) : 0);
   }
   all.forEach(b => { b.to_win = (+b.stake || 0) * payout(b.odds);
-    if (!b.result) { const f = finalFor(b.league, b.game_id, b.date, b.away, b.home); if (f) b.result = grade(b, f); }
+    if (!b.result && b.market === 'teaser') { const R = (b.legs || []).map(l => { const f = finalFor('NFL', l.game_id, b.date, l.away, l.home); return f ? grade(l, f) : ''; }); if (R.includes('L')) b.result = 'L'; else if (R.length && R.every(Boolean)) b.result = R.includes('P') ? 'P' : 'W'; }
+    else if (!b.result) { const f = finalFor(b.league, b.game_id, b.date, b.away, b.home); if (f) b.result = grade(b, f); }
     if (b.src === 'model' && started(b.kick) && !ST.frozen[b.id] && !ST.struck[b.id]) ST.frozen[b.id] = Object.assign({}, b); });
   BETS = all;
   const pk = {};
@@ -1076,7 +1104,7 @@ $('#s-testkey').onclick = async () => { $('#s-keymsg').textContent = 'Testing…
 $('#s-savebudget').onclick = () => { const v = +$('#s-budget').value; if (v > 0) { ST.budget = v; usave(); recompute(); } };
 function changes() {
   return {exported: new Date().toISOString(), built: SNAP.built, budget: ST.budget, struck: Object.keys(ST.struck), overrides: ST.ov, inputs: ST.inputs,
-          bets: BETS.filter(b => !ST.struck[b.id] && (b.src !== 'log' || ST.ov[b.id])).map(b => { const o = Object.assign({}, b); delete o.locked; return o; }),
+          bets: BETS.filter(b => !ST.struck[b.id] && (b.src !== 'log' || ST.ov[b.id])).map(b => { const o = Object.assign({}, b); delete o.locked; if (Array.isArray(o.legs)) o.legs = JSON.stringify(o.legs); return o; }),
           picks: Object.values(ST.frozenPicks), mine: Object.values(ST.mine)};
 }
 $('#s-export').onclick = async () => {
@@ -1258,8 +1286,8 @@ function renderLive() {
   let win = 0, lose = 0, pre = 0, done = 0, ifNow = 0, live = 0;
   const cards = L.map(({b, g}) => {
     const stake = +b.stake || 0, tw = stake * payout(+b.odds || -110);
-    if (b.market === 'parlay') {
-      const legs = (b.legs || []).map(l => { const lg = I[l.game_id]; if (!lg || lg.state === 'pre' || (!lg.state && !lg.done)) return {l, s: 'pre', g: lg}; const st = standing(l, lg); return {l, g: lg, s: st.m > 0 ? 'win' : st.m < 0 ? 'lose' : 'even', fin: lg.done || lg.state === 'post'}; });
+    if (b.market === 'parlay' || b.market === 'teaser') {
+      const legs = (b.legs || []).map(l => { const lg = I[l.espn || l.game_id]; if (!lg || lg.state === 'pre' || (!lg.state && !lg.done)) return {l, s: 'pre', g: lg}; const st = standing(l, lg); return {l, g: lg, s: st.m > 0 ? 'win' : st.m < 0 ? 'lose' : 'even', fin: lg.done || lg.state === 'post'}; });
       const lostLeg = legs.some(x => x.s === 'lose' && x.fin), anyLose = legs.some(x => x.s === 'lose'), allWin = legs.every(x => x.s === 'win');
       const cls = lostLeg ? 'lose' : allWin ? 'win' : legs.some(x => x.s !== 'pre') ? (anyLose ? 'lose' : 'even') : 'pre';
       if (cls === 'pre') pre++; else if (cls === 'win') win++; else if (cls === 'lose') lose++;
@@ -1327,7 +1355,8 @@ const sbSave = () => { try { localStorage.setItem('bt-sb', JSON.stringify(SB)); 
 function sbGames(lg) { const out = {}; Object.entries(ST.slate).forEach(([k, day]) => { if (!k.startsWith(lg + ':')) return; Object.values(day).forEach(g => out[g.id] = g); }); return Object.values(out); }
 function betsByGame() {   // every bet this week keyed by ESPN game id, with how it stands
   const M = {}, add = (id, b, who, t) => (M[id] = M[id] || []).push({b, who, t});
-  BETS.filter(b => !ST.struck[b.id]).forEach(b => { const id = b.league === 'NFL' ? (SNAP.nfl.games.find(x => x.id === b.game_id) || {}).espn || b.game_id : b.game_id; add(id, b, 'Model', b.bet || betText(b)); });
+  BETS.filter(b => !ST.struck[b.id] && b.market === 'teaser').forEach(b => (b.legs || []).forEach(l => add(l.espn || l.game_id, l, 'Teaser leg', legText(l))));
+  BETS.filter(b => !ST.struck[b.id] && b.market !== 'teaser').forEach(b => { const id = b.league === 'NFL' ? (SNAP.nfl.games.find(x => x.id === b.game_id) || {}).espn || b.game_id : b.game_id; add(id, b, 'Model', b.bet || betText(b)); });
   MINE.forEach(b => { if (b.market === 'parlay') (b.legs || []).forEach(l => add(l.game_id, l, 'Parlay leg', legText(l))); else add(b.game_id, b, 'Mine', b.bet || betText(b)); });
   return M;
 }
@@ -1361,7 +1390,7 @@ function renderScoreboard() {
         (bx.F.length ? ` · ${bx.F.map(f => `<span class="chip">${esc(f.text)}</span>`).join('')}` : '') + '</div>'; }
     const chips = (BG[g.id] || []).map(x => { let c = '', w = '';
       if (!pre) { const st = standing(x.b, g); c = st.m > 0 ? 'pos' : st.m < 0 ? 'neg' : ''; w = fin ? (st.m > 0 ? ' · won' : st.m < 0 ? ' · lost' : ' · push') : st.m > 0 ? ' · winning' : st.m < 0 ? ' · losing' : ' · even'; }
-      return `<span class="chip ${c === 'neg' ? 'no' : ''}"><span class="${c}">${esc(x.who === 'Model' ? 'Model: ' : x.who === 'Parlay leg' ? 'Parlay: ' : 'Mine: ')}${esc(x.t)}${w}</span></span>`; }).join('');
+      return `<span class="chip ${c === 'neg' ? 'no' : ''}"><span class="${c}">${esc(x.who === 'Model' ? 'Model: ' : x.who === 'Parlay leg' ? 'Parlay: ' : x.who === 'Teaser leg' ? 'Teaser: ' : 'Mine: ')}${esc(x.t)}${w}</span></span>`; }).join('');
     return `<div class="sbg ${live ? 'live' : ''}">
       ${bx ? '<div class="tm hd"><span></span><span><span class="mp">model</span><span class="sc">score</span></span></div>' : ''}
       <div class="tm ${aL ? 'lead' : ''}"><span>${g.ar ? `<span class="rk">${g.ar}</span>` : ''}${esc(g.away)}${live && g.poss === 'a' ? ' <span class="ball" title="Has the ball">🏈</span>' : ''}</span><span>${bx ? `<span class="mp">${LS[0]}</span>` : ''}<span class="sc">${pre ? '' : g.as}</span></span></div>

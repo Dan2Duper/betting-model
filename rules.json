@@ -71,7 +71,7 @@
    "cfb_tz_home": {
     "p": 0.55,
     "n": 129,
-    "src": "our 2015-25 CFB backtest"
+    "src": "our 2015-25 CFB backtest; re-tested 2015-25: 115-84 (57.8%)"
    },
    "cfb_tz_home_late": {
     "p": 0.623,
@@ -103,9 +103,56 @@
     "n": 57,
     "src": "key-number cover probability (Normal around the closing line x historical margin frequencies), edge >= 1 pt over the price, walk-forward 2023-25 at actual closing odds: 35-22, +21% ROI; small sample",
     "lean_only": true
+   },
+   "nfl_teaser_dog": {
+    "p": 0.615,
+    "n": 252,
+    "odds": -120,
+    "src": "2-team 6-pt teaser, underdog legs +1.5/+2.5 with total <= 49: legs 395-109 (78.4%) 2012-26, each era 77-80%; teaser win = 0.784^2 at DK -120 (break-even 73.9% per leg)"
+   },
+   "nfl_teaser_leg": {
+    "p": 0.784,
+    "n": 504,
+    "src": "single teaser leg record (graded at the teased line); legs are paired into nfl_teaser_dog bets",
+    "lean_only": true
+   },
+   "nfl_early_dog": {
+    "p": 0.549,
+    "n": 437,
+    "src": "NFL weeks 1-2 underdogs 2013-26",
+    "lean_only": true
+   },
+   "nfl_mnf_under": {
+    "p": 0.554,
+    "n": 249,
+    "src": "Monday night unders 2013-26",
+    "lean_only": true
+   },
+   "cfb_total68_under": {
+    "p": 0.575,
+    "n": 454,
+    "src": "FBS vs FBS closing total 68+: under 261-193, 2015-25 (7 of 10 seasons profitable; higher totals stronger)"
+   },
+   "cfb_letdown": {
+    "p": 0.567,
+    "n": 480,
+    "stake_mult": 0.5,
+    "src": "fade a team the week after it beat an Elo top-20% opponent: 272-208 2015-25 (50.7% in 2015-19, 59.1% in 2021-25) - half stakes"
+   },
+   "cfb_road_bounce28": {
+    "p": 0.56,
+    "n": 596,
+    "src": "road team off a loss by 28+: 334-262 2015-25 (57.2% 2015-19, 55.4% 2021-25)"
+   },
+   "cfb_late_under": {
+    "p": 0.55,
+    "n": 418,
+    "src": "kickoff 10pm ET or later: under 230-188 2015-25",
+    "lean_only": true
    }
   },
   "excluded": "time-zone spots where the model disagrees; any game passed with --skip",
-  "_lean_note": "lean_only rules are shown and graded on the report card but never become bets until their live record earns it"
+  "_lean_note": "lean_only rules are shown and graded on the report card but never become bets until their live record earns it",
+  "_kill_switch": "After 50 live bets, retire any rule below 52.4% (teasers: legs below 73.9%). Leans are promoted after 50 live picks at 55%+."
  }
 }
