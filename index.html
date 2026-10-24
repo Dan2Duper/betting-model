@@ -82,6 +82,8 @@ tr.struck td.keep{text-decoration:none;opacity:1}
 .hide{display:none!important}
 .ftoggle{display:none}
 .rtext p{margin:6px 0 10px;color:var(--ink-2)}
+.sline{margin-top:3px;font-weight:700;font-variant-numeric:tabular-nums}.sline .small{font-weight:400}
+.sline.in::before{content:"";display:inline-block;width:8px;height:8px;border-radius:50%;background:var(--bad-ink);margin-right:6px;vertical-align:1px}
 .lv{border:1px solid var(--border);border-radius:12px;padding:12px 14px;margin-top:10px;background:var(--surface);border-left-width:6px}
 .lv.win{border-left-color:var(--good-ink)}.lv.lose{border-left-color:var(--bad-ink)}.lv.even{border-left-color:var(--ink-3)}.lv.pre{border-left-color:var(--border)}
 .lv .top{display:flex;justify-content:space-between;gap:10px;align-items:baseline}
@@ -202,7 +204,7 @@ a{color:var(--series)}
           <option value="kick">Kickoff</option><option value="tgap">Biggest total gap (model vs line)</option><option value="sgap">Biggest side gap (model vs line)</option>
           <option value="flags">Flagged first</option><option value="conf">Conference</option><option value="total">Highest model total</option><option value="margin">Biggest model margin</option>
         </select></label>
-        <label class="f">Games<select id="g-when"><option value="upcoming">Not started</option><option value="all">All this week</option><option value="today">Today only</option></select></label>
+        <label class="f">Games<select id="g-when"><option value="all">All this week</option><option value="today">Today</option><option value="live">Live now</option><option value="upcoming">Not started</option></select></label>
         <datalist id="gteams"></datalist>
       </div>
       <div class="tablewrap" id="games"></div>
@@ -790,7 +792,8 @@ function renderGames() {
   if (SHOW === 'flag') rows = rows.filter(x => x.F.length); else if (SHOW === 'lines') rows = rows.filter(x => x.L.spread != null || x.L.total != null);
   const C = $('#g-conf').value, TM = $('#g-team').value.trim().toLowerCase(), SO = $('#g-sort').value, WH = $('#g-when').value;
   rows = rows.filter(x => confMatch(x.g, C) && (!TM || [x.g.away, x.g.home].some(t => t.toLowerCase().includes(TM))));
-  if (WH === 'upcoming') rows = rows.filter(x => !started(x.g.kick)); else if (WH === 'today') rows = rows.filter(x => ctDate(x.g.kick) === today());
+  const LI = liveIndex(), lgame = x => LI[x.lg === 'NFL' ? x.g.espn : x.g.id];
+  if (WH === 'upcoming') rows = rows.filter(x => !started(x.g.kick)); else if (WH === 'today') rows = rows.filter(x => ctDate(x.g.kick) === today()); else if (WH === 'live') rows = rows.filter(x => (lgame(x) || {}).state === 'in');
   const tg = x => x.L.total == null ? -1 : Math.abs(x.P.total - x.L.total), sg = x => x.L.spread == null ? -1 : Math.abs(x.P.hs - x.L.spread);
   const sorters = {kick: (a, b) => a.g.kick.localeCompare(b.g.kick), tgap: (a, b) => tg(b) - tg(a), sgap: (a, b) => sg(b) - sg(a),
     flags: (a, b) => b.F.length - a.F.length || a.g.kick.localeCompare(b.g.kick), conf: (a, b) => (a.g.home_conf || '').localeCompare(b.g.home_conf || '') || a.g.kick.localeCompare(b.g.kick),
@@ -803,7 +806,7 @@ function renderGames() {
       const gapT = L.total != null ? P.total - L.total : null, gapS = L.spread != null ? P.hs - L.spread : null;
       const wx = P.wind == null ? ((isN && !g.outdoor) || (!isN && g.dome) ? 'indoors' : '–') : P.wind + (P.wxd?.gust >= 20 ? ` (g${P.wxd.gust})` : '');
       return `<tr data-row="${i}" style="cursor:pointer"><td data-label="Kick (CT)">${ctTime(g.kick)}${g.neutral ? '<div class="small">neutral</div>' : ''}</td>
-        <td class="full first" data-label=""><b>${esc(g.away)}</b> @ <b>${esc(g.home)}</b><div class="small">${esc(g.away_conf === g.home_conf ? g.home_conf : (g.away_conf || '?') + ' vs ' + (g.home_conf || '?'))}</div>${isN ? `<div class="small">QBs ${esc(inputsOf('NFL', g).qbA || (QBX['NFL:' + g.away]?.changed ? QBX['NFL:' + g.away].qb || 'backup' : g.qa))} / ${esc(inputsOf('NFL', g).qbH || (QBX['NFL:' + g.home]?.changed ? QBX['NFL:' + g.home].qb || 'backup' : g.qh))}</div>` : ''}<div>${qbChips(x.lg, g)}</div>${fin ? `<div class="small"><b>Final ${fin.as}-${fin.hs}</b></div>` : ''}</td>
+        <td class="full first" data-label=""><b>${esc(g.away)}</b> @ <b>${esc(g.home)}</b>${scoreLine(lgame(x))}<div class="small">${esc(g.away_conf === g.home_conf ? g.home_conf : (g.away_conf || '?') + ' vs ' + (g.home_conf || '?'))}</div>${isN ? `<div class="small">QBs ${esc(inputsOf('NFL', g).qbA || (QBX['NFL:' + g.away]?.changed ? QBX['NFL:' + g.away].qb || 'backup' : g.qa))} / ${esc(inputsOf('NFL', g).qbH || (QBX['NFL:' + g.home]?.changed ? QBX['NFL:' + g.home].qb || 'backup' : g.qh))}</div>` : ''}<div>${qbChips(x.lg, g)}</div>${fin ? `<div class="small"><b>Final ${fin.as}-${fin.hs}</b></div>` : ''}</td>
         <td class="num" data-label="Model score">${P.pa.toFixed(1)} - ${P.ph.toFixed(1)}<div class="small">total ${P.total.toFixed(1)}</div></td>
         <td class="num" data-label="Line">${L.spread == null ? '–' : 'home ' + lineTxt(L.spread)}<div class="small">O/U ${L.total ?? '–'} · ${esc(L.src || 'no line')}</div></td>
         <td class="num" data-label="Model likes">${gapS == null ? '–' : (gapS < 0 ? esc(g.home) : esc(g.away)) + ' +' + Math.abs(gapS).toFixed(1)}<div class="small">${gapT == null ? '' : 'total ' + sgn(gapT)}</div></td>
@@ -826,7 +829,7 @@ function renderGames() {
     tr.querySelector('[data-clear]').onclick = () => { delete ST.inputs[key]; usave(); recompute(); };
   });
 }
-function restoreGF() { initGameFilters(); ['g-conf', 'g-team', 'g-sort', 'g-when'].forEach(id => { try { const v = localStorage.getItem('bt-' + id + '-' + LG); document.getElementById(id).value = v ?? (id === 'g-sort' ? 'kick' : id === 'g-when' ? 'upcoming' : ''); } catch (e) {} }); }
+function restoreGF() { initGameFilters(); ['g-conf', 'g-team', 'g-sort', 'g-when'].forEach(id => { try { const v = localStorage.getItem('bt-' + id + '-' + LG); document.getElementById(id).value = v ?? (id === 'g-sort' ? 'kick' : id === 'g-when' ? 'all' : ''); } catch (e) {} }); }
 $$('#lg button').forEach(b => b.onclick = () => { LG = b.dataset.l; $$('#lg button').forEach(x => x.classList.toggle('on', x === b)); restoreGF(); renderGames(); });
 $$('#show button').forEach(b => b.onclick = () => { SHOW = b.dataset.s; $$('#show button').forEach(x => x.classList.toggle('on', x === b)); renderGames(); });
 function confirmStrike(id) { const b = BETS.find(x => x.id === id); return !b || !b.result || window.confirm(`Strike ${b.bet}? It already has a result (${b.result}), so striking removes it from your record.`); }
@@ -1241,13 +1244,35 @@ async function refreshLive() {
   save(); recompute(); btn.disabled = false; btn.textContent = 'Refresh scores';
 }
 $('#live-refresh').onclick = refreshLive;
-setInterval(() => { if (TAB === 'live' && document.visibilityState === 'visible') refreshLive(); }, 60e3);
+function scoreLine(g) { if (!g || !(g.state === 'in' || g.state === 'post' || g.done)) return '';
+  return `<div class="sline ${g.state === 'in' ? 'in' : ''}">${g.as} – ${g.hs} <span class="small">${esc(g.detail || 'Final')}</span></div>`; }
+// ---------------- AUTO REFRESH (while the page is open) ----------------
+const busy = () => { const a = document.activeElement; return a && ['INPUT', 'SELECT', 'TEXTAREA'].includes(a.tagName) || $('#m-form').classList.contains('open'); };
+let tickN = 0;
+async function tick() {
+  if (document.visibilityState !== 'visible') return;
+  tickN++;
+  const cfbDays = new Set([today()]), nflDays = new Set([new Date().toLocaleDateString('en-CA', {timeZone: 'America/New_York'})]);
+  if (new Date().getHours() < 4) cfbDays.add(ctDate(new Date(Date.now() - 864e5).toISOString()));   // late games past midnight
+  await Promise.allSettled([...[...cfbDays].map(d => espnDay('CFB', d)), ...[...nflDays].map(d => espnDay('NFL', d))]);
+  save();
+  if (tickN % 5 === 0) syncCycle();
+  if (tickN % 30 === 0) refreshAll(false);
+  if (tickN % 15 === 0 && location.protocol.startsWith('http')) checkNewWeek();
+  if (!busy()) recompute(true);
+}
+async function checkNewWeek() {   // the Tuesday update publishes a new page; load it on its own
+  try { const t = await (await fetch(location.pathname + '?v=' + Date.now(), {cache: 'no-store'})).text();
+    const m = t.match(/"built":\s*"([^"]+)"/); if (m && m[1] !== SNAP.built && !busy()) location.reload(); } catch (e) {}
+}
+setInterval(tick, 60e3);
+document.addEventListener('visibilitychange', () => { if (document.visibilityState === 'visible') { tick(); checkNewWeek(); } });
 
 // ---------------- filter toggles (phone) ----------------
 $$('.ftoggle').forEach(b => { const box = document.getElementById(b.dataset.for); let open = false;
   try { open = localStorage.getItem('bt-open-' + b.dataset.for) === '1'; } catch (e) {}
   const label = b.textContent;
-  const set = () => { box.classList.toggle('shut', !open); const n = [...box.querySelectorAll('select,input')].filter(x => x.value && !['kick', 'upcoming'].includes(x.value)).length;
+  const set = () => { box.classList.toggle('shut', !open); const n = [...box.querySelectorAll('select,input')].filter(x => x.value && !['kick', 'all'].includes(x.value)).length;
     b.textContent = (open ? 'Hide ' + label.toLowerCase() : label) + (n && !open ? ` (${n} on)` : ''); };
   b.onclick = () => { open = !open; try { localStorage.setItem('bt-open-' + b.dataset.for, open ? '1' : '0'); } catch (e) {} set(); };
   b._set = set; box.addEventListener('input', set); box.addEventListener('click', () => setTimeout(set, 0)); set(); });
