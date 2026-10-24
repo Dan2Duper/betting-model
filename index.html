@@ -1262,6 +1262,7 @@ async function refreshLive() {
 $('#live-refresh').onclick = refreshLive;
 function scoreLine(g) { if (!g || !(g.state === 'in' || g.state === 'post' || g.done)) return '';
   return `<div class="sline ${g.state === 'in' ? 'in' : ''}">${g.as} – ${g.hs} <span class="small">${esc(g.detail || 'Final')}</span></div>`; }
+const PAGE_VER = "20261024130532";   // stamped by tracker.py; a newer published page reloads itself
 // ---------------- AUTO REFRESH (while the page is open) ----------------
 const busy = () => { const a = document.activeElement; return a && ['INPUT', 'SELECT', 'TEXTAREA'].includes(a.tagName) || $('#m-form').classList.contains('open'); };
 let tickN = 0;
@@ -1275,12 +1276,12 @@ async function tick() {
   save();
   if (tickN % 5 === 0) syncCycle();
   if (tickN % 30 === 0) refreshAll(false);
-  if (tickN % 15 === 0 && location.protocol.startsWith('http')) checkNewWeek();
+  if (tickN % 5 === 0 && location.protocol.startsWith('http')) checkNewWeek();
   if (!busy()) recompute(true);
 }
 async function checkNewWeek() {   // the Tuesday update publishes a new page; load it on its own
   try { const t = await (await fetch(location.pathname + '?v=' + Date.now(), {cache: 'no-store'})).text();
-    const m = t.match(/"built":\s*"([^"]+)"/); if (m && m[1] !== SNAP.built && !busy()) location.reload(); } catch (e) {}
+    const m = t.match(/const PAGE_VER = "([^"]+)"/); if (m && m[1] !== PAGE_VER && !busy()) location.reload(); } catch (e) {}
 }
 setInterval(tick, 60e3);
 document.addEventListener('visibilitychange', () => { if (document.visibilityState === 'visible') { tick(); checkNewWeek(); } });
