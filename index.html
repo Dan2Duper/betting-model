@@ -831,7 +831,7 @@ function renderWeek() {
       <td class="num" data-label="Odds">${(b.odds > 0 ? '+' : '') + b.odds}</td>
       <td class="num" data-label="Suggested $">$${(+b.stake || 0).toFixed(0)}</td>
       <td class="num" data-label="To win">${s ? '–' : fmt$(b.to_win)}</td><td data-label="Result">${b.result ? `<span class="pill ${b.result}">${b.result}</span>` : go ? '<span class="pill O">live</span>' : ''}</td>
-      <td class="keep" data-label="">${bet ? `<span class="chip">You bet it: ${esc(bet.bet || betText(bet))} · $${(+bet.stake).toFixed(2)}</span>` : '<span class="small">Not in your bets</span>'}</td></tr>`; }).join('') + '</tbody></table></div>';
+      <td class="keep" data-label="">${bet ? MINE.filter(m => sameBet(m, b)).map(m => `<span class="chip">You bet it: ${esc(m.bet || betText(m))} · $${(+m.stake).toFixed(2)}</span>`).join('') : '<span class="small">Not in your bets</span>'}</td></tr>`; }).join('') + '</tbody></table></div>';
   }).join('');
   renderMine(); renderGames();
 }
@@ -1350,7 +1350,7 @@ async function refreshLive() {
 }
 function scoreLine(g) { if (!g || !(g.state === 'in' || g.state === 'post' || g.done)) return '';
   return `<div class="sline ${g.state === 'in' ? 'in' : ''}">${g.as} – ${g.hs} <span class="small">${esc(g.detail || 'Final')}</span></div>`; }
-const PAGE_VER = "20261024155014";   // stamped by tracker.py; a newer published page reloads itself
+const PAGE_VER = "20261024155116";   // stamped by tracker.py; a newer published page reloads itself
 // ---------------- AUTO REFRESH (while the page is open) ----------------
 const busy = () => { const a = document.activeElement; return a && ['INPUT', 'SELECT', 'TEXTAREA'].includes(a.tagName) || $('#m-form').classList.contains('open'); };
 let tickN = 0;
