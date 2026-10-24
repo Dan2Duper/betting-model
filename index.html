@@ -82,6 +82,13 @@ tr.struck td.keep{text-decoration:none;opacity:1}
 .hide{display:none!important}
 .ftoggle{display:none}
 .rtext p{margin:6px 0 10px;color:var(--ink-2)}
+.lv{border:1px solid var(--border);border-radius:12px;padding:12px 14px;margin-top:10px;background:var(--surface);border-left-width:6px}
+.lv.win{border-left-color:var(--good-ink)}.lv.lose{border-left-color:var(--bad-ink)}.lv.even{border-left-color:var(--ink-3)}.lv.pre{border-left-color:var(--border)}
+.lv .top{display:flex;justify-content:space-between;gap:10px;align-items:baseline}
+.lv .bet{font-weight:700;font-size:18px}
+.lv .score{display:flex;justify-content:space-between;gap:10px;margin-top:6px;font-size:17px;font-variant-numeric:tabular-nums}
+.lv .where{margin-top:6px;font-weight:700}
+.lv .tag{font-size:12px;font-weight:700;text-transform:uppercase;letter-spacing:.04em;color:var(--ink-3)}
 table.cmp{max-width:460px}table.cmp td:first-child{color:var(--ink-2)}
 .addform{display:none;background:var(--surface-2);border-radius:12px;padding:12px;margin-top:10px}
 .addform.open{display:block}
@@ -98,7 +105,7 @@ a{color:var(--series)}
   .tabs button{font-size:17px}
   header{align-items:center}
   header .btn{padding:7px 10px}
-  .tabs button{padding:10px 9px}
+  .tabs button{padding:10px 7px;font-size:15px!important}
   .tiles{grid-template-columns:1fr 1fr;gap:8px}
   .tile{padding:10px 12px}.tile .v{font-size:26px}.tile .k{font-size:13px}.tile .n{font-size:15px}
   .filters{display:grid;grid-template-columns:1fr 1fr;gap:8px}
@@ -147,6 +154,7 @@ a{color:var(--series)}
   </header>
   <div class="tabs" id="tabs">
     <button data-t="week" class="on">Week</button>
+    <button data-t="live">Live</button>
     <button data-t="track">Tracker</button>
     <button data-t="stats">Stats</button>
     <button data-t="rules">Rules</button>
@@ -198,6 +206,14 @@ a{color:var(--series)}
         <datalist id="gteams"></datalist>
       </div>
       <div class="tablewrap" id="games"></div>
+    </div>
+  </section>
+
+  <section id="t-live" class="hide">
+    <div class="card">
+      <div class="cardhead"><div><h2>Live bets</h2><div class="small" id="live-when"></div></div><button class="btn primary" id="live-refresh">Refresh scores</button></div>
+      <div class="tiles" id="live-tiles" style="margin-top:10px"></div>
+      <div id="live-list"></div>
     </div>
   </section>
 
@@ -387,7 +403,7 @@ async function espnDay(lg, d) {
     const rec = {lg, id: ev.id, date: edate, home: H.team.location, away: A.team.location, habbr: nflAbbr(H.team.abbreviation), aabbr: nflAbbr(A.team.abbreviation),
                  hs: +H.score, as: +A.score, done: !!ev.status?.type?.completed};
     if (rec.done) ST.finals[lg + ':' + ev.id] = rec;
-    (ST.slate[lg + ':' + d] = ST.slate[lg + ':' + d] || {})[ev.id] = {id: ev.id, kick: ev.date, away: A.team.location, home: H.team.location, aabbr: rec.aabbr, habbr: rec.habbr, done: rec.done, as: rec.as, hs: rec.hs};
+    (ST.slate[lg + ':' + d] = ST.slate[lg + ':' + d] || {})[ev.id] = {id: ev.id, kick: ev.date, away: A.team.location, home: H.team.location, aabbr: rec.aabbr, habbr: rec.habbr, done: rec.done, as: rec.as, hs: rec.hs, state: ev.status?.type?.state || '', detail: ev.status?.type?.shortDetail || '', ts: Date.now()};
     const o = c.odds?.[0];
     if (o && !rec.done) {
       let sp = typeof o.spread === 'number' ? o.spread : null;
@@ -631,7 +647,9 @@ function flagsFor(lg, g, P, L) {
   }
   return out;
 }
+function legText(l) { return l.market === 'total' ? `${String(l.side).toUpperCase() === 'OVER' ? 'Over' : 'Under'} ${l.line} (${l.away}/${l.home})` : betText(l); }
 function betText(r) {
+  if (r.market === 'parlay') return `${(r.legs || []).length}-leg parlay`;
   if (r.market === 'ml') return `${r.side === 'home' ? r.home : r.away} moneyline`;
   if (r.market === 'total') return `${r.away}/${r.home} ${String(r.side).toUpperCase()} ${r.line}`;
   const ln = r.side === 'home' ? +r.line : -r.line; return `${r.side === 'home' ? r.home : r.away} ${ln > 0 ? '+' : ''}${ln}`;
@@ -823,13 +841,14 @@ function enrich(r, isBet) {
   o.kickw = h < 13 ? 'Early (before 1 pm CT)' : h < 17 ? 'Afternoon (1-5 pm CT)' : 'Night (5 pm CT or later)';
   const d = new Date(r.date + 'T12:00:00'); o.dow = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'][d.getDay()]; o.month = d.toLocaleString('en-US', {month: 'long'});
   const line = +r.line;
-  if (r.market === 'ml') { o.type = o.odds < 0 ? 'Favorite' : 'Underdog'; o.size = 'Moneyline'; o.gap = 'n/a'; }
+  if (r.market === 'parlay') { o.type = 'Parlay'; o.size = 'Parlay'; o.gap = 'n/a'; }
+  else if (r.market === 'ml') { o.type = o.odds < 0 ? 'Favorite' : 'Underdog'; o.size = 'Moneyline'; o.gap = 'n/a'; }
   else if (r.market === 'total') { o.type = r.side === 'over' ? 'Over' : 'Under'; o.size = line < 42 ? 'Total under 42' : line < 50 ? 'Total 42-49.5' : line < 58 ? 'Total 50-57.5' : 'Total 58+';
     const g = Math.abs(+r.model_total - (r.line_total === '' || r.line_total == null ? line : +r.line_total)); o.gap = isNaN(g) ? 'n/a' : g < 3 ? 'Model gap under 3' : g < 5 ? 'Model gap 3-5' : g < 7 ? 'Model gap 5-7' : 'Model gap 7+'; }
   else { const sl = r.side === 'home' ? line : -line; o.type = sl < 0 ? 'Favorite' : sl > 0 ? 'Underdog' : "Pick 'em"; const a = Math.abs(line);
     o.size = a <= 3 ? 'Spread 0-3' : a <= 7 ? 'Spread 3.5-7' : a <= 14 ? 'Spread 7.5-14' : 'Spread 14+';
     const g = Math.abs(+r.model_home_spread - (r.line_spread === '' || r.line_spread == null ? line : +r.line_spread)); o.gap = isNaN(g) ? 'n/a' : g < 3 ? 'Model gap under 3' : g < 5 ? 'Model gap 3-5' : g < 7 ? 'Model gap 5-7' : 'Model gap 7+'; }
-  o.homeaway = r.market === 'total' ? 'Total (no side)' : (r.side === 'home' ? 'Home team' : 'Road team');
+  o.homeaway = r.market === 'parlay' ? 'Parlay' : r.market === 'total' ? 'Total (no side)' : (r.side === 'home' ? 'Home team' : 'Road team');
   const w = r.wind === '' || r.wind == null ? NaN : +r.wind; o.windband = isNaN(w) ? 'No forecast' : w < 10 ? 'Wind under 10 mph' : w < 15 ? 'Wind 10-14 mph' : 'Wind 15+ mph';
   o.confs = [...new Set([r.away_conf, r.home_conf].filter(Boolean))]; o.confgame = r.away_conf && r.away_conf === r.home_conf ? 'Same conference / division' : 'Cross conference';
   o.teams = [r.away, r.home].filter(Boolean);
@@ -1098,7 +1117,9 @@ let MINE = [];
 function buildMine() {
   (DATA.mine || []).forEach(b => { if (!ST.mine[b.id] && !ST.mineDel[b.id]) ST.mine[b.id] = b; });
   MINE = Object.values(ST.mine).filter(b => !ST.mineDel[b.id]).map(b => {
-    if (!b.result) { const f = finalFor(b.league, b.game_id, b.date, b.away, b.home); if (f) { b.result = grade(b, f); ST.mine[b.id].result = b.result; } }
+    if (!b.result && b.market === 'parlay') { const R = (b.legs || []).map(l => { const f = finalFor(l.league, l.game_id, b.date, l.away, l.home); return f ? grade(l, f) : ''; });
+      if (R.includes('L')) b.result = 'L'; else if (R.length && R.every(Boolean)) b.result = R.every(r => r === 'P') ? 'P' : 'W'; if (b.result) ST.mine[b.id].result = b.result; }
+    else if (!b.result) { const f = finalFor(b.league, b.game_id, b.date, b.away, b.home); if (f) { b.result = grade(b, f); ST.mine[b.id].result = b.result; } }
     const o = Object.assign({}, b); o.odds = +o.odds || -110; o.stake = +o.stake || 0; o.to_win = o.stake * payout(o.odds); o.bet = betText(o); return o; });
 }
 function delMine(id) { const b = ST.mine[id]; if (!b) return;
@@ -1108,8 +1129,8 @@ function renderMine() {
   const cut = ctDate(new Date(Date.now() - 2 * 864e5).toISOString()), list = MINE.filter(b => b.date >= cut).sort((a, b) => a.kick < b.kick ? -1 : 1);
   $('#mineboard').innerHTML = !list.length ? '<div class="empty">None this week.</div>' :
     `<table class="cards"><thead><tr><th>Kick</th><th>Bet</th><th class="num">Odds</th><th class="num">Stake $</th><th class="num">To win</th><th>Result</th><th></th></tr></thead><tbody>` +
-    list.map(b => `<tr><td data-label="Kick">${ctTime(b.kick)}</td><td class="full first" data-label=""><b>${esc(b.bet)}</b><div class="small">${esc(b.away)} @ ${esc(b.home)}</div></td>
-      <td class="num" data-label="Odds">${b.odds > 0 ? '+' : ''}${b.odds}</td><td class="num" data-label="Stake $">$${b.stake.toFixed(0)}</td><td class="num" data-label="To win">${fmt$(b.to_win)}</td>
+    list.map(b => `<tr><td data-label="Kick">${ctTime(b.kick)}</td><td class="full first" data-label=""><b>${esc(b.bet)}</b><div class="small">${b.market === 'parlay' ? (b.legs || []).map(legText).map(esc).join(' · ') : esc(b.away) + ' @ ' + esc(b.home)}</div></td>
+      <td class="num" data-label="Odds">${b.odds > 0 ? '+' : ''}${b.odds}</td><td class="num" data-label="Stake $">${fmt$(b.stake)}</td><td class="num" data-label="To win">${fmt$(b.to_win)}</td>
       <td data-label="Result">${b.result ? `<span class="pill ${b.result}">${b.result}</span>` : started(b.kick) ? '<span class="pill O">live</span>' : ''}</td>
       <td class="keep" data-label=""><button class="btn small" data-delmine="${esc(b.id)}">Delete</button></td></tr>`).join('') + '</tbody></table>';
   $$('#mineboard [data-delmine]').forEach(el => el.onclick = () => delMine(el.dataset.delmine));
@@ -1158,6 +1179,70 @@ $('#m-save').onclick = () => {
   ST.mine[b.id] = b; usave(); recompute(); $('#m-form').classList.remove('open'); $('#m-stake').value = '';
 };
 
+// ---------------- LIVE BETS ----------------
+function liveIndex() { const I = {}; Object.values(ST.slate).forEach(day => Object.values(day).forEach(g => { const lg = g.aabbr && g.aabbr.length <= 3 && SNAP.nfl.games.some(x => x.espn === g.id) ? 'NFL' : null; I[g.id] = g; })); return I; }
+function liveGameFor(b, I) {
+  if (b.league === 'NFL') { const sg = SNAP.nfl.games.find(x => x.id === b.game_id); if (sg && sg.espn && I[sg.espn]) return I[sg.espn];
+    return I[b.game_id] || Object.values(I).find(g => g.aabbr === b.away && g.habbr === b.home && Math.abs(new Date(g.kick) - new Date(b.kick || b.date)) < 3 * 864e5); }
+  return I[b.game_id];
+}
+function standing(b, g) {   // >0 winning, <0 losing, 0 push, from the current score
+  const line = +b.line;
+  if (b.market === 'total') { const t = g.hs + g.as; return {m: b.side === 'under' ? line - t : t - line, txt: `Total ${t} vs ${line}`}; }
+  if (b.market === 'ml') { const d = g.hs - g.as; return {m: b.side === 'away' ? -d : d, txt: ''}; }
+  const d = g.hs - g.as + line; return {m: b.side === 'away' ? -d : d, txt: ''};
+}
+function liveBets() {
+  const from = ctDate(new Date(Date.now() - 864e5).toISOString()), to = today();
+  return BETS.filter(b => !ST.struck[b.id]).map(b => Object.assign({}, b, {who: 'Model'})).concat(MINE.map(b => Object.assign({}, b, {who: 'Mine'})))
+    .filter(b => b.date >= from && b.date <= to);
+}
+function renderLive() {
+  const I = liveIndex(), L = liveBets().map(b => { const g = liveGameFor(b, I); return {b, g}; });
+  const rank = x => !x.g ? 3 : x.g.state === 'in' ? 0 : x.g.state === 'pre' ? 2 : 1;
+  L.sort((x, y) => rank(x) - rank(y) || String(x.b.kick).localeCompare(String(y.b.kick)));
+  let win = 0, lose = 0, pre = 0, done = 0, ifNow = 0, live = 0;
+  const cards = L.map(({b, g}) => {
+    const stake = +b.stake || 0, tw = stake * payout(+b.odds || -110);
+    if (b.market === 'parlay') {
+      const legs = (b.legs || []).map(l => { const lg = I[l.game_id]; if (!lg || lg.state === 'pre' || (!lg.state && !lg.done)) return {l, s: 'pre', g: lg}; const st = standing(l, lg); return {l, g: lg, s: st.m > 0 ? 'win' : st.m < 0 ? 'lose' : 'even', fin: lg.done || lg.state === 'post'}; });
+      const lostLeg = legs.some(x => x.s === 'lose' && x.fin), anyLose = legs.some(x => x.s === 'lose'), allWin = legs.every(x => x.s === 'win');
+      const cls = lostLeg ? 'lose' : allWin ? 'win' : legs.some(x => x.s !== 'pre') ? (anyLose ? 'lose' : 'even') : 'pre';
+      if (cls === 'pre') pre++; else if (cls === 'win') win++; else if (cls === 'lose') lose++;
+      ifNow += cls === 'win' ? tw : cls === 'lose' ? -stake : 0;
+      return `<div class="lv ${cls}"><div class="top"><span class="bet">${esc(b.bet || betText(b))}</span><span class="tag">${b.who}</span></div>
+        <div class="small">$${stake.toFixed(2)} to win ${fmt$(tw)}</div>` + legs.map(x => `<div class="score"><span>${x.s === 'win' ? '✓' : x.s === 'lose' ? '✗' : x.s === 'even' ? '=' : '·'} ${esc(legText(x.l))}</span><span class="small">${x.g ? esc(x.g.away + ' ' + x.g.as + ' · ' + x.g.home + ' ' + x.g.hs + ' · ' + (x.g.detail || '')) : ''}</span></div>`).join('') +
+        `<div class="where ${cls === 'win' ? 'pos' : cls === 'lose' ? 'neg' : ''}">${lostLeg ? 'Lost (a leg missed)' : allWin && legs.every(x => x.fin) ? `Won ${fmt$(tw)}` : `${legs.filter(x => x.s === 'win').length} of ${legs.length} legs winning`}</div></div>`;
+    }
+    if (!g || g.state === 'pre' || (!g.state && !g.done)) { pre++;
+      return `<div class="lv pre"><div class="top"><span class="bet">${esc(b.bet || betText(b))}</span><span class="tag">${b.who}</span></div><div class="small">${esc(b.game || (b.away + ' @ ' + b.home))}</div><div class="where small">Kicks ${ctTime(b.kick || (g && g.kick))} · ${fmt$(stake)} to win ${fmt$(tw)}</div></div>`; }
+    const st = standing(b, g), fin = g.done || g.state === 'post', cls = st.m > 0 ? 'win' : st.m < 0 ? 'lose' : 'even';
+    const pl = st.m > 0 ? tw : st.m < 0 ? -stake : 0; ifNow += pl;
+    if (fin) done++; else live++;
+    if (st.m > 0) win++; else if (st.m < 0) lose++;
+    const by = Math.abs(st.m), unit = b.market === 'ml' ? (by === 0 ? 'Tied' : '') : '';
+    const where = fin ? (st.m > 0 ? `Won ${fmt$(tw)}` : st.m < 0 ? `Lost $${stake.toFixed(0)}` : 'Push, stake back')
+      : st.m === 0 ? (b.market === 'ml' ? 'Tied right now' : 'Push right now') : `${st.m > 0 ? 'Winning' : 'Losing'} by ${by % 1 ? by.toFixed(1) : by}${b.market === 'ml' ? '' : ' vs the line'}`;
+    return `<div class="lv ${cls}"><div class="top"><span class="bet">${esc(b.bet || betText(b))}</span><span class="tag">${b.who}</span></div>
+      <div class="score"><span>${esc(g.away)} <b>${g.as}</b> · ${esc(g.home)} <b>${g.hs}</b></span><span class="small">${esc(g.detail || (fin ? 'Final' : ''))}</span></div>
+      <div class="where ${cls === 'win' ? 'pos' : cls === 'lose' ? 'neg' : ''}">${where}${st.txt ? ` <span class="small">(${esc(st.txt)})</span>` : ''}</div></div>`;
+  }).join('');
+  $('#live-tiles').innerHTML = [['Winning', win, 'pos'], ['Losing', lose, 'neg'], ['Not started', pre, ''], ['If it ended now', (ifNow > 0 ? '+' : '') + fmt$(ifNow), ifNow > 0 ? 'pos' : ifNow < 0 ? 'neg' : '']]
+    .map(([k, v, c]) => `<div class="tile"><div class="k">${k}</div><div class="v ${c}">${v}</div></div>`).join('');
+  $('#live-list').innerHTML = cards || '<div class="empty">No bets today or last night.</div>';
+  const ts = Math.max(0, ...Object.values(ST.slate).flatMap(d => Object.values(d).map(g => g.ts || 0)));
+  $('#live-when').textContent = ts ? 'Scores as of ' + new Date(ts).toLocaleTimeString([], {hour: 'numeric', minute: '2-digit'}) + (live ? ' · updates every minute' : '') : '';
+}
+async function refreshLive() {
+  const btn = $('#live-refresh'); btn.disabled = true; btn.textContent = 'Refreshing…';
+  const days = new Set(); liveBets().forEach(b => { days.add((b.league || 'CFB') + '|' + b.date); if (b.league === 'NFL') days.add('NFL|' + new Date(b.kick || b.date).toLocaleDateString('en-CA', {timeZone: 'America/New_York'})); });
+  await Promise.allSettled([...days].map(k => { const [lg, d] = k.split('|'); return espnDay(lg, d); }));
+  const cut = ctDate(new Date(Date.now() - 10 * 864e5).toISOString()); Object.keys(ST.slate).forEach(k => { if (k.split(':')[1] < cut) delete ST.slate[k]; });
+  save(); recompute(); btn.disabled = false; btn.textContent = 'Refresh scores';
+}
+$('#live-refresh').onclick = refreshLive;
+setInterval(() => { if (TAB === 'live' && document.visibilityState === 'visible') refreshLive(); }, 60e3);
+
 // ---------------- filter toggles (phone) ----------------
 $$('.ftoggle').forEach(b => { const box = document.getElementById(b.dataset.for); let open = false;
   try { open = localStorage.getItem('bt-open-' + b.dataset.for) === '1'; } catch (e) {}
@@ -1169,11 +1254,11 @@ $$('.ftoggle').forEach(b => { const box = document.getElementById(b.dataset.for)
 
 // ---------------- boot ----------------
 let TAB = 'week';
-$$('#tabs button').forEach(b => b.onclick = () => { TAB = b.dataset.t; $$('#tabs button').forEach(x => x.classList.toggle('on', x === b)); ['week', 'track', 'stats', 'rules', 'settings'].forEach(t => $('#t-' + t).classList.toggle('hide', t !== TAB)); renderAll(); });
+$$('#tabs button').forEach(b => b.onclick = () => { TAB = b.dataset.t; if (TAB === 'live') setTimeout(refreshLive, 0); $$('#tabs button').forEach(x => x.classList.toggle('on', x === b)); ['week', 'live', 'track', 'stats', 'rules', 'settings'].forEach(t => $('#t-' + t).classList.toggle('hide', t !== TAB)); renderAll(); });
 function recompute(keepOpen) { const open = keepOpen ? $$('#games tr.edit.open').map(t => t.dataset.edit) : []; buildBoard(); buildBets(); buildMine(); renderAll(); open.forEach(i => $(`#games tr[data-edit="${i}"]`)?.classList.add('open')); }
 function renderAll() {
   $('#sub').textContent = `Ratings through CFB week ${SNAP.cfb.week - 1} and NFL week ${SNAP.nfl.week - 1} · $${(+ST.budget).toFixed(0)} a day`;
-  if (TAB === 'week') renderWeek(); else if (TAB === 'track') renderTracker(); else if (TAB === 'stats') renderStats();
+  if (TAB === 'week') renderWeek(); else if (TAB === 'live') renderLive(); else if (TAB === 'track') renderTracker(); else if (TAB === 'stats') renderStats();
 }
 async function refreshAll(force) {
   $('#refresh').disabled = true; $('#refresh').textContent = 'Refreshing…';
