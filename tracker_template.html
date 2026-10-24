@@ -182,12 +182,12 @@ a{color:var(--series)}
     <div id="dsnote"></div>
     <div class="card">
       <div class="cardhead">
-        <div><h2>Bets</h2></div>
+        <div><h2>AI-LOX</h2><div class="small">The model's picks with suggested stakes. They only count as your bets if you add them below or send a screenshot.</div></div>
       </div>
       <div id="betboard"></div>
     </div>
     <div class="card">
-      <div class="cardhead"><div><h2>My own bets</h2></div><button class="btn primary" id="m-open">+ Add a bet</button></div>
+      <div class="cardhead"><div><h2>My bets</h2></div><button class="btn primary" id="m-open">+ Add a bet</button></div>
       <div class="addform" id="m-form">
         <div class="editgrid">
           <label class="f">League<select id="m-lg"><option value="CFB">College</option><option value="NFL">NFL</option></select></label>
@@ -240,7 +240,7 @@ a{color:var(--series)}
   <section id="t-track" class="hide">
     <div style="display:flex;justify-content:space-between;gap:8px;flex-wrap:wrap;margin-bottom:10px">
       <button class="btn ftoggle" data-for="filters">Filters</button>
-      <div class="seg" id="mode"><button data-m="bets" class="on">Model bets</button><button data-m="mine">My own bets</button><button data-m="picks">Every pick</button></div>
+      <div class="seg" id="mode"><button data-m="mine" class="on">My bets</button><button data-m="minelox">My AI-LOX</button><button data-m="bets">All AI-LOX</button><button data-m="picks">All flags</button></div>
     </div>
     <div class="filters" id="filters">
       <label class="f">League<select id="f-league"></select></label>
@@ -276,6 +276,7 @@ a{color:var(--series)}
   </section>
 
   <section id="t-stats" class="hide">
+    <div class="card" id="modelcard"></div>
     <div class="tiles" id="livetiles"></div>
     <div class="grid2">
       <div class="card" style="margin:0" id="stat-cfb"></div>
@@ -301,17 +302,17 @@ a{color:var(--series)}
     <div class="card">
       <h2>Using the page</h2>
       <div class="rtext">
-        <p><b>Strike</b> drops a bet. The rest of that day re-splits the budget and the next qualifying pick can move up. <b>Undo</b> brings it back. Striking a finished bet asks first, since it takes that result off your record.</p>
-        <p><b>Odds or stake:</b> type over them on a bet. A stake you type is locked; clear the box to let it auto-size again. Bets freeze at kickoff.</p>
+        <p><b>AI-LOX</b> are the model's picks, with suggested stakes from the daily budget. They are tracked as the model's record whether or not you bet them. A bet only counts as yours when it's in <b>My bets</b> (added on the Week tab or sent to Claude as a DraftKings screenshot). If one of your bets matches an AI-LOX (same game, market and side) it's marked and counted under <b>My AI-LOX</b> too.</p>
+
         <p><b>Games:</b> tap a game to type in a line, a QB change or the wind by hand. Typed values beat the automatic ones.</p>
-        <p><b>My own bets:</b> tap <b>+ Add a bet</b>, pick the game from ESPN's list for that day (every FBS and NFL game), then the bet, line, DraftKings odds and stake. They grade themselves from final scores and are tracked separately from the model, so the Tracker can compare the two. Enter the line as the number on your ticket for the team you picked (e.g. -3.5), or the total for over/under.</p>
+        <p><b>My bets:</b> tap <b>+ Add a bet</b>, pick the game from ESPN's list for that day (every FBS and NFL game), then the bet, line, DraftKings odds and stake. They grade themselves from final scores and are tracked separately from the model, so the Tracker can compare the two. Enter the line as the number on your ticket for the team you picked (e.g. -3.5), or the total for over/under.</p>
         <p><b>Model games:</b> Major (the default) shows every college game with a top-60 team by Elo rank (the #number by each team) or a Power 4 team (SEC, Big Ten, Big 12, ACC) or Notre Dame, and every NFL game. Every FBS-vs-FBS game is modeled; games against FCS teams are not. The Scores tab shows the model's score and lean on each modeled game. Flagged shows only games that match a rule; With lines shows every game that has a line; All shows everything.</p>
       </div>
     </div>
     <div class="card">
       <h2>Reading the Tracker</h2>
       <div class="rtext">
-        <p><b>Model bets</b> is the money record of the bets the model chose. <b>My own bets</b> is the record of bets you added yourself. The box at the top compares the two with the same filters. <b>Every pick</b> grades every flag the model made, bet or not, to show which rules are really working.</p>
+        <p><b>My bets</b> is your real money record. <b>My AI-LOX</b> is the part of it that matched the model's locks. <b>All AI-LOX</b> is the model's record at suggested stakes, whether or not you bet them. <b>All flags</b> grades every flag the model made, bet or not, to show which rules are really working.</p>
         <p>On the win-rate chart the dashed line is the 52.4% break-even; gray bars have fewer than 5 settled bets, too few to read much into. Pick what to split by with <b>Slice by</b>.</p>
       </div>
     </div>
@@ -337,13 +338,13 @@ a{color:var(--series)}
     </div>
     <div class="card">
       <h2>Sync with GitHub</h2>
-      <div class="hint">Strikes, edited odds and stakes, typed-in lines, your own bets and the bets this page makes are saved to <b>state.json</b> on the <b>sync</b> branch of your betting-model repository, so your phone and PC always match and nothing is lost if browser data is cleared. Every device reads it on open. To save changes, a device needs a GitHub key that can write only to betting-model (Contents: Read and write). The key stays on this device.</div>
+      <div class="hint">Your bets, typed-in lines, saved pre-kick lines and the AI-LOX this page makes are saved to <b>state.json</b> on the <b>sync</b> branch of your betting-model repository, so your phone and PC always match and nothing is lost if browser data is cleared. Every device reads it on open. To save changes, a device needs a GitHub key that can write only to betting-model (Contents: Read and write). The key stays on this device.</div>
       <div class="editgrid"><label class="f">GitHub key<input id="s-gh" type="password" style="width:320px" placeholder="github_pat_…" autocomplete="off"></label>
         <button class="btn primary" id="s-saveghkey">Save key</button><button class="btn" id="s-syncnow">Sync now</button><span class="small" id="s-syncmsg"></span></div>
     </div>
     <div class="card">
       <h2>Save your changes to the official log</h2>
-      <div class="hint">Only needed if GitHub sync is off. Strikes, edited stakes and odds, and bets the page made are stored in this browser. Save them as <b>page_changes.json</b> into <b>Betting Model\betting_models\logs</b>. The Tuesday-morning refresh merges them into the log so every device and the weekly report see them.</div>
+      <div class="hint">Only needed if GitHub sync is off. Your bets and the AI-LOX the page made are stored in this browser. Save them as <b>page_changes.json</b> into <b>Betting Model\betting_models\logs</b>. The Tuesday-morning refresh merges them into the log so every device and the weekly report see them.</div>
       <div class="editgrid"><button class="btn primary" id="s-export">Save changes file</button><label class="btn">Load a changes file<input type="file" id="s-import" accept=".json" class="hide"></label>
         <button class="btn" id="s-clear">Clear cached data</button><span class="small" id="s-msg"></span></div>
     </div>
@@ -375,6 +376,7 @@ const KEY = 'bt-state-v2';
 let ST = {key: '', budget: BR.daily_budget, struck: {}, ov: {}, frozen: {}, frozenPicks: {}, mine: {}, mineDel: {}, slate: {}, finals: {}, odds: {}, wx: {}, inputs: {}, espnOdds: {}, qbnews: {}, nflInj: null};
 try { Object.assign(ST, JSON.parse(localStorage.getItem(KEY) || '{}')); } catch (e) {}
 const save = () => { try { localStorage.setItem(KEY, JSON.stringify(ST)); } catch (e) {} };
+ST.struck = {}; ST.ov = {};   // AI-LOX are recommendations: no strikes or overrides any more
 const usave = () => { ST.updated = Date.now(); save(); if (typeof syncMark === 'function') syncMark(); };   // a change you made: save and sync
 try { navigator.storage && navigator.storage.persist && navigator.storage.persist(); } catch (e) {}
 try { const t = localStorage.getItem('bt-theme'); if (t) document.documentElement.dataset.theme = t; } catch (e) {}
@@ -734,6 +736,10 @@ function buildBoard() {
   computeQB();
   BOARD = [];
   for (const lg of ['CFB', 'NFL']) for (const g of SNAP[lg.toLowerCase()].games) { const L = lineFor(lg, g), P = predict(lg, g); BOARD.push({lg, g, L, P, F: flagsFor(lg, g, P, L)}); }
+  ST.glines = ST.glines || {}; ST.glast = ST.glast || {};
+  for (const x of BOARD) { if (x.L.spread == null && x.L.total == null) continue; const k = x.lg + ':' + (x.lg === 'NFL' ? (x.g.espn || x.g.id) : x.g.id);
+    if (!started(x.g.kick)) ST.glast[k] = {spread: x.L.spread, total: x.L.total, src: x.L.src || ''};
+    else if (!ST.glines[k]) ST.glines[k] = ST.glast[k] || {spread: x.L.spread, total: x.L.total, src: x.L.src || ''}; }
 }
 function kellyOf(b) { const r = BR.rules[b.rule] || {p: +b.hit_rate, n: +b.n || 50}; const ps = (r.p * r.n + 0.5 * BR.shrink_k) / (r.n + BR.shrink_k); return Math.max(ps - (1 - ps) / payout(+b.odds || -110), 0.001) * (r.stake_mult || 1); }
 function buildBets() {
@@ -814,22 +820,19 @@ function renderWeek() {
   BETS.filter(b => b.date >= cut).forEach(b => (dates[b.date] = dates[b.date] || []).push(b));
   const days = Object.keys(dates).sort();
   $('#keynote').innerHTML = ST.key ? '' : '<div class="note">No Odds API key yet. Lines come from ESPN\'s listing (and the nflverse consensus for NFL). Add a free key in Settings to price everything off DraftKings.</div>';
-  $('#betboard').innerHTML = !days.length ? '<div class="empty">No qualifying bets right now. They appear once lines and weather are in.</div>' : days.map(d => {
-    const list = dates[d].sort((a, b) => (!!ST.struck[a.id]) - (!!ST.struck[b.id]) || (+b.stake || 0) - (+a.stake || 0));
-    const live = list.filter(b => !ST.struck[b.id]), tot = live.reduce((s, b) => s + (+b.stake || 0), 0);
-    return `<div class="dayhead"><span>${dayLbl(d)}</span><span class="small">$${tot.toFixed(0)} of $${(+ST.budget).toFixed(0)} · ${live.length} bet${live.length === 1 ? '' : 's'}</span></div>
-    <div class="tablewrap"><table class="cards"><thead><tr><th>Kick</th><th>Bet</th><th class="why">Why</th><th class="num">Backtest</th><th class="num">Odds</th><th class="num">Stake $</th><th class="num">To win</th><th>Result</th><th></th></tr></thead><tbody>` +
-    list.map(b => { const s = !!ST.struck[b.id], go = started(b.kick);
+  $('#betboard').innerHTML = !days.length ? '<div class="empty">No AI-LOX right now. They appear once lines and weather are in.</div>' : days.map(d => {
+    const list = dates[d].sort((a, b) => (+b.stake || 0) - (+a.stake || 0));
+    const tot = list.reduce((s, b) => s + (+b.stake || 0), 0);
+    return `<div class="dayhead"><span>${dayLbl(d)}</span><span class="small">${list.length} lock${list.length === 1 ? '' : 's'} · suggested $${tot.toFixed(0)}</span></div>
+    <div class="tablewrap"><table class="cards"><thead><tr><th>Kick</th><th>Lock</th><th class="why">Why</th><th class="num">Backtest</th><th class="num">Odds</th><th class="num">Suggested $</th><th class="num">To win</th><th>Result</th><th></th></tr></thead><tbody>` +
+    list.map(b => { const s = false, go = started(b.kick), bet = mineFor(b);
       return `<tr class="${s ? 'struck' : ''}"><td data-label="Kick">${ctTime(b.kick)}</td><td class="full first" data-label=""><b>${esc(b.bet)}</b><div class="small">${esc(b.game)}</div>${(() => { const qs = [b.away, b.home].map(t => QBX[b.league + ':' + t]).filter(q => q && ['quest', 'out', 'doubt', 'check'].includes(q.status)); return qs.map(q => `<span class="chip no" title="${esc(q.why)}">QB: ${esc(q.team)} ${q.status === 'quest' ? 'questionable' : q.status === 'check' ? 'check' : 'starter out'}</span>`).join(''); })()}</td><td class="why full" data-label="Why">${esc(RNAME(b.rule))}</td>
       <td class="num" data-label="Backtest">${pct(+b.hit_rate)}${(() => { const c = sideProb(b.league, b); return c && c.push >= 0.02 ? `<div class="small">${pct(c.push)} push chance</div>` : ''; })()}</td>
-      <td class="num" data-label="Odds">${go || s ? (b.odds > 0 ? '+' : '') + b.odds : `<input class="num" data-ov="odds" data-id="${esc(b.id)}" value="${b.odds}">`}</td>
-      <td class="num" data-label="Stake $">${go || s ? '$' + (+b.stake || 0).toFixed(0) : `<input class="num" data-ov="stake" data-id="${esc(b.id)}" value="${(+b.stake || 0).toFixed(0)}"${b.locked ? ' title="Locked. Clear the box to let it auto-size."' : ''}>`}</td>
+      <td class="num" data-label="Odds">${(b.odds > 0 ? '+' : '') + b.odds}</td>
+      <td class="num" data-label="Suggested $">$${(+b.stake || 0).toFixed(0)}</td>
       <td class="num" data-label="To win">${s ? '–' : fmt$(b.to_win)}</td><td data-label="Result">${b.result ? `<span class="pill ${b.result}">${b.result}</span>` : go ? '<span class="pill O">live</span>' : ''}</td>
-      <td class="keep" data-label="">${s ? `<button class="btn small" data-unstrike="${esc(b.id)}">Undo</button>` : `<button class="btn small" data-strike="${esc(b.id)}">Strike</button>`}</td></tr>`; }).join('') + '</tbody></table></div>';
+      <td class="keep" data-label="">${bet ? MINE.filter(m => sameBet(m, b)).map(m => `<span class="chip">You bet it: ${esc(m.bet || betText(m))} · $${(+m.stake).toFixed(2)}</span>`).join('') : '<span class="small">Not in your bets</span>'}</td></tr>`; }).join('') + '</tbody></table></div>';
   }).join('');
-  $$('#betboard [data-strike]').forEach(el => el.onclick = () => { if (confirmStrike(el.dataset.strike)) { ST.struck[el.dataset.strike] = Date.now(); usave(); recompute(); } });
-  $$('#betboard [data-unstrike]').forEach(el => el.onclick = () => { delete ST.struck[el.dataset.unstrike]; usave(); recompute(); });
-  $$('#betboard input[data-ov]').forEach(el => el.onchange = () => { const o = ST.ov[el.dataset.id] = ST.ov[el.dataset.id] || {}; if (el.value.trim() === '') delete o[el.dataset.ov]; else o[el.dataset.ov] = el.value.trim(); usave(); recompute(); });
   renderMine(); renderGames();
 }
 
@@ -916,7 +919,7 @@ $$('#show button').forEach(b => b.onclick = () => { SHOW = b.dataset.s; $$('#sho
 function confirmStrike(id) { const b = BETS.find(x => x.id === id); return !b || !b.result || window.confirm(`Strike ${b.bet}? It already has a result (${b.result}), so striking removes it from your record.`); }
 
 // ---------------- TRACKER ----------------
-let MODE = 'bets', SORT = {k: 'date', dir: -1};
+let MODE = 'mine', SORT = {k: 'date', dir: -1};
 function enrich(r, isBet) {
   const o = Object.assign({}, r);
   o.odds = +r.odds || -110; o.stake = isBet ? (+r.stake || 0) : 1; o.result = r.result || '';
@@ -946,9 +949,16 @@ function enrich(r, isBet) {
 const SLICES = [['rulename', 'Rule'], ['league', 'League'], ['conf', 'Conference / division'], ['team', 'Team'], ['kickw', 'Kickoff window'], ['dow', 'Day of week'],
   ['type', 'Bet type'], ['homeaway', 'Home vs road'], ['size', 'Line size'], ['gap', 'Model vs line gap'], ['windband', 'Wind'], ['tier', 'Backtest hit rate'],
   ['confgame', 'Conference game?'], ['weeklbl', 'Week'], ['month', 'Month'], ['stakeband', 'Stake size'], ['betlbl', 'Bet or not']];
+function espnOf(lg, id) { if (lg !== 'NFL') return String(id); const g = SNAP.nfl.games.find(x => x.id === id); return g && g.espn ? String(g.espn) : String(id); }
+function sameBet(m, x) {   // is your bet m the same pick as AI-LOX x?
+  if (x.market === 'teaser') { if (m.market !== 'teaser' && m.market !== 'parlay') return false; const a = (x.legs || []).map(l => espnOf('NFL', l.game_id)).sort().join(','), b = (m.legs || []).map(l => String(l.espn || l.game_id)).sort().join(','); return a === b; }
+  return m.league === x.league && String(m.game_id) === espnOf(x.league, x.game_id) && m.market === x.market && m.side === x.side;
+}
+function mineFor(x) { return MINE.find(m => sameBet(m, x)); }
+function loxFor(m) { return BETS.find(x => sameBet(m, x)); }
 function mineRows() { return MINE.map(b => enrich(b, true)); }
 function modelRows() { return BETS.filter(b => !ST.struck[b.id]).map(b => enrich(b, true)); }
-function trackerRows(m) { m = m || MODE; return m === 'bets' ? modelRows() : m === 'mine' ? mineRows() : PICKS.map(p => enrich(p, false)); }
+function trackerRows(m) { m = m || MODE; return m === 'bets' ? modelRows() : m === 'mine' ? mineRows() : m === 'minelox' ? MINE.filter(b => loxFor(b)).map(b => enrich(b, true)) : PICKS.map(p => enrich(p, false)); }
 function initFilters() {
   const opts = (sel, vals, lbl) => { const cur = sel.value; sel.innerHTML = `<option value="">${lbl}</option>` + vals.map(v => `<option>${esc(v)}</option>`).join(''); sel.value = cur; };
   const all = BETS.map(b => enrich(b, true)).concat(PICKS.map(p => enrich(p, false)), mineRows());
@@ -1002,7 +1012,7 @@ function drawCompare() {
   const row = (n, f) => `<tr><td>${n}</td><td class="num">${f(a)}</td><td class="num">${f(b)}</td></tr>`;
   const wr = x => x.winrate == null ? '–' : `<span class="${x.winrate >= BE ? 'pos' : 'neg'}">${pct(x.winrate)}</span>`;
   const nt = x => `<span class="${x.profit > 0 ? 'pos' : x.profit < 0 ? 'neg' : ''}">${fmt$(x.profit)}</span>`;
-  $('#compare').innerHTML = `<h2>Model vs my own bets</h2><table class="cmp"><thead><tr><th></th><th class="num">Model</th><th class="num">Mine</th></tr></thead><tbody>` +
+  $('#compare').innerHTML = `<h2>AI-LOX vs my bets</h2><table class="cmp"><thead><tr><th></th><th class="num">All AI-LOX</th><th class="num">My bets</th></tr></thead><tbody>` +
     row('Record', x => `${x.W}-${x.L}-${x.P}`) + row('Win rate', wr) + row('Net', nt) + row('ROI', x => x.roi == null ? '–' : (x.roi > 0 ? '+' : '') + pct(x.roi)) +
     row('Staked', x => fmt$(x.staked)) + row('Open', x => `${x.open}`) + '</tbody></table>';
 }
@@ -1049,21 +1059,19 @@ function drawRun(list) {
   el.querySelectorAll('rect[data-i]').forEach(rc => { const p = pts[+rc.dataset.i]; rc.onmousemove = e => showTip(e, `<b>${dayLbl(p.d)}</b><br>Day: ${money(p.day)} (${p.s.W}-${p.s.L}-${p.s.P})<br>Running: ${money(p.run)}`); rc.onmouseleave = hideTip; });
 }
 function drawList(list) {
-  const isB = MODE !== 'picks', isM = MODE === 'mine'; $('#listtitle').textContent = isM ? 'My own bets' : isB ? 'Model bets' : 'Every flagged pick';
+  const isB = MODE !== 'picks', isM = MODE === 'mine' || MODE === 'minelox'; $('#listtitle').textContent = MODE === 'mine' ? 'My bets' : MODE === 'minelox' ? 'My bets that were AI-LOX' : isB ? 'All AI-LOX (suggested stakes, whether or not you bet them)' : 'Every model flag, including leans';
   const cols = isM ? [['date', 'Date'], ['league', 'Lg'], ['game', 'Game'], ['bettext', 'Bet'], ['odds', 'Odds', 'num'], ['stake', 'Stake', 'num'], ['result', 'Result'], ['profit', 'Profit', 'num'], ['x', '']] : isB ? [['date', 'Date'], ['league', 'Lg'], ['game', 'Game'], ['bettext', 'Bet'], ['rulename', 'Rule'], ['hit', 'Backtest', 'num'], ['odds', 'Odds', 'num'], ['stake', 'Stake', 'num'], ['result', 'Result'], ['profit', 'Profit', 'num'], ['x', '']]
                    : [['date', 'Date'], ['league', 'Lg'], ['game', 'Game'], ['bettext', 'Pick'], ['rulename', 'Rule'], ['betlbl', 'Bet?'], ['result', 'Result'], ['profit', 'Units', 'num']];
   const sorted = list.slice().sort((a, b) => { const A = a[SORT.k], B = b[SORT.k]; return (A > B ? 1 : A < B ? -1 : 0) * SORT.dir; });
   const cell = (r, k) => k === 'result' ? `<span class="pill ${r.result || 'O'}">${r.result || 'open'}</span>` : k === 'profit' ? (r.result ? `<span class="${r.profit > 0 ? 'pos' : r.profit < 0 ? 'neg' : ''}">${money(r.profit)}</span>` : '<span class="small">–</span>')
     : k === 'stake' ? fmt$(r.stake) : k === 'hit' ? (r.hit ? pct(r.hit) : '–') : k === 'odds' ? (r.odds > 0 ? '+' : '') + r.odds : k === 'date' ? dayLbl(r.date) : k === 'bettext' ? `<b>${esc(r.bettext)}</b>`
-    : k === 'x' ? (isM ? `<button class="btn small" data-delmine="${esc(r.id)}">Delete</button>` : `<button class="btn small" data-strike="${esc(r.id)}">Strike</button>`) : esc(r[k] ?? '');
-  const struckList = isB && !isM ? BETS.filter(b => ST.struck[b.id]) : [];
+    : k === 'x' ? (isM ? `<button class="btn small" data-delmine="${esc(r.id)}">Delete</button>` : '') : esc(r[k] ?? '');
+  const struckList = [];
   $('#list').innerHTML = (!sorted.length ? '<div class="empty">Nothing matches these filters.</div>' :
     `<table class="cards"><thead><tr>${cols.map(([k, n, c]) => `<th class="sort ${c || ''}" data-k="${k}">${n}${SORT.k === k ? (SORT.dir > 0 ? ' ▲' : ' ▼') : ''}</th>`).join('')}</tr></thead><tbody>` +
     sorted.map(r => `<tr>${cols.map(([k, n, c]) => `<td class="${c || ''}${k === 'bettext' ? ' full first' : ['game', 'rulename'].includes(k) ? ' full' : k === 'x' ? ' keep' : ''}" data-label="${k === 'bettext' || k === 'x' ? '' : n}">${cell(r, k)}</td>`).join('')}</tr>`).join('') + '</tbody></table>') +
     (struckList.length ? `<div class="small" style="margin-top:10px">Struck: ${struckList.map(b => `${esc(b.bet)} (${dayLbl(b.date)}) <button class="btn small" data-unstrike="${esc(b.id)}">Undo</button>`).join(' · ')}</div>` : '');
   $$('#list th.sort').forEach(th => th.onclick = () => { const k = th.dataset.k; if (k === 'x') return; SORT = {k, dir: SORT.k === k ? -SORT.dir : -1}; drawList(filtered()); });
-  $$('#list [data-strike]').forEach(el => el.onclick = () => { if (confirmStrike(el.dataset.strike)) { ST.struck[el.dataset.strike] = Date.now(); usave(); recompute(); } });
-  $$('#list [data-unstrike]').forEach(el => el.onclick = () => { delete ST.struck[el.dataset.unstrike]; usave(); recompute(); });
   $$('#list [data-delmine]').forEach(el => el.onclick = () => delMine(el.dataset.delmine));
 }
 
@@ -1073,7 +1081,23 @@ const WNAME = {ppg: 'points per game', epa: 'EPA per play', success: 'success ra
   pts_drive: 'points per drive', points: 'points', epa_all: 'EPA (all plays)', home: 'home field', rating: 'Elo rating gap', home_fans: 'home field', home_covid: 'home field in 2020',
   wind: 'wind', div: 'division game', tz_trav: 'time zones traveled', qb_val: 'QB value', qb_delta: 'QB change vs usual', opp_qb_val: 'opponent QB value', west_early: 'West team, 1pm ET kick'};
 const wname = k => /^o_/.test(k) ? 'Offense: ' + (WNAME[k.slice(2)] || k) : /^d_/.test(k) ? 'Opp. defense: ' + (WNAME[k.slice(2)] || k) : (WNAME[k] || k).replace(/^./, c => c.toUpperCase());
+function renderModelCard() {
+  const R = {}; const add = (lg, k, v) => { const o = (R[lg] = R[lg] || {}); const t = (o[k] = o[k] || {W: 0, L: 0, P: 0}); t[v]++; };
+  DATA.predlog.forEach(p => { const f = finalFor(p.league, p.id, p.date, p.away, p.home); if (!f) return;
+    const ph = +p.pred_home, pa = +p.pred_away, key = p.league + ':' + p.id;
+    const bx = BOARD.find(x => x.lg === p.league && String(x.lg === 'NFL' ? (x.g.espn || x.g.id) : x.g.id) === String(p.id));
+    const ln = (ST.glines || {})[key] || (bx && (bx.L.spread != null || bx.L.total != null) ? bx.L : null);
+    for (const lg of [p.league, 'All']) {
+      if (Math.sign(ph - pa) && f.hs !== f.as) add(lg, 'su', Math.sign(ph - pa) === Math.sign(f.hs - f.as) ? 'W' : 'L');
+      if (ln && ln.spread != null) { const side = Math.sign((ph - pa) + ln.spread), r = (f.hs - f.as) + ln.spread; if (side) add(lg, 'ats', r === 0 ? 'P' : Math.sign(r) === side ? 'W' : 'L'); }
+      if (ln && ln.total != null) { const side = Math.sign(ph + pa - ln.total), r = f.hs + f.as - ln.total; if (side) add(lg, 'ou', r === 0 ? 'P' : Math.sign(r) === side ? 'W' : 'L'); } } });
+  const cell = (t, be) => !t ? '–' : `${t.W}-${t.L}${t.P ? '-' + t.P : ''} <span class="${t.W + t.L ? (t.W / (t.W + t.L) >= be ? 'pos' : 'neg') : ''}">${t.W + t.L ? pct(t.W / (t.W + t.L)) : ''}</span>`;
+  $('#modelcard').innerHTML = `<h2>Model report card: every modeled game</h2><div class="small" style="margin-bottom:8px">Every game the model scored this season, whether or not it was an AI-LOX. Against the spread and over/under use the last line saved before kickoff (saved from Oct 24, 2026 on). Break-even is 52.4%.</div>
+    <table class="cmp" style="max-width:none"><thead><tr><th></th><th class="num">Straight up</th><th class="num">Against the spread</th><th class="num">Over / under</th></tr></thead><tbody>` +
+    ['All', 'CFB', 'NFL'].map(lg => `<tr><td>${lg === 'All' ? 'Both' : lg}</td><td class="num">${cell((R[lg] || {}).su, 0.5)}</td><td class="num">${cell((R[lg] || {}).ats, 0.524)}</td><td class="num">${cell((R[lg] || {}).ou, 0.524)}</td></tr>`).join('') + '</tbody></table>';
+}
 function renderStats() {
+  renderModelCard();
   const live = {CFB: [], NFL: []};
   DATA.predlog.forEach(p => { const f = finalFor(p.league, p.id, p.date, p.away, p.home);
     if (f) live[p.league].push({et: Math.abs(+p.pred_away + +p.pred_home - f.as - f.hs), wrong: Math.sign(+p.pred_home - +p.pred_away) !== Math.sign(f.hs - f.as)}); });
@@ -1122,12 +1146,12 @@ $('#s-import').onchange = async e => { const f = e.target.files[0]; if (!f) retu
   try { const j = JSON.parse(await f.text()); (j.struck || []).forEach(id => ST.struck[id] = ST.struck[id] || Date.now()); Object.assign(ST.ov, j.overrides || {}); Object.assign(ST.inputs, j.inputs || {});
     (j.bets || []).forEach(b => { if (started(b.kick)) ST.frozen[b.id] = ST.frozen[b.id] || b; }); (j.picks || []).forEach(p => ST.frozenPicks[p.id] = ST.frozenPicks[p.id] || p);
     if (j.budget) ST.budget = j.budget; usave(); recompute(); $('#s-msg').textContent = 'Loaded.'; } catch (err) { $('#s-msg').textContent = 'Could not read that file.'; } };
-$('#s-clear').onclick = () => { ST.finals = {}; ST.odds = {}; ST.wx = {}; ST.espnOdds = {}; save(); $('#s-msg').textContent = 'Cache cleared. Strikes and edits kept.'; refreshAll(true); };
+$('#s-clear').onclick = () => { ST.finals = {}; ST.odds = {}; ST.wx = {}; ST.espnOdds = {}; save(); $('#s-msg').textContent = 'Cache cleared. Your bets kept.'; refreshAll(true); };
 $('#s-about').innerHTML = `Model snapshot built ${new Date(SNAP.built).toLocaleString()}: CFB week ${SNAP.cfb.week} (${SNAP.cfb.games.length} games), NFL week ${SNAP.nfl.week} (${SNAP.nfl.games.length} games). Team ratings refresh every Tuesday morning from play-by-play data. Scores, lines, weather and bets refresh live on this page. Sources: ESPN scoreboard (scores, listed lines), The Odds API (DraftKings), Open-Meteo (weather).`;
 
 // ---------------- GITHUB SYNC ----------------
 const GH = {owner: 'Dan2Duper', repo: 'betting-model', branch: 'sync', path: 'state.json'};
-const SYNCED = ['struck', 'ov', 'inputs', 'frozen', 'frozenPicks', 'budget', 'mine', 'mineDel'];
+const SYNCED = ['inputs', 'frozen', 'frozenPicks', 'budget', 'mine', 'mineDel'];
 let syncSha = null, syncLast = null, syncTimer = null, syncBusy = false, syncApplying = false;
 function syncMark() { ST.syncPending = true; save(); clearTimeout(syncTimer); syncTimer = setTimeout(() => { ST.syncPending = false; syncPush(); }, 2500); }
 const b64e = s => btoa(unescape(encodeURIComponent(s)));
@@ -1145,9 +1169,9 @@ async function syncPull() {
     syncRemoteUpdated = rem.updated || 0;
     if ((rem.updated || 0) > (ST.updated || 0)) {
       syncApplying = true;
-      const localFrozen = ST.frozen || {};
+      const localFrozen = ST.frozen || {}, localLines = ST.glines || {};
       SYNCED.forEach(k => { if (rem.state && rem.state[k] !== undefined) ST[k] = rem.state[k]; });
-      ST.frozen = Object.assign({}, localFrozen, ST.frozen || {});
+      ST.frozen = Object.assign({}, localFrozen, ST.frozen || {}); ST.glines = Object.assign({}, rem.state?.glines || {}, localLines);
       ST.updated = rem.updated;
       try { localStorage.setItem(KEY, JSON.stringify(ST)); } catch (e) {}
       syncApplying = false; syncLast = Date.now();
@@ -1169,7 +1193,7 @@ async function syncPush(retry) {
   syncBusy = true;
   try {
     if (!syncSha) { await ensureBranch(); const g = await fetch(ghUrl(`contents/${GH.path}?ref=${GH.branch}&t=${Date.now()}`), {headers: ghHead(), cache: 'no-store'}); if (g.ok) syncSha = (await g.json()).sha; }
-    const body = {updated: ST.updated || Date.now(), device: navigator.userAgent.slice(0, 80), state: Object.fromEntries(SYNCED.map(k => [k, ST[k]])), changes: changes()};
+    const body = {updated: ST.updated || Date.now(), device: navigator.userAgent.slice(0, 80), state: Object.assign(Object.fromEntries(SYNCED.map(k => [k, ST[k]])), {glines: ST.glines || {}}), changes: changes()};
     const r = await fetch(ghUrl(`contents/${GH.path}`), {method: 'PUT', headers: ghHead(),
       body: JSON.stringify({message: 'Sync bet tracker changes', branch: GH.branch, content: b64e(JSON.stringify(body)), ...(syncSha ? {sha: syncSha} : {})})});
     if ((r.status === 409 || r.status === 422) && !retry) { syncSha = null; syncBusy = false; return syncPush(true); }
@@ -1278,7 +1302,7 @@ function standing(b, g) {   // >0 winning, <0 losing, 0 push, from the current s
 }
 function liveBets() {
   const from = ctDate(new Date(Date.now() - 864e5).toISOString()), to = today();
-  return BETS.filter(b => !ST.struck[b.id]).map(b => Object.assign({}, b, {who: 'Model'})).concat(MINE.map(b => Object.assign({}, b, {who: 'Mine'})))
+  return MINE.map(b => Object.assign({}, b, {who: loxFor(b) ? 'Mine · AI-LOX' : 'Mine'}))
     .filter(b => b.date >= from && b.date <= to);
 }
 function renderLive() {
@@ -1392,7 +1416,7 @@ function renderScoreboard() {
         (bx.F.length ? ` · ${bx.F.map(f => `<span class="chip">${esc(f.text)}</span>`).join('')}` : '') + '</div>'; }
     const chips = (BG[g.id] || []).map(x => { let c = '', w = '';
       if (!pre) { const st = standing(x.b, g); c = st.m > 0 ? 'pos' : st.m < 0 ? 'neg' : ''; w = fin ? (st.m > 0 ? ' · won' : st.m < 0 ? ' · lost' : ' · push') : st.m > 0 ? ' · winning' : st.m < 0 ? ' · losing' : ' · even'; }
-      return `<span class="chip ${c === 'neg' ? 'no' : ''}"><span class="${c}">${esc(x.who === 'Model' ? 'Model: ' : x.who === 'Parlay leg' ? 'Parlay: ' : x.who === 'Teaser leg' ? 'Teaser: ' : 'Mine: ')}${esc(x.t)}${w}</span></span>`; }).join('');
+      return `<span class="chip ${c === 'neg' ? 'no' : ''}"><span class="${c}">${esc(x.who === 'Model' ? 'AI-LOX: ' : x.who === 'Parlay leg' ? 'Parlay: ' : x.who === 'Teaser leg' ? 'AI-LOX teaser: ' : 'Mine: ')}${esc(x.t)}${w}</span></span>`; }).join('');
     return `<div class="sbg ${live ? 'live' : ''}">
       ${bx ? '<div class="tm hd"><span></span><span><span class="mp">model</span><span class="sc">score</span></span></div>' : ''}
       <div class="tm ${aL ? 'lead' : ''}"><span>${g.ar ? `<span class="rk">${g.ar}</span>` : ''}${esc(g.away)}${live && g.poss === 'a' ? ' <span class="ball" title="Has the ball">🏈</span>' : ''}</span><span>${bx ? `<span class="mp">${LS[0]}</span>` : ''}<span class="sc">${pre ? '' : g.as}</span></span></div>
