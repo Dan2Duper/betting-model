@@ -451,7 +451,7 @@ async function refreshFinals() {
   [...DATA.bets, ...DATA.picks].forEach(r => { if (!r.result && !finalFor(r.league, r.game_id, r.date, r.away, r.home)) add(r.league, r.date); });
   Object.values(ST.frozen).concat(Object.values(ST.frozenPicks)).forEach(r => { if (!finalFor(r.league, r.game_id, r.date, r.away, r.home)) add(r.league, r.date); });
   DATA.predlog.forEach(r => { if (!finalFor(r.league, r.id, r.date, r.away, r.home)) add(r.league, r.date); });
-  Object.values(ST.mine).forEach(r => { if (!r.result && !finalFor(r.league, r.game_id, r.date, r.away, r.home)) add(r.league, r.date); });
+  Object.values(ST.mine).forEach(r => { if (r.result) return; if (r.market === 'parlay') (r.legs || []).forEach(l => { if (!finalFor(l.league || r.league, l.game_id, r.date, l.away, l.home)) add(l.league || r.league, l.kick ? ctDate(l.kick) : r.date); }); else if (!finalFor(r.league, r.game_id, r.date, r.away, r.home)) add(r.league, r.date); });
   // this week's dates (finals + ESPN-listed lines)
   SNAP.cfb.games.forEach(g => need.CFB.add(ctDate(g.kick)));
   SNAP.nfl.games.forEach(g => need.NFL.add(new Date(g.kick).toLocaleDateString('en-CA', {timeZone: 'America/New_York'})));

@@ -39,8 +39,11 @@ def grade(r):
         for l in legs:
             k = (l.get('league', r.league), str(l['game_id']))
             if k not in F: return prev
-            hp, ap = F[k]; ln = float(l['line']); d = (hp + ap) - ln if l['market'] == 'total' else (hp - ap) + ln
-            if (l['market'] == 'total' and l['side'] == 'under') or (l['market'] == 'spread' and l['side'] == 'away'): d = -d
+            hp, ap = F[k]
+            if l['market'] == 'ml': d = (hp - ap) * (1 if l['side'] == 'home' else -1)
+            else:
+                ln = float(l['line']); d = (hp + ap) - ln if l['market'] == 'total' else (hp - ap) + ln
+                if (l['market'] == 'total' and l['side'] == 'under') or (l['market'] == 'spread' and l['side'] == 'away'): d = -d
             res.append('W' if d > 0 else ('L' if d < 0 else 'P'))
         return 'L' if 'L' in res else ('P' if all(x == 'P' for x in res) else 'W')
     k = (r.league, str(r.game_id))
