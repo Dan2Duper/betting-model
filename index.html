@@ -1,0 +1,944 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Bet Tracker</title>
+<meta name="theme-color" content="#f7f7f5">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-title" content="Bet Tracker">
+<style>
+:root{
+  color-scheme: light;
+  --bg:#f7f7f5; --surface:#fcfcfb; --surface-2:#f0efec; --border:#e2e1dc;
+  --ink:#0b0b0b; --ink-2:#52514e; --ink-3:#8a8984;
+  --series:#2a78d6; --muted-bar:#b9b8b2;
+  --good-bg:#dff3df; --good-ink:#0a6e0a; --bad-bg:#f8dddd; --bad-ink:#a12a2a; --push-bg:#e9e8e4;
+  --warn-bg:#fdf0d2; --warn-ink:#7a5200; --chip:#e7f0fb; --chip-ink:#1c5cab;
+}
+:root[data-theme="dark"]{
+  --bg:#121211; --surface:#1a1a19; --surface-2:#242422; --border:#33332f;
+  --ink:#f0efec; --ink-2:#c3c2b7; --ink-3:#8f8e86; --series:#3987e5; --muted-bar:#55544f;
+  --good-bg:#173a17; --good-ink:#7fdc7f; --bad-bg:#432020; --bad-ink:#f2a0a0; --push-bg:#2c2c29;
+  --warn-bg:#3a2e12; --warn-ink:#f0c66a; --chip:#1c3a5e; --chip-ink:#a9cdf7; color-scheme: dark;
+}
+*{box-sizing:border-box}
+body{margin:0;background:var(--bg);color:var(--ink);font:14px/1.45 -apple-system,"Segoe UI",Roboto,Arial,sans-serif}
+.wrap{max-width:1180px;margin:0 auto;padding-block:18px 48px;padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px))}
+header{display:flex;flex-wrap:wrap;align-items:flex-end;justify-content:space-between;gap:12px;margin-bottom:12px}
+h1{font-size:26px;margin:0;letter-spacing:-.01em}
+h2{font-size:15px;margin:0 0 2px}
+.sub{color:var(--ink-2);font-size:13px;margin-top:2px}
+.tabs{display:flex;gap:4px;border-bottom:1px solid var(--border);margin-bottom:14px;overflow-x:auto}
+.tabs button{border:0;background:transparent;color:var(--ink-2);padding:10px 14px;font:inherit;font-weight:600;cursor:pointer;border-bottom:2px solid transparent;white-space:nowrap}
+.tabs button.on{color:var(--ink);border-bottom-color:var(--series)}
+.seg{display:inline-flex;background:var(--surface-2);border:1px solid var(--border);border-radius:10px;padding:3px}
+.seg button{border:0;background:transparent;color:var(--ink-2);padding:6px 11px;border-radius:8px;font:inherit;font-weight:600;cursor:pointer;font-size:13px}
+.seg button.on{background:var(--surface);color:var(--ink);box-shadow:0 1px 2px rgba(0,0,0,.12)}
+.btn{border:1px solid var(--border);background:var(--surface);color:var(--ink);border-radius:8px;padding:7px 12px;font:inherit;font-size:13px;cursor:pointer;font-weight:600}
+.btn.primary{background:var(--series);border-color:var(--series);color:#fff}
+.btn.small{padding:3px 9px;font-size:12px}
+.btn:disabled{opacity:.5;cursor:default}
+.filters{display:flex;flex-wrap:wrap;gap:8px;align-items:end;background:var(--surface);border:1px solid var(--border);border-radius:12px;padding:12px;margin-bottom:14px}
+label.f{display:flex;flex-direction:column;font-size:11px;color:var(--ink-3);font-weight:600;text-transform:uppercase;letter-spacing:.04em;gap:3px}
+select,input{max-width:100%;font:inherit;font-size:13px;color:var(--ink);background:var(--surface);border:1px solid var(--border);border-radius:8px;padding:6px 8px}
+input.num{width:64px;padding:4px 6px;text-align:right}
+.tiles{display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:10px;margin-bottom:14px}
+.tile{background:var(--surface);border:1px solid var(--border);border-radius:12px;padding:12px 14px}
+.tile .k{font-size:11px;color:var(--ink-3);font-weight:700;text-transform:uppercase;letter-spacing:.04em}
+.tile .v{font-size:24px;font-weight:700;margin-top:4px;font-variant-numeric:tabular-nums}
+.tile .n{font-size:12px;color:var(--ink-2);margin-top:2px}
+.pos{color:var(--good-ink)} .neg{color:var(--bad-ink)}
+.grid2{display:grid;grid-template-columns:1.25fr 1fr;gap:14px;margin-bottom:14px}
+@media (max-width:860px){.grid2{grid-template-columns:1fr}}
+.card{background:var(--surface);border:1px solid var(--border);border-radius:12px;padding:14px;margin-bottom:14px}
+.hint{color:var(--ink-3);font-size:12px;margin-bottom:8px}
+.cardhead{display:flex;justify-content:space-between;align-items:flex-start;gap:10px;flex-wrap:wrap}
+svg text{fill:var(--ink-2);font-size:11px}
+.tip{position:fixed;pointer-events:none;background:var(--ink);color:var(--surface);padding:7px 9px;border-radius:8px;font-size:12px;line-height:1.35;opacity:0;transition:opacity .08s;z-index:10;max-width:260px}
+table{width:100%;border-collapse:collapse;font-size:13px;font-variant-numeric:tabular-nums}
+th{text-align:left;font-size:11px;text-transform:uppercase;letter-spacing:.04em;color:var(--ink-3);padding:8px;border-bottom:1px solid var(--border);white-space:nowrap;user-select:none}
+th.sort{cursor:pointer}
+th.num,td.num{text-align:right}
+td{padding:8px;border-bottom:1px solid var(--border);vertical-align:top}
+tr:hover td{background:var(--surface-2)}
+tr.struck td{opacity:.45;text-decoration:line-through}
+tr.struck td.keep{text-decoration:none;opacity:1}
+.pill{display:inline-block;min-width:26px;text-align:center;padding:2px 8px;border-radius:999px;font-weight:700;font-size:12px}
+.W{background:var(--good-bg);color:var(--good-ink)} .L{background:var(--bad-bg);color:var(--bad-ink)} .P{background:var(--push-bg);color:var(--ink-2)} .O{color:var(--ink-3);border:1px dashed var(--border)}
+.chip{display:inline-block;background:var(--chip);color:var(--chip-ink);border-radius:6px;padding:1px 7px;font-size:12px;font-weight:600;margin:1px 4px 1px 0}
+.chip.lean{background:var(--surface-2);color:var(--ink-2)}
+.chip.no{background:var(--warn-bg);color:var(--warn-ink)}
+.tablewrap{overflow-x:auto}
+.small{font-size:12px;color:var(--ink-3)}
+.empty{padding:24px 10px;text-align:center;color:var(--ink-3)}
+.status{font-size:12px;color:var(--ink-2);display:flex;flex-wrap:wrap;gap:6px 14px;margin-bottom:12px}
+.status span b{color:var(--ink)}
+.dayhead{display:flex;justify-content:space-between;align-items:baseline;margin:12px 0 4px;font-weight:700}
+.edit{display:none;background:var(--surface-2)}
+.edit.open{display:table-row}
+.edit td{padding:10px}
+.editgrid{display:flex;flex-wrap:wrap;gap:12px;align-items:end}
+.hide{display:none!important}
+.note{background:var(--warn-bg);color:var(--warn-ink);border-radius:8px;padding:8px 10px;font-size:13px;margin-bottom:12px}
+a{color:var(--series)}
+@media (max-width:640px){
+  h1{font-size:22px}
+  header{align-items:center}
+  header .btn{padding:7px 10px}
+  .tabs button{padding:10px 11px}
+  .tiles{grid-template-columns:1fr 1fr;gap:8px}
+  .tile{padding:10px 12px}.tile .v{font-size:20px}
+  .filters{display:grid;grid-template-columns:1fr 1fr;gap:8px}
+  .filters label.f{min-width:0}
+  .filters select,.filters input{width:100%}
+  .filters .btn{grid-column:1/-1;margin-left:0!important}
+  .card{padding:12px}
+  .cardhead{flex-direction:column;align-items:stretch}
+  .seg{display:flex}.seg button{flex:1}
+  select,input,.btn{min-height:40px;font-size:15px}
+  input.num{width:100%;min-height:38px}
+  .btn.small{min-height:36px;padding:6px 12px;font-size:14px}
+  table.cards,table.cards tbody,table.cards tr,table.cards td{display:block;width:auto}
+  table.cards thead{display:none}
+  table.cards tbody{display:flex;flex-direction:column;gap:10px}
+  table.cards tr{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:8px 10px;border:1px solid var(--border);border-radius:12px;padding:12px;background:var(--surface)}
+  table.cards tr:hover td{background:transparent}
+  table.cards td{border:0;padding:0;min-width:0;text-align:left!important}
+  table.cards td[data-label]:not([data-label=""])::before{content:attr(data-label);display:block;font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:.05em;color:var(--ink-3);margin-bottom:2px}
+  table.cards td.full{grid-column:1/-1}
+  table.cards td.first{order:-2;font-size:15px}
+  table.cards td.why{order:-1;font-size:13px;color:var(--ink-2)}
+  table.cards td.why::before{display:none!important}
+  table.cards td.keep{grid-column:1/-1}
+  table.cards td.keep .btn{width:100%}
+  table.cards tr.edit{display:none}
+  table.cards tr.edit.open{display:block}
+  table.cards tr.struck td.first{text-decoration:line-through}
+}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <header>
+    <div><h1>Bet Tracker</h1><div class="sub" id="sub"></div></div>
+    <div style="display:flex;gap:8px;align-items:center">
+      <button class="btn" id="refresh">Refresh data</button>
+      <button class="btn" id="theme">Theme</button>
+    </div>
+  </header>
+  <div class="tabs" id="tabs">
+    <button data-t="week" class="on">This week</button>
+    <button data-t="track">Tracker</button>
+    <button data-t="stats">Model stats</button>
+    <button data-t="settings">Settings</button>
+  </div>
+
+  <section id="t-week">
+    <div class="status" id="status"></div>
+    <div id="keynote"></div>
+    <div class="card">
+      <div class="cardhead">
+        <div><h2>Bets</h2><div class="hint">Bets that clear the rules (CFB 55%+, NFL 53.5%+, top 5 a day). Each day's budget is split by edge. Strike a bet to drop it and the rest of that day re-splits. Edit odds or stake to lock it.</div></div>
+      </div>
+      <div id="betboard"></div>
+    </div>
+    <div class="card">
+      <div class="cardhead">
+        <div><h2>Games</h2><div class="hint">Predicted scores from the model, live lines and kickoff weather. Click a game to enter lines, QB changes or wind by hand.</div></div>
+        <div style="display:flex;gap:8px;flex-wrap:wrap">
+          <div class="seg" id="lg"><button data-l="CFB" class="on">College</button><button data-l="NFL">NFL</button></div>
+          <div class="seg" id="show"><button data-s="flag" class="on">Flagged</button><button data-s="lines">With lines</button><button data-s="all">All</button></div>
+        </div>
+      </div>
+      <div class="filters" style="margin:8px 0 10px;padding:10px" id="gfilters">
+        <label class="f">Conference<select id="g-conf"></select></label>
+        <label class="f">Team<input id="g-team" placeholder="any team" list="gteams"></label>
+        <label class="f">Sort by<select id="g-sort">
+          <option value="kick">Kickoff</option><option value="tgap">Biggest total gap (model vs line)</option><option value="sgap">Biggest side gap (model vs line)</option>
+          <option value="flags">Flagged first</option><option value="conf">Conference</option><option value="total">Highest model total</option><option value="margin">Biggest model margin</option>
+        </select></label>
+        <label class="f">Games<select id="g-when"><option value="upcoming">Not started</option><option value="all">All this week</option><option value="today">Today only</option></select></label>
+        <datalist id="gteams"></datalist>
+      </div>
+      <div class="tablewrap" id="games"></div>
+    </div>
+  </section>
+
+  <section id="t-track" class="hide">
+    <div style="display:flex;justify-content:flex-end;margin-bottom:10px">
+      <div class="seg" id="mode"><button data-m="bets" class="on">Money: bets</button><button data-m="picks">Model report card: every pick</button></div>
+    </div>
+    <div class="filters" id="filters">
+      <label class="f">League<select id="f-league"></select></label>
+      <label class="f">From<input type="date" id="f-from"></label>
+      <label class="f">To<input type="date" id="f-to"></label>
+      <label class="f">Rule<select id="f-rule"></select></label>
+      <label class="f">Conference / division<select id="f-conf"></select></label>
+      <label class="f">Team<input id="f-team" list="teams" placeholder="any team"></label>
+      <label class="f">Kickoff<select id="f-kick"></select></label>
+      <label class="f">Bet type<select id="f-type"></select></label>
+      <label class="f">Status<select id="f-status"><option value="">All</option><option value="settled">Settled</option><option value="open">Open</option></select></label>
+      <button class="btn" id="reset" style="margin-left:auto">Clear filters</button>
+      <datalist id="teams"></datalist>
+    </div>
+    <div class="tiles" id="tiles"></div>
+    <div class="grid2">
+      <div class="card" style="margin:0">
+        <div class="cardhead">
+          <div><h2>Win rate by <span id="slicename"></span></h2><div class="hint">Dashed line = 52.4% break-even at -110. Gray bars = fewer than 5 settled.</div></div>
+          <label class="small">Slice by <select id="slice"></select></label>
+        </div>
+        <div id="bars"></div>
+      </div>
+      <div class="card" style="margin:0">
+        <h2 id="runtitle">Running profit</h2><div class="hint">Settled bets by day. Hover a point.</div>
+        <div id="run"></div>
+      </div>
+    </div>
+    <div class="card"><h2>Slice detail</h2><div class="hint">Every group in the current slice, with the money behind it.</div><div class="tablewrap" id="slicetable"></div></div>
+    <div class="card"><h2 id="listtitle">Bets</h2><div class="hint">Click a header to sort. Strike removes a bet from every number on this page.</div><div class="tablewrap" id="list"></div></div>
+    <p class="small" id="foot"></p>
+  </section>
+
+  <section id="t-stats" class="hide">
+    <div class="tiles" id="livetiles"></div>
+    <div class="grid2">
+      <div class="card" style="margin:0" id="stat-cfb"></div>
+      <div class="card" style="margin:0" id="stat-nfl"></div>
+    </div>
+    <div class="card" id="stat-rules"></div>
+    <div class="grid2">
+      <div class="card" style="margin:0" id="w-cfb"></div>
+      <div class="card" style="margin:0" id="w-nfl"></div>
+    </div>
+  </section>
+
+  <section id="t-settings" class="hide">
+    <div class="card">
+      <h2>DraftKings lines (The Odds API)</h2>
+      <div class="hint">Free key from <a href="https://the-odds-api.com" target="_blank" rel="noopener">the-odds-api.com</a> (500 requests a month free; each refresh uses about 4). Without a key the page uses the lines ESPN lists, then the nflverse consensus for NFL.</div>
+      <div class="editgrid"><label class="f">API key<input id="s-key" style="width:320px" placeholder="paste key"></label>
+        <button class="btn primary" id="s-savekey">Save key</button><button class="btn" id="s-testkey">Test</button><span class="small" id="s-keymsg"></span></div>
+    </div>
+    <div class="card">
+      <h2>Budget</h2>
+      <div class="editgrid"><label class="f">Daily budget $<input id="s-budget" class="num" style="width:90px"></label><button class="btn" id="s-savebudget">Save</button>
+        <span class="small">Rules: CFB 55%+, NFL 53.5%+, top 5 bets per day, one per game, stakes split by edge (fractional Kelly), $5 minimum.</span></div>
+    </div>
+    <div class="card">
+      <h2>Save your changes to the official log</h2>
+      <div class="hint">Strikes, edited stakes and odds, and bets the page made are stored in this browser. Save them as <b>page_changes.json</b> into <b>Betting Model\betting_models\logs</b>. The Tuesday-morning refresh merges them into the log so every device and the weekly report see them.</div>
+      <div class="editgrid"><button class="btn primary" id="s-export">Save changes file</button><label class="btn">Load a changes file<input type="file" id="s-import" accept=".json" class="hide"></label>
+        <button class="btn" id="s-clear">Clear cached data</button><span class="small" id="s-msg"></span></div>
+    </div>
+    <div class="card small" id="s-about"></div>
+  </section>
+</div>
+<div class="tip" id="tip"></div>
+
+<script>
+const DATA = {"snapshot": {"built": "2026-10-24T16:02:30.301118+00:00", "season": 2026, "rules": {"_note": "Betting rules backed by backtests against closing lines. Edit these when weekly grading says so.", "cfb": {"total_gap_min": 7.0, "total_gap_hit": "60% (55 games, 2025 test)", "tz_spot": {"min_tz_west": 2, "hit": "55% overall (129), 59% since 2021; 62% if kickoff 10pm ET or later (69)"}, "wind_under_mph": 13, "wind_under_hit": "~57% (published CFB studies since 2005)", "qb_split": [0.6, 0.4], "wx_total_adj": {"wind": [[0, 10, 0], [10, 15, -1.5], [15, 20, -2.5], [20, 100, -3.5]], "gust25": -1.0, "rain40": -1.5}}, "nfl": {"wind_under_mph": 10, "wind_under_hit": "59% at 10-14 mph (465 games), 55% at 15+ (234), 2014-25", "side_gap_lean": 4.0, "side_note": "no proven edge vs closing line; small-stake leans only, key numbers 3/7", "qb_split": [0.7, 0.3]}, "break_even": 0.524, "betting": {"_note": "Which picks become bets and how $ are split. p = backtest hit rate vs closing line, n = games behind it.", "cfb_min_hit": 0.55, "nfl_min_hit": 0.535, "max_bets_per_day": 5, "daily_budget": 130, "min_stake": 5, "default_odds": -110, "shrink_k": 100, "_stake_method": "fractional Kelly on a shrunk hit rate (p*n + 0.5*k)/(n + k), scaled so each day's stakes add to the budget", "rules": {"cfb_total_gap7": {"p": 0.6, "n": 55, "src": "our 2025 CFB test"}, "cfb_tz_home": {"p": 0.55, "n": 129, "src": "our 2015-25 CFB backtest"}, "cfb_tz_home_late": {"p": 0.623, "n": 69, "src": "our 2015-25 CFB backtest (kick 10pm ET+)"}, "cfb_wind_under": {"p": 0.57, "n": 150, "src": "published CFB wind studies (n discounted - not our data)"}, "nfl_wind_under_10_14": {"p": 0.591, "n": 465, "src": "our 2014-25 NFL backtest"}, "nfl_wind_under_15plus": {"p": 0.547, "n": 234, "src": "our 2014-25 NFL backtest"}, "nfl_side_gap4": {"p": 0.529, "n": 68, "src": "our 2025 NFL test (below threshold - lean only)"}}, "excluded": "time-zone spots where the model disagrees; any game passed with --skip"}}, "stats": {"cfb": {"model": "Season-to-date opponent-adjusted team stats + home field + pregame Elo gap, ridge regression trained 2023-25", "test": "Trained 2023-24, scored 2025 (567 games with closing lines)", "rows": [["Team points error (RMSE)", "10.85", ""], ["Game total error", "15.54", "15.16 (closing line)"], ["Margin error", "15.14", "14.85 (closing line)"], ["O/U hit, model gap 3+", "51.1% (272)", ""], ["O/U hit, model gap 5+", "52.3% (130)", ""], ["O/U hit, model gap 7+", "60.0% (55)", "used as a betting rule"], ["ATS hit, model gap 3+", "52.9% (210)", ""], ["ATS hit, model gap 7+", "43.2% (44)", "spreads do not beat the market"]], "spots": [["East team flying 2+ zones west: bet home", "55.0% (129)", "44.1% 2015-19 / 58.9% 2021-25"], ["Same, kickoff 10pm ET or later", "62.3% (69)", "46.2% / 66.1%"], ["Travel 1200+ miles: bet home", "53.9% (519)", "53.9% / 54.0%"], ["Noon ET kickoff: bet road", "52.6% (1151)", "51.4% / 53.4%"], ["Wind 13+ mph: under", "~57%", "published studies, not our data"]], "weights": [["rating", 3.27], ["o_ppg", 2.05], ["home", 1.62], ["d_ppg", 1.28], ["d_expl", 1.22], ["o_success", 1.19], ["d_plays", 0.97], ["d_to_pp", 0.8], ["o_pass_rate", 0.71], ["d_pts_per_opp", 0.7], ["d_pass_rate", -0.67], ["o_pts_per_opp", -0.5], ["o_epa", 0.34], ["d_success", 0.17], ["d_epa", 0.11], ["o_expl", 0.07], ["o_to_pp", 0.04], ["o_plays", -0.04]]}, "nfl": {"model": "Ridge opponent-adjusted ratings (4-week half-life, 20% prior season), garbage time removed, play-by-play QB values, home/wind/division/travel; trained 2014-25", "test": "Walk-forward: each season 2023-25 predicted by a model trained only on earlier seasons (816 games)", "rows": [["Team points error (RMSE)", "9.25", ""], ["Game total error", "13.27", "12.96 (closing line)"], ["Margin error", "13.18", "12.65 (closing line)"], ["ATS hit, model gap 3+", "48.8% (258)", ""], ["ATS hit, model gap 5+", "51.8% (83)", ""], ["O/U hit, model gap 3+", "49.6% (228)", ""], ["Market-residual version", "shrank to the line", "no stats-based edge vs NFL closing lines"]], "weights": [["qb_val", 1.35], ["home_fans", 0.93], ["wind", -0.89], ["d_points", 0.84], ["o_points", 0.76], ["d_epa_all", 0.66], ["o_epa", -0.6], ["o_pass_epa", 0.6], ["d_epa", -0.56], ["o_rush_epa", 0.54], ["opp_qb_val", -0.53], ["d_pts_drive", -0.48], ["qb_delta", 0.39], ["d_pass_epa", 0.38], ["o_pts_drive", 0.37], ["o_epa_all", 0.33], ["d_pass_oe", -0.31], ["d_expl", 0.28], ["o_fum_rate", 0.27], ["d_plays", 0.26], ["div", -0.26], ["d_rush_epa", 0.17], ["d_fum_rate", 0.15], ["o_sack_rate", -0.14], ["d_sack_rate", -0.12], ["tz_trav", -0.09], ["west_early", 0.09], ["o_plays", -0.07], ["o_expl", 0.05], ["home_covid", 0.04], ["o_pass_oe", -0.01]]}}, "cfb": {"week": 8, "games": [{"id": "401871069", "kick": "2026-10-20T23:00:00.000Z", "tbd": false, "away": "Missouri State", "home": "Delaware", "neutral": false, "venue": "Delaware Stadium", "away_conf": "Conference USA", "home_conf": "Conference USA", "tz_away": -1, "tz_home": 0, "lat": 39.68, "lon": -75.75, "dome": false, "pa": 23.38, "ph": 32.34, "games_a": 6, "games_h": 6, "espn_a": 2623, "espn_h": 48}, {"id": "401871055", "kick": "2026-10-20T23:00:00.000Z", "tbd": false, "away": "Middle Tennessee", "home": "Florida International", "neutral": false, "venue": "Pitbull Stadium", "away_conf": "Conference USA", "home_conf": "Conference USA", "tz_away": -1, "tz_home": 0, "lat": 25.76, "lon": -80.37, "dome": false, "pa": 16.67, "ph": 33.54, "games_a": 6, "games_h": 6, "espn_a": 2393, "espn_h": 2229}, {"id": "401871092", "kick": "2026-10-20T23:30:00.000Z", "tbd": false, "away": "South Alabama", "home": "Marshall", "neutral": false, "venue": "Joan C. Edwards Stadium", "away_conf": "Sun Belt", "home_conf": "Sun Belt", "tz_away": -1, "tz_home": 0, "lat": 38.42, "lon": -82.42, "dome": false, "pa": 29.13, "ph": 32.71, "games_a": 6, "games_h": 6, "espn_a": 6, "espn_h": 276}, {"id": "401871070", "kick": "2026-10-22T00:00:00.000Z", "tbd": false, "away": "New Mexico State", "home": "Sam Houston", "neutral": false, "venue": "Elliott T. Bowers Stadium", "away_conf": "Conference USA", "home_conf": "Conference USA", "tz_away": -2, "tz_home": -1, "lat": 30.71, "lon": -95.55, "dome": false, "pa": 27.71, "ph": 24.91, "games_a": 6, "games_h": 6, "espn_a": 166, "espn_h": 2534}, {"id": "401871056", "kick": "2026-10-22T23:00:00.000Z", "tbd": false, "away": "Liberty", "home": "Kennesaw State", "neutral": false, "venue": "Fifth Third Stadium", "away_conf": "Conference USA", "home_conf": "Conference USA", "tz_away": 0, "tz_home": 0, "lat": 34.04, "lon": -84.58, "dome": false, "pa": 31.51, "ph": 19.55, "games_a": 6, "games_h": 6, "espn_a": 2335, "espn_h": 338}, {"id": "401869845", "kick": "2026-10-22T23:00:00.000Z", "tbd": false, "away": "James Madison", "home": "App State", "neutral": false, "venue": "Kidd Brewer Stadium", "away_conf": "Sun Belt", "home_conf": "Sun Belt", "tz_away": 0, "tz_home": 0, "lat": 36.21, "lon": -81.68, "dome": false, "pa": 36.68, "ph": 20.26, "games_a": 7, "games_h": 6, "espn_a": 256, "espn_h": 2026}, {"id": "401862807", "kick": "2026-10-22T23:30:00.000Z", "tbd": false, "away": "East Carolina", "home": "Memphis", "neutral": false, "venue": "Simmons Bank Liberty Stadium", "away_conf": "American Athletic", "home_conf": "American Athletic", "tz_away": 0, "tz_home": -1, "lat": 35.12, "lon": -89.94, "dome": false, "pa": 21.3, "ph": 34.29, "games_a": 6, "games_h": 7, "espn_a": 151, "espn_h": 235}, {"id": "401861965", "kick": "2026-10-23T23:00:00.000Z", "tbd": false, "away": "Massachusetts", "home": "UConn", "neutral": false, "venue": "Pratt & Whitney Stadium", "away_conf": "Mid-American", "home_conf": "FBS Independents", "tz_away": 0, "tz_home": 0, "lat": 41.76, "lon": -72.62, "dome": false, "pa": 20.18, "ph": 33.55, "games_a": 7, "games_h": 6, "espn_a": 113, "espn_h": 41}, {"id": "401858271", "kick": "2026-10-23T23:00:00.000Z", "tbd": false, "away": "Duke", "home": "Virginia", "neutral": false, "venue": "Scott Stadium", "away_conf": "ACC", "home_conf": "ACC", "tz_away": 0, "tz_home": 0, "lat": 38.03, "lon": -78.51, "dome": false, "pa": 19.55, "ph": 24.43, "games_a": 6, "games_h": 7, "espn_a": 150, "espn_h": 258}, {"id": "401862808", "kick": "2026-10-24T00:30:00.000Z", "tbd": false, "away": "Army", "home": "Tulsa", "neutral": false, "venue": "Chapman Stadium", "away_conf": "American Athletic", "home_conf": "American Athletic", "tz_away": 0, "tz_home": -1, "lat": 36.15, "lon": -95.94, "dome": false, "pa": 30.94, "ph": 24.68, "games_a": 6, "games_h": 7, "espn_a": 349, "espn_h": 202}, {"id": "401864525", "kick": "2026-10-24T01:00:00.000Z", "tbd": false, "away": "Air Force", "home": "Wyoming", "neutral": false, "venue": "War Memorial Stadium", "away_conf": "Mountain West", "home_conf": "Mountain West", "tz_away": -2, "tz_home": -2, "lat": 41.31, "lon": -105.57, "dome": false, "pa": 26.09, "ph": 22.44, "games_a": 6, "games_h": 7, "espn_a": 2005, "espn_h": 2751}, {"id": "401858272", "kick": "2026-10-24T02:30:00.000Z", "tbd": false, "away": "NC State", "home": "Stanford", "neutral": false, "venue": "Stanford Stadium", "away_conf": "ACC", "home_conf": "ACC", "tz_away": 0, "tz_home": -3, "lat": 37.43, "lon": -122.17, "dome": false, "pa": 32.99, "ph": 22.99, "games_a": 6, "games_h": 7, "espn_a": 152, "espn_h": 24}, {"id": "401856728", "kick": "2026-10-24T16:00:00.000Z", "tbd": false, "away": "LSU", "home": "Auburn", "neutral": false, "venue": "Jordan-Hare Stadium", "away_conf": "SEC", "home_conf": "SEC", "tz_away": -1, "tz_home": -1, "lat": 32.6, "lon": -85.49, "dome": false, "pa": 28.57, "ph": 20.53, "games_a": 7, "games_h": 6, "espn_a": 99, "espn_h": 2}, {"id": "401856841", "kick": "2026-10-24T16:00:00.000Z", "tbd": false, "away": "West Virginia", "home": "TCU", "neutral": false, "venue": "Amon G. Carter Stadium", "away_conf": "Big 12", "home_conf": "Big 12", "tz_away": 0, "tz_home": -1, "lat": 32.71, "lon": -97.36, "dome": false, "pa": 17.39, "ph": 33.64, "games_a": 7, "games_h": 6, "espn_a": 277, "espn_h": 2628}, {"id": "401856840", "kick": "2026-10-24T16:00:00.000Z", "tbd": false, "away": "Texas Tech", "home": "Cincinnati", "neutral": false, "venue": "Nippert Stadium", "away_conf": "Big 12", "home_conf": "Big 12", "tz_away": -1, "tz_home": 0, "lat": 39.13, "lon": -84.52, "dome": false, "pa": 35.41, "ph": 23.13, "games_a": 6, "games_h": 6, "espn_a": 2641, "espn_h": 2132}, {"id": "401866450", "kick": "2026-10-24T16:00:00.000Z", "tbd": false, "away": "Western Michigan", "home": "Toledo", "neutral": false, "venue": "Glass Bowl", "away_conf": "Mid-American", "home_conf": "Mid-American", "tz_away": 0, "tz_home": 0, "lat": 41.66, "lon": -83.61, "dome": false, "pa": 23.41, "ph": 29.47, "games_a": 7, "games_h": 7, "espn_a": 2711, "espn_h": 2649}, {"id": "401862809", "kick": "2026-10-24T16:00:00.000Z", "tbd": false, "away": "Rice", "home": "Florida Atlantic", "neutral": false, "venue": "FAU Stadium", "away_conf": "American Athletic", "home_conf": "American Athletic", "tz_away": -1, "tz_home": 0, "lat": 26.37, "lon": -80.1, "dome": false, "pa": 20.95, "ph": 34.81, "games_a": 7, "games_h": 6, "espn_a": 242, "espn_h": 2226}, {"id": "401858270", "kick": "2026-10-24T16:00:00.000Z", "tbd": false, "away": "California", "home": "SMU", "neutral": false, "venue": "Gerald J. Ford Stadium", "away_conf": "ACC", "home_conf": "ACC", "tz_away": -3, "tz_home": -1, "lat": 32.84, "lon": -96.78, "dome": false, "pa": 16.58, "ph": 35.18, "games_a": 7, "games_h": 6, "espn_a": 25, "espn_h": 2567}, {"id": "401858274", "kick": "2026-10-24T16:00:00.000Z", "tbd": false, "away": "Pittsburgh", "home": "Miami", "neutral": false, "venue": "Hard Rock Stadium", "away_conf": "ACC", "home_conf": "ACC", "tz_away": 0, "tz_home": 0, "lat": 25.96, "lon": -80.24, "dome": false, "pa": 16.74, "ph": 32.34, "games_a": 7, "games_h": 6, "espn_a": 221, "espn_h": 2390}, {"id": "401858496", "kick": "2026-10-24T16:00:00.000Z", "tbd": false, "away": "Indiana", "home": "Michigan", "neutral": false, "venue": "Michigan Stadium", "away_conf": "Big Ten", "home_conf": "Big Ten", "tz_away": 0, "tz_home": 0, "lat": 42.27, "lon": -83.74, "dome": false, "pa": 28.06, "ph": 18.28, "games_a": 7, "games_h": 6, "espn_a": 84, "espn_h": 130}, {"id": "401858498", "kick": "2026-10-24T16:00:00.000Z", "tbd": false, "away": "Rutgers", "home": "Northwestern", "neutral": false, "venue": "Ryan Field", "away_conf": "Big Ten", "home_conf": "Big Ten", "tz_away": 0, "tz_home": -1, "lat": 42.06, "lon": -87.68, "dome": false, "pa": 21.0, "ph": 38.35, "games_a": 6, "games_h": 6, "espn_a": 164, "espn_h": 77}, {"id": "401866446", "kick": "2026-10-24T17:00:00.000Z", "tbd": false, "away": "Akron", "home": "Kent State", "neutral": false, "venue": "Dix Stadium", "away_conf": "Mid-American", "home_conf": "Mid-American", "tz_away": 0, "tz_home": 0, "lat": 41.15, "lon": -81.34, "dome": false, "pa": 22.83, "ph": 27.89, "games_a": 7, "games_h": 7, "espn_a": 2006, "espn_h": 2309}, {"id": "401856834", "kick": "2026-10-24T17:00:00.000Z", "tbd": false, "away": "Baylor", "home": "Kansas", "neutral": false, "venue": "Memorial Stadium", "away_conf": "Big 12", "home_conf": "Big 12", "tz_away": -1, "tz_home": -1, "lat": 38.96, "lon": -95.25, "dome": false, "pa": 23.7, "ph": 28.76, "games_a": 6, "games_h": 6, "espn_a": 239, "espn_h": 2305}, {"id": "401866476", "kick": "2026-10-24T17:00:00.000Z", "tbd": false, "away": "Miami (OH)", "home": "Central Michigan", "neutral": false, "venue": "Kelly/Shorts Stadium", "away_conf": "Mid-American", "home_conf": "Mid-American", "tz_away": 0, "tz_home": 0, "lat": 43.59, "lon": -84.77, "dome": false, "pa": 24.55, "ph": 24.29, "games_a": 7, "games_h": 7, "espn_a": 193, "espn_h": 2117}, {"id": "401858495", "kick": "2026-10-24T19:00:00.000Z", "tbd": false, "away": "Oregon", "home": "Illinois", "neutral": false, "venue": "Memorial Stadium (Champaign, IL)", "away_conf": "Big Ten", "home_conf": "Big Ten", "tz_away": -3, "tz_home": -1, "lat": 40.1, "lon": -88.23, "dome": false, "pa": 30.69, "ph": 22.73, "games_a": 6, "games_h": 6, "espn_a": 2483, "espn_h": 356}, {"id": "401856727", "kick": "2026-10-24T19:30:00.000Z", "tbd": false, "away": "Texas A&M", "home": "Alabama", "neutral": false, "venue": "Bryant-Denny Stadium", "away_conf": "SEC", "home_conf": "SEC", "tz_away": -1, "tz_home": -1, "lat": 33.21, "lon": -87.55, "dome": false, "pa": 19.45, "ph": 33.15, "games_a": 7, "games_h": 7, "espn_a": 245, "espn_h": 333}, {"id": "401856730", "kick": "2026-10-24T19:30:00.000Z", "tbd": false, "away": "Oklahoma", "home": "Mississippi State", "neutral": false, "venue": "Davis Wade Stadium", "away_conf": "SEC", "home_conf": "SEC", "tz_away": -1, "tz_home": -1, "lat": 33.46, "lon": -88.79, "dome": false, "pa": 23.14, "ph": 22.85, "games_a": 6, "games_h": 6, "espn_a": 201, "espn_h": 344}, {"id": "401858499", "kick": "2026-10-24T19:30:00.000Z", "tbd": false, "away": "Michigan State", "home": "UCLA", "neutral": false, "venue": "Rose Bowl", "away_conf": "Big Ten", "home_conf": "Big Ten", "tz_away": 0, "tz_home": -3, "lat": 34.16, "lon": -118.17, "dome": false, "pa": 21.25, "ph": 31.29, "games_a": 7, "games_h": 6, "espn_a": 127, "espn_h": 26}, {"id": "401858273", "kick": "2026-10-24T19:30:00.000Z", "tbd": false, "away": "Boston College", "home": "Georgia Tech", "neutral": false, "venue": "Bobby Dodd Stadium", "away_conf": "ACC", "home_conf": "ACC", "tz_away": 0, "tz_home": 0, "lat": 33.78, "lon": -84.4, "dome": false, "pa": 22.14, "ph": 27.8, "games_a": 6, "games_h": 6, "espn_a": 103, "espn_h": 59}, {"id": "401856731", "kick": "2026-10-24T19:30:00.000Z", "tbd": false, "away": "Tennessee", "home": "South Carolina", "neutral": false, "venue": "Williams-Brice Stadium", "away_conf": "SEC", "home_conf": "SEC", "tz_away": 0, "tz_home": 0, "lat": 33.99, "lon": -81.03, "dome": false, "pa": 26.49, "ph": 24.65, "games_a": 7, "games_h": 6, "espn_a": 2633, "espn_h": 2579}, {"id": "401864526", "kick": "2026-10-24T19:30:00.000Z", "tbd": false, "away": "Hawai'i", "home": "Northern Illinois", "neutral": false, "venue": "Huskie Stadium", "away_conf": "Mountain West", "home_conf": "Mountain West", "tz_away": -6, "tz_home": -1, "lat": 41.93, "lon": -88.77, "dome": false, "pa": 29.33, "ph": 25.95, "games_a": 7, "games_h": 6, "espn_a": 62, "espn_h": 2459}, {"id": "401866448", "kick": "2026-10-24T19:30:00.000Z", "tbd": false, "away": "Bowling Green", "home": "Buffalo", "neutral": false, "venue": "UB Stadium", "away_conf": "Mid-American", "home_conf": "Mid-American", "tz_away": 0, "tz_home": 0, "lat": 43.0, "lon": -78.79, "dome": false, "pa": 22.17, "ph": 29.9, "games_a": 7, "games_h": 7, "espn_a": 189, "espn_h": 2084}, {"id": "401866447", "kick": "2026-10-24T19:30:00.000Z", "tbd": false, "away": "Sacramento State", "home": "Ball State", "neutral": false, "venue": "Scheumann Stadium", "away_conf": "Mid-American", "home_conf": "Mid-American", "tz_away": -3, "tz_home": 0, "lat": 40.2, "lon": -85.41, "dome": false, "pa": 26.58, "ph": 32.09, "games_a": 7, "games_h": 7, "espn_a": 16, "espn_h": 2050}, {"id": "401856835", "kick": "2026-10-24T19:30:00.000Z", "tbd": false, "away": "BYU", "home": "UCF", "neutral": false, "venue": "FBC Mortgage Stadium", "away_conf": "Big 12", "home_conf": "Big 12", "tz_away": -2, "tz_home": 0, "lat": 28.6, "lon": -81.2, "dome": false, "pa": 26.9, "ph": 18.9, "games_a": 6, "games_h": 6, "espn_a": 252, "espn_h": 2116}, {"id": "401862810", "kick": "2026-10-24T19:30:00.000Z", "tbd": false, "away": "North Texas", "home": "Navy", "neutral": false, "venue": "Navy-Marine Corps Memorial Stadium", "away_conf": "American Athletic", "home_conf": "American Athletic", "tz_away": -1, "tz_home": 0, "lat": 38.98, "lon": -76.49, "dome": false, "pa": 30.16, "ph": 26.84, "games_a": 6, "games_h": 6, "espn_a": 249, "espn_h": 2426}, {"id": "401858497", "kick": "2026-10-24T19:30:00.000Z", "tbd": false, "away": "Iowa", "home": "Minnesota", "neutral": false, "venue": "Huntington Bank Stadium", "away_conf": "Big Ten", "home_conf": "Big Ten", "tz_away": -1, "tz_home": -1, "lat": 44.97, "lon": -93.23, "dome": false, "pa": 30.61, "ph": 19.18, "games_a": 6, "games_h": 6, "espn_a": 2294, "espn_h": 135}, {"id": "401856839", "kick": "2026-10-24T19:45:00.000Z", "tbd": false, "away": "Kansas State", "home": "Arizona State", "neutral": false, "venue": "Mountain America Stadium", "away_conf": "Big 12", "home_conf": "Big 12", "tz_away": -1, "tz_home": -3, "lat": 33.42, "lon": -111.93, "dome": false, "pa": 29.37, "ph": 26.15, "games_a": 6, "games_h": 6, "espn_a": 2306, "espn_h": 9}, {"id": "401871094", "kick": "2026-10-24T20:00:00.000Z", "tbd": false, "away": "UL Monroe", "home": "Troy", "neutral": false, "venue": "Veterans Memorial Stadium (AL)", "away_conf": "Sun Belt", "home_conf": "Sun Belt", "tz_away": -1, "tz_home": -1, "lat": 31.8, "lon": -85.97, "dome": false, "pa": 18.05, "ph": 36.88, "games_a": 6, "games_h": 6, "espn_a": 2433, "espn_h": 2653}, {"id": "401866449", "kick": "2026-10-24T20:00:00.000Z", "tbd": false, "away": "Eastern Michigan", "home": "Ohio", "neutral": false, "venue": "Peden Stadium", "away_conf": "Mid-American", "home_conf": "Mid-American", "tz_away": 0, "tz_home": 0, "lat": 39.32, "lon": -82.1, "dome": false, "pa": 21.29, "ph": 33.46, "games_a": 8, "games_h": 7, "espn_a": 2199, "espn_h": 195}, {"id": "401864528", "kick": "2026-10-24T21:00:00.000Z", "tbd": false, "away": "San Jos\u00e9 State", "home": "Nevada", "neutral": false, "venue": "Mackay Stadium", "away_conf": "Mountain West", "home_conf": "Mountain West", "tz_away": -3, "tz_home": -3, "lat": 39.55, "lon": -119.82, "dome": false, "pa": 22.33, "ph": 30.22, "games_a": 7, "games_h": 6, "espn_a": 23, "espn_h": 2440}, {"id": "401869967", "kick": "2026-10-24T21:00:00.000Z", "tbd": false, "away": "Louisiana", "home": "Southern Miss", "neutral": false, "venue": "M. M. Roberts Stadium", "away_conf": "Sun Belt", "home_conf": "Sun Belt", "tz_away": -1, "tz_home": -1, "lat": 31.33, "lon": -89.33, "dome": false, "pa": 32.95, "ph": 19.43, "games_a": 7, "games_h": 6, "espn_a": 309, "espn_h": 2572}, {"id": "401871093", "kick": "2026-10-24T21:00:00.000Z", "tbd": false, "away": "Old Dominion", "home": "Louisiana Tech", "neutral": false, "venue": "Joe Aillet Stadium", "away_conf": "Sun Belt", "home_conf": "Sun Belt", "tz_away": 0, "tz_home": -1, "lat": 32.53, "lon": -92.65, "dome": false, "pa": 19.0, "ph": 28.4, "games_a": 7, "games_h": 6, "espn_a": 295, "espn_h": 2348}, {"id": "401860907", "kick": "2026-10-24T22:00:00.000Z", "tbd": false, "away": "Boise State", "home": "Washington State", "neutral": false, "venue": "Gesa Field", "away_conf": "Pac-12", "home_conf": "Pac-12", "tz_away": -2, "tz_home": -3, "lat": 46.73, "lon": -117.16, "dome": false, "pa": 31.1, "ph": 20.97, "games_a": 6, "games_h": 7, "espn_a": 68, "espn_h": 265}, {"id": "401860905", "kick": "2026-10-24T22:30:00.000Z", "tbd": false, "away": "San Diego State", "home": "Colorado State", "neutral": false, "venue": "Canvas Stadium", "away_conf": "Pac-12", "home_conf": "Pac-12", "tz_away": -3, "tz_home": -2, "lat": 40.57, "lon": -105.08, "dome": false, "pa": 29.58, "ph": 30.99, "games_a": 7, "games_h": 6, "espn_a": 21, "espn_h": 36}, {"id": "401858276", "kick": "2026-10-24T23:00:00.000Z", "tbd": false, "away": "Virginia Tech", "home": "Clemson", "neutral": false, "venue": "Memorial Stadium (Clemson, SC)", "away_conf": "ACC", "home_conf": "ACC", "tz_away": 0, "tz_home": 0, "lat": 34.68, "lon": -82.84, "dome": false, "pa": 24.07, "ph": 25.66, "games_a": 7, "games_h": 6, "espn_a": 259, "espn_h": 228}, {"id": "401869935", "kick": "2026-10-24T23:00:00.000Z", "tbd": false, "away": "Georgia State", "home": "Arkansas State", "neutral": false, "venue": "Centennial Bank Stadium", "away_conf": "Sun Belt", "home_conf": "Sun Belt", "tz_away": 0, "tz_home": -1, "lat": 35.84, "lon": -90.67, "dome": false, "pa": 30.24, "ph": 30.36, "games_a": 6, "games_h": 7, "espn_a": 2247, "espn_h": 2032}, {"id": "401856836", "kick": "2026-10-24T23:00:00.000Z", "tbd": false, "away": "Colorado", "home": "Oklahoma State", "neutral": false, "venue": "Boone Pickens Stadium", "away_conf": "Big 12", "home_conf": "Big 12", "tz_away": -2, "tz_home": -1, "lat": 36.13, "lon": -97.07, "dome": false, "pa": 21.7, "ph": 31.03, "games_a": 6, "games_h": 6, "espn_a": 38, "espn_h": 197}, {"id": "401856729", "kick": "2026-10-24T23:30:00.000Z", "tbd": false, "away": "Vanderbilt", "home": "Kentucky", "neutral": false, "venue": "Kroger Field", "away_conf": "SEC", "home_conf": "SEC", "tz_away": -1, "tz_home": 0, "lat": 38.03, "lon": -84.5, "dome": false, "pa": 23.55, "ph": 32.33, "games_a": 7, "games_h": 7, "espn_a": 238, "espn_h": 96}, {"id": "401856838", "kick": "2026-10-24T23:30:00.000Z", "tbd": false, "away": "Iowa State", "home": "Arizona", "neutral": false, "venue": "Arizona Stadium", "away_conf": "Big 12", "home_conf": "Big 12", "tz_away": -1, "tz_home": -3, "lat": 32.23, "lon": -110.95, "dome": false, "pa": 22.23, "ph": 27.68, "games_a": 6, "games_h": 6, "espn_a": 66, "espn_h": 12}, {"id": "401860906", "kick": "2026-10-24T23:30:00.000Z", "tbd": false, "away": "Utah State", "home": "Texas State", "neutral": false, "venue": "Bobcat Stadium (TX)", "away_conf": "Pac-12", "home_conf": "Pac-12", "tz_away": -2, "tz_home": -1, "lat": 29.89, "lon": -97.94, "dome": false, "pa": 21.83, "ph": 30.22, "games_a": 6, "games_h": 6, "espn_a": 328, "espn_h": 326}, {"id": "401858500", "kick": "2026-10-24T23:30:00.000Z", "tbd": false, "away": "USC", "home": "Wisconsin", "neutral": false, "venue": "Camp Randall Stadium", "away_conf": "Big Ten", "home_conf": "Big Ten", "tz_away": -3, "tz_home": -1, "lat": 43.07, "lon": -89.41, "dome": false, "pa": 29.31, "ph": 25.1, "games_a": 7, "games_h": 6, "espn_a": 30, "espn_h": 275}, {"id": "401856732", "kick": "2026-10-24T23:30:00.000Z", "tbd": false, "away": "Ole Miss", "home": "Texas", "neutral": false, "venue": "DKR-Texas Memorial Stadium", "away_conf": "SEC", "home_conf": "SEC", "tz_away": -1, "tz_home": -1, "lat": 30.28, "lon": -97.73, "dome": false, "pa": 21.01, "ph": 28.0, "games_a": 6, "games_h": 6, "espn_a": 145, "espn_h": 251}, {"id": "401858275", "kick": "2026-10-24T23:30:00.000Z", "tbd": false, "away": "Syracuse", "home": "North Carolina", "neutral": false, "venue": "Kenan Stadium", "away_conf": "ACC", "home_conf": "ACC", "tz_away": 0, "tz_home": 0, "lat": 35.9, "lon": -79.05, "dome": false, "pa": 21.68, "ph": 31.75, "games_a": 6, "games_h": 6, "espn_a": 183, "espn_h": 153}, {"id": "401862811", "kick": "2026-10-25T00:00:00.000Z", "tbd": false, "away": "UTSA", "home": "Tulane", "neutral": false, "venue": "Yulman Stadium", "away_conf": "American Athletic", "home_conf": "American Athletic", "tz_away": -1, "tz_home": -1, "lat": 29.94, "lon": -90.12, "dome": false, "pa": 22.08, "ph": 24.25, "games_a": 7, "games_h": 6, "espn_a": 2636, "espn_h": 2655}, {"id": "401864527", "kick": "2026-10-25T02:00:00.000Z", "tbd": false, "away": "North Dakota State", "home": "New Mexico", "neutral": false, "venue": "University Stadium (NM)", "away_conf": "Mountain West", "home_conf": "Mountain West", "tz_away": -1, "tz_home": -2, "lat": 35.08, "lon": -106.62, "dome": false, "pa": 23.79, "ph": 24.53, "games_a": 7, "games_h": 6, "espn_a": 2449, "espn_h": 167}, {"id": "401856837", "kick": "2026-10-25T02:15:00.000Z", "tbd": false, "away": "Houston", "home": "Utah", "neutral": false, "venue": "Rice-Eccles Stadium", "away_conf": "Big 12", "home_conf": "Big 12", "tz_away": -1, "tz_home": -2, "lat": 40.76, "lon": -111.85, "dome": false, "pa": 22.04, "ph": 32.33, "games_a": 7, "games_h": 6, "espn_a": 248, "espn_h": 254}], "qbs": {"Air Force": {"last": "Evan Medders", "primary": "Liam Szarka", "share_last": 0.19, "share_primary": 0.72, "starts_last": 4, "games": 6}, "Akron": {"last": "Brayden Roggow", "primary": "Brayden Roggow", "share_last": 0.69, "share_primary": 0.69, "starts_last": 7, "games": 7}, "Alabama": {"last": "Keelon Russell", "primary": "Keelon Russell", "share_last": 0.93, "share_primary": 0.93, "starts_last": 7, "games": 7}, "App State": {"last": "Malachi Singleton", "primary": "Malachi Singleton", "share_last": 0.83, "share_primary": 0.83, "starts_last": 6, "games": 6}, "Arizona": {"last": "Noah Fifita", "primary": "Noah Fifita", "share_last": 0.93, "share_primary": 0.93, "starts_last": 6, "games": 6}, "Arizona State": {"last": "Mikey Keene", "primary": "Cutter Boley", "share_last": 0.19, "share_primary": 0.78, "starts_last": 2, "games": 6}, "Arkansas State": {"last": "Trey Owens", "primary": "Trey Owens", "share_last": 0.97, "share_primary": 0.97, "starts_last": 7, "games": 7}, "Army": {"last": "Cale Hellums", "primary": "Cale Hellums", "share_last": 0.89, "share_primary": 0.89, "starts_last": 6, "games": 6}, "Auburn": {"last": "Byrum Brown", "primary": "Byrum Brown", "share_last": 0.93, "share_primary": 0.93, "starts_last": 6, "games": 6}, "BYU": {"last": "Bear Bachmeier", "primary": "Bear Bachmeier", "share_last": 0.94, "share_primary": 0.94, "starts_last": 6, "games": 6}, "Ball State": {"last": "Keldric Luster", "primary": "Keldric Luster", "share_last": 0.81, "share_primary": 0.81, "starts_last": 6, "games": 7}, "Baylor": {"last": "D.J. Lagway", "primary": "D.J. Lagway", "share_last": 0.73, "share_primary": 0.73, "starts_last": 4, "games": 6}, "Boise State": {"last": "Maddux Madsen", "primary": "Maddux Madsen", "share_last": 0.97, "share_primary": 0.97, "starts_last": 6, "games": 6}, "Boston College": {"last": "Mason McKenzie", "primary": "Mason McKenzie", "share_last": 0.95, "share_primary": 0.95, "starts_last": 6, "games": 6}, "Bowling Green": {"last": "Jay Kastantin", "primary": "Jay Kastantin", "share_last": 0.95, "share_primary": 0.95, "starts_last": 7, "games": 7}, "Buffalo": {"last": "Jason Wright", "primary": "Jason Wright", "share_last": 0.72, "share_primary": 0.72, "starts_last": 6, "games": 7}, "California": {"last": "Jackson Brousseau", "primary": "Jaron-Keawe Sagapolutele", "share_last": 0.39, "share_primary": 0.59, "starts_last": 5, "games": 7}, "Central Michigan": {"last": "Angel H Flores", "primary": "Angel H Flores", "share_last": 0.63, "share_primary": 0.63, "starts_last": 7, "games": 7}, "Cincinnati": {"last": "JC French", "primary": "JC French", "share_last": 0.94, "share_primary": 0.94, "starts_last": 6, "games": 6}, "Clemson": {"last": "Tait Reynolds", "primary": "Tait Reynolds", "share_last": 0.81, "share_primary": 0.81, "starts_last": 6, "games": 6}, "Colorado": {"last": "Isaac Wilson", "primary": "Isaac Wilson", "share_last": 0.47, "share_primary": 0.47, "starts_last": 4, "games": 6}, "Colorado State": {"last": "Ksaan Farrar", "primary": "Ksaan Farrar", "share_last": 0.63, "share_primary": 0.63, "starts_last": 5, "games": 6}, "Delaware": {"last": "Tyler Bell", "primary": "Nick Minicucci", "share_last": 0.22, "share_primary": 0.49, "starts_last": 2, "games": 6}, "Duke": {"last": "Walker Eget", "primary": "Walker Eget", "share_last": 0.92, "share_primary": 0.92, "starts_last": 6, "games": 6}, "East Carolina": {"last": "Emory Williams", "primary": "Emory Williams", "share_last": 0.58, "share_primary": 0.58, "starts_last": 5, "games": 6}, "Eastern Michigan": {"last": "Noah Kim", "primary": "Noah Kim", "share_last": 0.96, "share_primary": 0.96, "starts_last": 8, "games": 8}, "Florida Atlantic": {"last": "Caden Veltkamp", "primary": "Caden Veltkamp", "share_last": 0.9, "share_primary": 0.9, "starts_last": 6, "games": 6}, "Florida International": {"last": "J.J. Kohl", "primary": "J.J. Kohl", "share_last": 0.92, "share_primary": 0.92, "starts_last": 6, "games": 6}, "Georgia State": {"last": "Cameran Brown", "primary": "Cameran Brown", "share_last": 0.86, "share_primary": 0.86, "starts_last": 6, "games": 6}, "Georgia Tech": {"last": "Alberto Mendoza", "primary": "Alberto Mendoza", "share_last": 0.99, "share_primary": 0.99, "starts_last": 6, "games": 6}, "Hawai'i": {"last": "Micah Alejado", "primary": "Micah Alejado", "share_last": 0.96, "share_primary": 0.96, "starts_last": 7, "games": 7}, "Houston": {"last": "Conner Weigman", "primary": "Conner Weigman", "share_last": 0.93, "share_primary": 0.93, "starts_last": 7, "games": 7}, "Illinois": {"last": "Katin Houser", "primary": "Katin Houser", "share_last": 0.96, "share_primary": 0.96, "starts_last": 6, "games": 6}, "Indiana": {"last": "Josh Hoover", "primary": "Josh Hoover", "share_last": 0.93, "share_primary": 0.93, "starts_last": 7, "games": 7}, "Iowa": {"last": "Jeremy Hecklinski", "primary": "Hank Brown", "share_last": 0.28, "share_primary": 0.68, "starts_last": 4, "games": 6}, "Iowa State": {"last": "Jaylen Raynor", "primary": "Jaylen Raynor", "share_last": 0.97, "share_primary": 0.97, "starts_last": 6, "games": 6}, "James Madison": {"last": "Camden Coleman", "primary": "Camden Coleman", "share_last": 0.84, "share_primary": 0.84, "starts_last": 7, "games": 7}, "Kansas": {"last": "Isaiah Marshall", "primary": "Isaiah Marshall", "share_last": 0.94, "share_primary": 0.94, "starts_last": 6, "games": 6}, "Kansas State": {"last": "Avery Johnson", "primary": "Avery Johnson", "share_last": 0.97, "share_primary": 0.97, "starts_last": 6, "games": 6}, "Kennesaw State": {"last": "Rickie Collins", "primary": "Rickie Collins", "share_last": 0.93, "share_primary": 0.93, "starts_last": 6, "games": 6}, "Kent State": {"last": "Dru Deshields", "primary": "Dru Deshields", "share_last": 0.92, "share_primary": 0.92, "starts_last": 7, "games": 7}, "Kentucky": {"last": "Kenny Minchey", "primary": "Kenny Minchey", "share_last": 0.95, "share_primary": 0.95, "starts_last": 7, "games": 7}, "LSU": {"last": "Sam Leavitt", "primary": "Sam Leavitt", "share_last": 0.81, "share_primary": 0.81, "starts_last": 7, "games": 7}, "Liberty": {"last": "Deshawn Purdie", "primary": "Deshawn Purdie", "share_last": 0.88, "share_primary": 0.88, "starts_last": 6, "games": 6}, "Louisiana": {"last": "D'Wayne' Winfield", "primary": "D'Wayne' Winfield", "share_last": 0.93, "share_primary": 0.93, "starts_last": 7, "games": 7}, "Louisiana Tech": {"last": "Blake Baker", "primary": "Blake Baker", "share_last": 0.54, "share_primary": 0.54, "starts_last": 5, "games": 6}, "Marshall": {"last": "Zion Turner", "primary": "Zion Turner", "share_last": 0.77, "share_primary": 0.77, "starts_last": 4, "games": 6}, "Massachusetts": {"last": "Logan Inagawa", "primary": "William Watson III", "share_last": 0.18, "share_primary": 0.59, "starts_last": 2, "games": 7}, "Memphis": {"last": "Marcus Stokes", "primary": "Marcus Stokes", "share_last": 0.94, "share_primary": 0.94, "starts_last": 7, "games": 7}, "Miami": {"last": "Darian Mensah", "primary": "Darian Mensah", "share_last": 0.87, "share_primary": 0.87, "starts_last": 6, "games": 6}, "Miami (OH)": {"last": "Caleb Heavner", "primary": "David McComb", "share_last": 0.4, "share_primary": 0.59, "starts_last": 6, "games": 7}, "Michigan": {"last": "Bryce Underwood", "primary": "Bryce Underwood", "share_last": 0.9, "share_primary": 0.9, "starts_last": 6, "games": 6}, "Michigan State": {"last": "Alessio Milivojevic", "primary": "Alessio Milivojevic", "share_last": 0.94, "share_primary": 0.94, "starts_last": 7, "games": 7}, "Middle Tennessee": {"last": "Roman Gagliano", "primary": "Roman Gagliano", "share_last": 0.99, "share_primary": 0.99, "starts_last": 6, "games": 6}, "Minnesota": {"last": "Drake Lindsey", "primary": "Drake Lindsey", "share_last": 0.95, "share_primary": 0.95, "starts_last": 6, "games": 6}, "Mississippi State": {"last": "Parker Puckett", "primary": "Kamario Taylor", "share_last": 0.2, "share_primary": 0.78, "starts_last": 3, "games": 6}, "Missouri State": {"last": "Henry Belin IV", "primary": "Skyler Locklear", "share_last": 0.4, "share_primary": 0.59, "starts_last": 5, "games": 6}, "NC State": {"last": "CJ Bailey", "primary": "CJ Bailey", "share_last": 0.92, "share_primary": 0.92, "starts_last": 6, "games": 6}, "Navy": {"last": "Jackson Gutierrez", "primary": "Jackson Gutierrez", "share_last": 0.72, "share_primary": 0.72, "starts_last": 5, "games": 6}, "Nevada": {"last": "AJ Bianco", "primary": "Carter Jones", "share_last": 0.35, "share_primary": 0.55, "starts_last": 4, "games": 6}, "New Mexico": {"last": "Toa Faavae", "primary": "Toa Faavae", "share_last": 0.61, "share_primary": 0.61, "starts_last": 6, "games": 6}, "New Mexico State": {"last": "Adam Damante", "primary": "Trey Hedden", "share_last": 0.37, "share_primary": 0.62, "starts_last": 4, "games": 6}, "North Carolina": {"last": "Billy Edwards", "primary": "Billy Edwards", "share_last": 0.96, "share_primary": 0.96, "starts_last": 6, "games": 6}, "North Dakota State": {"last": "Nathan Hayes", "primary": "Nathan Hayes", "share_last": 0.94, "share_primary": 0.94, "starts_last": 7, "games": 7}, "North Texas": {"last": "Tayven Jackson", "primary": "Tayven Jackson", "share_last": 0.89, "share_primary": 0.89, "starts_last": 6, "games": 6}, "Northern Illinois": {"last": "Taron Dickens", "primary": "Taron Dickens", "share_last": 0.91, "share_primary": 0.91, "starts_last": 6, "games": 6}, "Northwestern": {"last": "Aidan Chiles", "primary": "Aidan Chiles", "share_last": 0.97, "share_primary": 0.97, "starts_last": 6, "games": 6}, "Ohio": {"last": "Nick Poulos", "primary": "Nick Poulos", "share_last": 0.43, "share_primary": 0.43, "starts_last": 4, "games": 7}, "Oklahoma": {"last": "John Mateer", "primary": "John Mateer", "share_last": 0.98, "share_primary": 0.98, "starts_last": 6, "games": 6}, "Oklahoma State": {"last": "Drew Mestemaker", "primary": "Drew Mestemaker", "share_last": 0.96, "share_primary": 0.96, "starts_last": 6, "games": 6}, "Old Dominion": {"last": "Ryan Huff", "primary": "Quinn Henicle", "share_last": 0.39, "share_primary": 0.58, "starts_last": 4, "games": 7}, "Ole Miss": {"last": "Trinidad Chambliss", "primary": "Trinidad Chambliss", "share_last": 0.95, "share_primary": 0.95, "starts_last": 6, "games": 6}, "Oregon": {"last": "Brock Thomas", "primary": "Dante Moore", "share_last": 0.17, "share_primary": 0.45, "starts_last": 3, "games": 6}, "Pittsburgh": {"last": "Corey Dailey", "primary": "Mason Heintschel", "share_last": 0.15, "share_primary": 0.82, "starts_last": 2, "games": 6}, "Rice": {"last": "Jacurri Brown", "primary": "Jacurri Brown", "share_last": 0.88, "share_primary": 0.88, "starts_last": 7, "games": 7}, "Rutgers": {"last": "Dylan Lonergan", "primary": "Dylan Lonergan", "share_last": 0.71, "share_primary": 0.71, "starts_last": 5, "games": 6}, "SMU": {"last": "Kevin Jennings", "primary": "Kevin Jennings", "share_last": 0.92, "share_primary": 0.92, "starts_last": 6, "games": 6}, "Sacramento State": {"last": "Jackson Sharman", "primary": "Jackson Sharman", "share_last": 0.78, "share_primary": 0.78, "starts_last": 6, "games": 7}, "Sam Houston": {"last": "Landyn Locke", "primary": "Landyn Locke", "share_last": 0.97, "share_primary": 0.97, "starts_last": 6, "games": 6}, "San Diego State": {"last": "Jayden Denegal", "primary": "Jayden Denegal", "share_last": 0.99, "share_primary": 0.99, "starts_last": 7, "games": 7}, "San Jos\u00e9 State": {"last": "Daniel Rolovich", "primary": "Luke Weaver", "share_last": 0.1, "share_primary": 0.89, "starts_last": 1, "games": 7}, "South Alabama": {"last": "Jared Hollins", "primary": "Jared Hollins", "share_last": 0.6, "share_primary": 0.6, "starts_last": 4, "games": 6}, "South Carolina": {"last": "Lanorris Sellers", "primary": "Lanorris Sellers", "share_last": 0.92, "share_primary": 0.92, "starts_last": 6, "games": 6}, "Southern Miss": {"last": "Landy Lyddy", "primary": "Landy Lyddy", "share_last": 0.63, "share_primary": 0.63, "starts_last": 6, "games": 6}, "Stanford": {"last": "Davis Warren", "primary": "Davis Warren", "share_last": 0.96, "share_primary": 0.96, "starts_last": 7, "games": 7}, "Syracuse": {"last": "Malachi Nelson", "primary": "Steven Angeli", "share_last": 0.3, "share_primary": 0.43, "starts_last": 3, "games": 6}, "TCU": {"last": "Jaden Craig", "primary": "Jaden Craig", "share_last": 0.99, "share_primary": 0.99, "starts_last": 6, "games": 6}, "Tennessee": {"last": "George MacIntyre", "primary": "Faizon Brandon", "share_last": 0.43, "share_primary": 0.55, "starts_last": 5, "games": 7}, "Texas": {"last": "Arch Manning", "primary": "Arch Manning", "share_last": 0.94, "share_primary": 0.94, "starts_last": 6, "games": 6}, "Texas A&M": {"last": "Marcel Reed", "primary": "Marcel Reed", "share_last": 0.91, "share_primary": 0.91, "starts_last": 7, "games": 7}, "Texas State": {"last": "Brad Jackson", "primary": "Brad Jackson", "share_last": 0.95, "share_primary": 0.95, "starts_last": 6, "games": 6}, "Texas Tech": {"last": "Will Hammond", "primary": "Will Hammond", "share_last": 0.97, "share_primary": 0.97, "starts_last": 6, "games": 6}, "Toledo": {"last": "John Alan Richter", "primary": "John Alan Richter", "share_last": 0.97, "share_primary": 0.97, "starts_last": 7, "games": 7}, "Troy": {"last": "Will Crowder", "primary": "Will Crowder", "share_last": 0.93, "share_primary": 0.93, "starts_last": 6, "games": 6}, "Tulane": {"last": "Trace Johnson", "primary": "Kadin Semonza", "share_last": 0.16, "share_primary": 0.77, "starts_last": 2, "games": 6}, "Tulsa": {"last": "Baylor Hayes", "primary": "Baylor Hayes", "share_last": 0.71, "share_primary": 0.71, "starts_last": 5, "games": 7}, "UCF": {"last": "Keyone Jenkins", "primary": "Keyone Jenkins", "share_last": 0.69, "share_primary": 0.69, "starts_last": 5, "games": 6}, "UCLA": {"last": "Ty Dieffenbach", "primary": "Nico Iamaleava", "share_last": 0.25, "share_primary": 0.73, "starts_last": 2, "games": 6}, "UConn": {"last": "Kalieb Osborne", "primary": "Kalieb Osborne", "share_last": 0.94, "share_primary": 0.94, "starts_last": 6, "games": 6}, "UL Monroe": {"last": "Aidan Armenta", "primary": "Aidan Armenta", "share_last": 0.68, "share_primary": 0.68, "starts_last": 5, "games": 6}, "USC": {"last": "Jayden Maiava", "primary": "Jayden Maiava", "share_last": 0.94, "share_primary": 0.94, "starts_last": 7, "games": 7}, "UTSA": {"last": "Owen McCown", "primary": "Owen McCown", "share_last": 0.98, "share_primary": 0.98, "starts_last": 7, "games": 7}, "Utah": {"last": "Devon Dampier", "primary": "Devon Dampier", "share_last": 0.9, "share_primary": 0.9, "starts_last": 6, "games": 6}, "Utah State": {"last": "Grady Brosterhous", "primary": "Grady Brosterhous", "share_last": 0.81, "share_primary": 0.81, "starts_last": 6, "games": 6}, "Vanderbilt": {"last": "Jared Curtis", "primary": "Jared Curtis", "share_last": 0.74, "share_primary": 0.74, "starts_last": 6, "games": 7}, "Virginia": {"last": "Beau Pribula", "primary": "Beau Pribula", "share_last": 0.86, "share_primary": 0.86, "starts_last": 7, "games": 7}, "Virginia Tech": {"last": "Ethan Grunkemeyer", "primary": "Ethan Grunkemeyer", "share_last": 0.94, "share_primary": 0.94, "starts_last": 7, "games": 7}, "Washington State": {"last": "Owen Eshelman", "primary": "Caden Pinnick", "share_last": 0.22, "share_primary": 0.78, "starts_last": 1, "games": 7}, "West Virginia": {"last": "Michael Hawkins Jr.", "primary": "Michael Hawkins Jr.", "share_last": 0.97, "share_primary": 0.97, "starts_last": 7, "games": 7}, "Western Michigan": {"last": "Broc Lowry", "primary": "Broc Lowry", "share_last": 0.95, "share_primary": 0.95, "starts_last": 7, "games": 7}, "Wisconsin": {"last": "Colton Joseph", "primary": "Colton Joseph", "share_last": 1.0, "share_primary": 1.0, "starts_last": 6, "games": 6}, "Wyoming": {"last": "Tyler Hughes", "primary": "Tyler Hughes", "share_last": 1.0, "share_primary": 1.0, "starts_last": 7, "games": 7}}}, "nfl": {"week": 7, "games": [{"id": "2026_07_PIT_NO", "espn": "401873011", "kick": "2026-10-25T13:30:00+00:00", "away": "PIT", "home": "NO", "neutral": true, "stadium": "Stade de France", "outdoor": true, "lat": 48.924, "lon": 2.36, "away_conf": "AFC North", "home_conf": "NFC South", "pa": 24.5, "ph": 22.06, "qa": "A.Rodgers", "qh": "T.Shough", "qa0": -0.011281990852182597, "qh0": -0.03683431256104577, "line_spread": 3.0, "line_total": 44.5}, {"id": "2026_07_SF_ATL", "espn": "401873017", "kick": "2026-10-25T17:00:00+00:00", "away": "SF", "home": "ATL", "neutral": false, "stadium": "Mercedes-Benz Stadium", "outdoor": false, "lat": 33.755, "lon": -84.401, "away_conf": "NFC West", "home_conf": "NFC South", "pa": 28.0, "ph": 23.36, "qa": "B.Purdy", "qh": "M.Penix", "qa0": 0.1460681091107191, "qh0": 0.003066573392949544, "line_spread": 2.5, "line_total": 49.5}, {"id": "2026_07_CIN_BAL", "espn": "401873012", "kick": "2026-10-25T17:00:00+00:00", "away": "CIN", "home": "BAL", "neutral": false, "stadium": "M&T Bank Stadium", "outdoor": true, "lat": 39.278, "lon": -76.623, "away_conf": "AFC North", "home_conf": "AFC North", "pa": 25.15, "ph": 22.81, "qa": "J.Burrow", "qh": "T.Huntley", "qa0": 0.10440249151199109, "qh0": -0.06192138607423564, "line_spread": 1.5, "line_total": 47.5}, {"id": "2026_07_TB_CAR", "espn": "401873018", "kick": "2026-10-25T17:00:00+00:00", "away": "TB", "home": "CAR", "neutral": false, "stadium": "Bank of America Stadium", "outdoor": true, "lat": 35.226, "lon": -80.853, "away_conf": "NFC South", "home_conf": "NFC South", "pa": 18.93, "ph": 23.31, "qa": "J.Daniels", "qh": "B.Young", "qa0": -0.08467241004033914, "qh0": -0.033764346240959725, "line_spread": -3.0, "line_total": 44.5}, {"id": "2026_07_NYG_HOU", "espn": "401873016", "kick": "2026-10-25T17:00:00+00:00", "away": "NYG", "home": "HOU", "neutral": false, "stadium": "Reliant Stadium", "outdoor": false, "lat": 29.685, "lon": -95.411, "away_conf": "NFC East", "home_conf": "AFC South", "pa": 19.81, "ph": 26.97, "qa": "J.Winston", "qh": "C.Stroud", "qa0": -0.03850598828904933, "qh0": 0.06770144280040577, "line_spread": -10.0, "line_total": 42.5}, {"id": "2026_07_IND_MIN", "espn": "401873014", "kick": "2026-10-25T17:00:00+00:00", "away": "IND", "home": "MIN", "neutral": false, "stadium": "U.S. Bank Stadium", "outdoor": false, "lat": 44.974, "lon": -93.258, "away_conf": "AFC South", "home_conf": "NFC North", "pa": 19.7, "ph": 23.62, "qa": "D.Jones", "qh": "K.Murray", "qa0": -0.04897194327951336, "qh0": 0.0015119736359296932, "line_spread": -6.5, "line_total": 41.5}, {"id": "2026_07_MIA_NYJ", "espn": "401873015", "kick": "2026-10-25T17:00:00+00:00", "away": "MIA", "home": "NYJ", "neutral": false, "stadium": "MetLife Stadium", "outdoor": true, "lat": 40.814, "lon": -74.074, "away_conf": "AFC East", "home_conf": "AFC East", "pa": 20.19, "ph": 22.35, "qa": "M.Willis", "qh": "G.Smith", "qa0": -0.09438138860357101, "qh0": -0.019795971107142474, "line_spread": -4.5, "line_total": 39.5}, {"id": "2026_07_CLE_TEN", "espn": "401873013", "kick": "2026-10-25T17:00:00+00:00", "away": "CLE", "home": "TEN", "neutral": false, "stadium": "Nissan Stadium", "outdoor": true, "lat": 36.166, "lon": -86.771, "away_conf": "AFC North", "home_conf": "AFC South", "pa": 20.96, "ph": 18.35, "qa": "D.Watson", "qh": "C.Ward", "qa0": -0.03338089873207459, "qh0": -0.1546126779545492, "line_spread": 2.5, "line_total": 36.5}, {"id": "2026_07_DEN_ARI", "espn": "401873019", "kick": "2026-10-25T20:05:00+00:00", "away": "DEN", "home": "ARI", "neutral": false, "stadium": "State Farm Stadium", "outdoor": false, "lat": 33.528, "lon": -112.263, "away_conf": "AFC West", "home_conf": "NFC West", "pa": 24.59, "ph": 21.24, "qa": "B.Nix", "qh": "J.Brissett", "qa0": 0.006005261359701041, "qh0": -0.03088539560209537, "line_spread": 4.5, "line_total": 43.5}, {"id": "2026_07_GB_DET", "espn": "401873020", "kick": "2026-10-25T20:25:00+00:00", "away": "GB", "home": "DET", "neutral": false, "stadium": "Ford Field", "outdoor": false, "lat": 42.34, "lon": -83.046, "away_conf": "NFC North", "home_conf": "NFC North", "pa": 24.34, "ph": 28.13, "qa": "J.Love", "qh": "J.Goff", "qa0": 0.12415330158243197, "qh0": 0.17630467348542467, "line_spread": -3.0, "line_total": 53.5}, {"id": "2026_07_LA_LV", "espn": "401873021", "kick": "2026-10-25T20:25:00+00:00", "away": "LA", "home": "LV", "neutral": false, "stadium": "Allegiant Stadium", "outdoor": false, "lat": 36.091, "lon": -115.184, "away_conf": "NFC West", "home_conf": "AFC West", "pa": 26.23, "ph": 24.46, "qa": "M.Stafford", "qh": "K.Cousins", "qa0": 0.07540589009831924, "qh0": 0.06600192403273475, "line_spread": 3.0, "line_total": 48.5}, {"id": "2026_07_KC_SEA", "espn": "401873022", "kick": "2026-10-26T00:20:00+00:00", "away": "KC", "home": "SEA", "neutral": false, "stadium": "Lumen Field", "outdoor": true, "lat": 47.595, "lon": -122.332, "away_conf": "AFC West", "home_conf": "NFC West", "pa": 23.59, "ph": 22.45, "qa": "P.Mahomes", "qh": "S.Darnold", "qa0": 0.10559969120477412, "qh0": -0.013004785516805561, "line_spread": -3.0, "line_total": 42.5}, {"id": "2026_07_DAL_PHI", "espn": "401873009", "kick": "2026-10-27T00:15:00+00:00", "away": "DAL", "home": "PHI", "neutral": false, "stadium": "Lincoln Financial Field", "outdoor": true, "lat": 39.901, "lon": -75.168, "away_conf": "NFC East", "home_conf": "NFC East", "pa": 25.02, "ph": 22.41, "qa": "D.Prescott", "qh": "T.McKee", "qa0": 0.08199234304008406, "qh0": -0.05522228952421214, "line_spread": 4.5, "line_total": 44.5}], "coef": {"wind": -0.1596992091896635, "qb_own": 26.75719577435192, "qb_opp": -6.6825316344279315}, "qbs": {"D.Prescott": 0.082, "J.Hurts": 0.0258, "P.Mahomes": 0.1056, "J.Herbert": -0.0331, "K.Murray": 0.0015, "S.Rattler": -0.1598, "L.Jackson": 0.1503, "J.Allen": 0.1384, "B.Young": -0.0338, "T.Lawrence": 0.0663, "J.Burrow": 0.1044, "J.Flacco": -0.0845, "J.Goff": 0.1763, "J.Love": 0.1242, "C.Stroud": 0.0677, "M.Stafford": 0.0754, "G.Smith": -0.0198, "D.Maye": 0.1244, "D.Jones": -0.049, "T.Tagovailoa": 0.0806, "R.Wilson": -0.0665, "J.Daniels": -0.0847, "J.Fields": -0.1059, "A.Rodgers": -0.0113, "S.Darnold": -0.013, "B.Purdy": 0.1461, "M.Penix": 0.0031, "B.Mayfield": -0.0168, "B.Nix": 0.006, "C.Ward": -0.1546, "C.Williams": 0.0327, "J.McCarthy": -0.0948, "J.Browning": -0.0776, "M.Jones": 0.0093, "C.Wentz": -0.0257, "M.Mariota": 0.0224, "T.Taylor": -0.0212, "J.Dart": 0.0383, "C.Rush": -0.1596, "D.Gabriel": -0.1322, "J.Brissett": -0.0309, "A.Dalton": -0.0765, "T.Huntley": -0.0619, "K.Cousins": 0.066, "T.Shough": -0.0368, "D.Mills": -0.1096, "S.Sanders": -0.1791, "M.Rudolph": -0.0368, "J.Winston": -0.0385, "M.Brosmer": -0.2226, "R.Leonard": -0.0762, "B.Cook": -0.1971, "P.Rivers": 0.0572, "K.Pickett": -0.1016, "M.Willis": -0.0944, "Q.Ewers": -0.0585, "C.Oladokun": -0.1685, "J.Johnson": 0.0197, "J.Milton": -0.0504, "C.Tune": -0.243, "A.O'Connell": -0.0655, "T.Lance": -0.1287, "M.Trubisky": 0.0535, "B.Allen": -0.2071, "T.McKee": -0.0552, "D.Lock": 0.0049, "D.Watson": -0.0334, "C.Keenum": -0.0038, "A.Kaliakmanis": -0.084, "T.Bagent": -0.1222}, "team_qbs": {"ARI": ["J.Brissett", "K.Murray"], "ATL": ["M.Penix", "C.Rush", "K.Cousins"], "BAL": ["T.Huntley", "L.Jackson", "C.Rush"], "BUF": ["J.Allen", "M.Trubisky"], "CAR": ["B.Young", "A.Dalton"], "CHI": ["C.Williams", "T.Bagent", "C.Keenum"], "CIN": ["J.Burrow", "J.Flacco", "J.Browning"], "CLE": ["D.Watson", "S.Sanders", "D.Gabriel", "J.Flacco"], "DAL": ["D.Prescott", "J.Milton"], "DEN": ["B.Nix"], "DET": ["J.Goff"], "GB": ["J.Love", "C.Tune", "M.Willis"], "HOU": ["C.Stroud", "D.Mills"], "IND": ["D.Jones", "R.Leonard", "P.Rivers"], "JAX": ["T.Lawrence"], "KC": ["P.Mahomes", "C.Oladokun"], "LA": ["M.Stafford"], "LAC": ["J.Herbert", "T.Lance"], "LV": ["K.Cousins", "A.O'Connell", "G.Smith", "K.Pickett"], "MIA": ["M.Willis", "Q.Ewers", "T.Tagovailoa"], "MIN": ["K.Murray", "C.Wentz", "J.McCarthy", "M.Brosmer"], "NE": ["D.Maye"], "NO": ["T.Shough", "S.Rattler"], "NYG": ["J.Winston", "J.Dart", "R.Wilson"], "NYJ": ["G.Smith", "B.Cook", "T.Taylor", "J.Fields"], "PHI": ["T.McKee", "J.Hurts"], "PIT": ["A.Rodgers", "M.Rudolph"], "SEA": ["S.Darnold", "D.Lock"], "SF": ["B.Purdy", "M.Jones"], "TB": ["J.Daniels", "B.Mayfield"], "TEN": ["C.Ward", "B.Allen"], "WAS": ["J.Daniels", "A.Kaliakmanis", "M.Mariota", "J.Johnson"]}, "primary": {"ARI": "J.Brissett", "ATL": "M.Penix", "BAL": "L.Jackson", "BUF": "J.Allen", "CAR": "B.Young", "CHI": "C.Williams", "CIN": "J.Burrow", "CLE": "D.Watson", "DAL": "D.Prescott", "DEN": "B.Nix", "DET": "J.Goff", "GB": "J.Love", "HOU": "C.Stroud", "IND": "D.Jones", "JAX": "T.Lawrence", "KC": "P.Mahomes", "LA": "M.Stafford", "LAC": "J.Herbert", "LV": "K.Cousins", "MIA": "M.Willis", "MIN": "K.Murray", "NE": "D.Maye", "NO": "T.Shough", "NYG": "J.Winston", "NYJ": "G.Smith", "PHI": "J.Hurts", "PIT": "A.Rodgers", "SEA": "S.Darnold", "SF": "B.Purdy", "TB": "B.Mayfield", "TEN": "C.Ward", "WAS": "J.Daniels"}, "qb_default": -0.06}}, "bets": [{"date": "2026-10-24", "league": "CFB", "week": "8", "game_id": "401858274", "game": "Pittsburgh @ Miami", "bet": "Pittsburgh/Miami UNDER 50.5", "rule": "cfb_wind_under", "market": "total", "side": "under", "line": "50.5", "odds": "-110", "hit_rate": "0.57", "n": "150", "stake": "45", "to_win": "40.91", "result": "", "profit": "", "away": "Pittsburgh", "home": "Miami", "away_conf": "ACC", "home_conf": "ACC", "kick_hour": "11.0", "wind": "14.0", "line_spread": "-20.5", "line_total": "50.5", "model_total": "47.0", "model_home_spread": "-18.6"}, {"date": "2026-10-24", "league": "CFB", "week": "8", "game_id": "401856835", "game": "BYU @ UCF", "bet": "BYU/UCF UNDER 43.5", "rule": "cfb_wind_under", "market": "total", "side": "under", "line": "43.5", "odds": "-110", "hit_rate": "0.57", "n": "150", "stake": "45", "to_win": "40.91", "result": "", "profit": "", "away": "BYU", "home": "UCF", "away_conf": "Big 12", "home_conf": "Big 12", "kick_hour": "14.5", "wind": "15.0", "line_spread": "7.5", "line_total": "43.5", "model_total": "42.3", "model_home_spread": "8.0"}, {"date": "2026-10-24", "league": "CFB", "week": "8", "game_id": "401860906", "game": "Utah State @ Texas State", "bet": "Utah State/Texas State UNDER 60.5", "rule": "cfb_total_gap7", "market": "total", "side": "under", "line": "60.5", "odds": "-110", "hit_rate": "0.6", "n": "55", "stake": "29", "to_win": "26.36", "result": "", "profit": "", "away": "Utah State", "home": "Texas State", "away_conf": "Pac-12", "home_conf": "Pac-12", "kick_hour": "18.5", "wind": "10.0", "line_spread": "-13.0", "line_total": "60.5", "model_total": "50.6", "model_home_spread": "-8.4"}, {"date": "2026-10-24", "league": "CFB", "week": "8", "game_id": "401856839", "game": "Kansas State @ Arizona State", "bet": "Arizona State +2.5", "rule": "cfb_tz_home", "market": "spread", "side": "home", "line": "2.5", "odds": "-110", "hit_rate": "0.55", "n": "129", "stake": "11", "to_win": "10.0", "result": "", "profit": "", "away": "Kansas State", "home": "Arizona State", "away_conf": "Big 12", "home_conf": "Big 12", "kick_hour": "14.75", "wind": "5.0", "line_spread": "2.5", "line_total": "55.5", "model_total": "54.6", "model_home_spread": "-1.6"}, {"date": "2026-10-25", "league": "NFL", "week": "7", "game_id": "2026_07_PIT_NO", "game": "PIT @ NO", "bet": "PIT/NO UNDER 44.5", "rule": "nfl_wind_under_10_14", "market": "total", "side": "under", "line": "44.5", "odds": "-110", "hit_rate": "0.591", "n": "465", "stake": "65", "to_win": "59.09", "result": "", "profit": "", "away": "PIT", "home": "NO", "away_conf": "AFC North", "home_conf": "NFC South", "kick_hour": "8.5", "wind": "14.0", "line_spread": "3.5", "line_total": "44.5", "model_total": "42.1", "model_home_spread": "2.4"}, {"date": "2026-10-25", "league": "NFL", "week": "7", "game_id": "2026_07_TB_CAR", "game": "TB @ CAR", "bet": "TB/CAR UNDER 44.5", "rule": "nfl_wind_under_10_14", "market": "total", "side": "under", "line": "44.5", "odds": "-110", "hit_rate": "0.591", "n": "465", "stake": "65", "to_win": "59.09", "result": "", "profit": "", "away": "TB", "home": "CAR", "away_conf": "NFC South", "home_conf": "NFC South", "kick_hour": "12.0", "wind": "10.0", "line_spread": "-3.0", "line_total": "44.5", "model_total": "40.4", "model_home_spread": "-2.1"}], "picks": [{"season": "2026", "league": "CFB", "week": "8", "game_id": "401858274", "game": "Pittsburgh @ Miami", "rule": "cfb_wind_under", "market": "total", "side": "under", "line": "50.5", "model_total": "47.0", "model_home_spread": "-18.6", "stake": "", "result": "", "date": "2026-10-24", "skipped": "", "away": "Pittsburgh", "home": "Miami", "away_conf": "ACC", "home_conf": "ACC", "kick_hour": "11.0", "wind": "14.0", "line_spread": "-20.5", "line_total": "50.5"}, {"season": "2026", "league": "CFB", "week": "8", "game_id": "401856835", "game": "BYU @ UCF", "rule": "cfb_wind_under", "market": "total", "side": "under", "line": "43.5", "model_total": "42.3", "model_home_spread": "8.0", "stake": "", "result": "", "date": "2026-10-24", "skipped": "", "away": "BYU", "home": "UCF", "away_conf": "Big 12", "home_conf": "Big 12", "kick_hour": "14.5", "wind": "15.0", "line_spread": "7.5", "line_total": "43.5"}, {"season": "2026", "league": "CFB", "week": "8", "game_id": "401856838", "game": "Iowa State @ Arizona", "rule": "cfb_tz_home_model_disagrees", "market": "spread", "side": "home", "line": "-10.5", "model_total": "49.9", "model_home_spread": "-5.4", "stake": "", "result": "", "date": "2026-10-24", "skipped": "", "away": "Iowa State", "home": "Arizona", "away_conf": "Big 12", "home_conf": "Big 12", "kick_hour": "18.5", "wind": "8.0", "line_spread": "-10.5", "line_total": "50.5"}, {"season": "2026", "league": "CFB", "week": "8", "game_id": "401858499", "game": "Michigan State @ UCLA", "rule": "cfb_total_gap7", "market": "total", "side": "over", "line": "43.5", "model_total": "51.5", "model_home_spread": "-9.0", "stake": "", "result": "", "date": "2026-10-24", "skipped": "Y", "away": "Michigan State", "home": "UCLA", "away_conf": "Big Ten", "home_conf": "Big Ten", "kick_hour": "14.5", "wind": "5.0", "line_spread": "-14.5", "line_total": "43.5"}, {"season": "2026", "league": "CFB", "week": "8", "game_id": "401858499", "game": "Michigan State @ UCLA", "rule": "cfb_tz_home_model_disagrees", "market": "spread", "side": "home", "line": "-14.5", "model_total": "51.5", "model_home_spread": "-9.0", "stake": "", "result": "", "date": "2026-10-24", "skipped": "Y", "away": "Michigan State", "home": "UCLA", "away_conf": "Big Ten", "home_conf": "Big Ten", "kick_hour": "14.5", "wind": "5.0", "line_spread": "-14.5", "line_total": "43.5"}, {"season": "2026", "league": "CFB", "week": "8", "game_id": "401856839", "game": "Kansas State @ Arizona State", "rule": "cfb_tz_home", "market": "spread", "side": "home", "line": "2.5", "model_total": "54.6", "model_home_spread": "-1.6", "stake": "", "result": "", "date": "2026-10-24", "skipped": "", "away": "Kansas State", "home": "Arizona State", "away_conf": "Big 12", "home_conf": "Big 12", "kick_hour": "14.75", "wind": "5.0", "line_spread": "2.5", "line_total": "55.5"}, {"season": "2026", "league": "CFB", "week": "8", "game_id": "401860906", "game": "Utah State @ Texas State", "rule": "cfb_total_gap7", "market": "total", "side": "under", "line": "60.5", "model_total": "50.6", "model_home_spread": "-8.4", "stake": "", "result": "", "date": "2026-10-24", "skipped": "", "away": "Utah State", "home": "Texas State", "away_conf": "Pac-12", "home_conf": "Pac-12", "kick_hour": "18.5", "wind": "10.0", "line_spread": "-13.0", "line_total": "60.5"}, {"season": "2026", "league": "NFL", "week": "7", "game_id": "2026_07_PIT_NO", "game": "PIT @ NO", "rule": "nfl_wind_under_10_14", "market": "total", "side": "under", "line": "44.5", "model_total": "42.1", "model_home_spread": "2.4", "stake": "", "result": "", "date": "2026-10-25", "skipped": "", "away": "PIT", "home": "NO", "away_conf": "AFC North", "home_conf": "NFC South", "kick_hour": "8.5", "wind": "14.0", "line_spread": "3.5", "line_total": "44.5"}, {"season": "2026", "league": "NFL", "week": "7", "game_id": "2026_07_TB_CAR", "game": "TB @ CAR", "rule": "nfl_wind_under_10_14", "market": "total", "side": "under", "line": "44.5", "model_total": "40.4", "model_home_spread": "-2.1", "stake": "", "result": "", "date": "2026-10-25", "skipped": "", "away": "TB", "home": "CAR", "away_conf": "NFC South", "home_conf": "NFC South", "kick_hour": "12.0", "wind": "10.0", "line_spread": "-3.0", "line_total": "44.5"}, {"season": "2026", "league": "NFL", "week": "7", "game_id": "2026_07_KC_SEA", "game": "KC @ SEA", "rule": "nfl_side_gap4", "market": "spread", "side": "away", "line": "-3.0", "model_total": "45.1", "model_home_spread": "1.1", "stake": "", "result": "", "date": "2026-10-25", "skipped": "", "away": "KC", "home": "SEA", "away_conf": "AFC West", "home_conf": "NFC West", "kick_hour": "19.33", "wind": "3.0", "line_spread": "-3.0", "line_total": "42.5"}], "predlog": [{"season": "2026", "league": "CFB", "week": "8", "date": "2026-10-20", "id": "401871069", "away": "Missouri State", "home": "Delaware", "pred_away": "23.4", "pred_home": "32.3"}, {"season": "2026", "league": "CFB", "week": "8", "date": "2026-10-20", "id": "401871055", "away": "Middle Tennessee", "home": "Florida International", "pred_away": "16.7", "pred_home": "33.5"}, {"season": "2026", "league": "CFB", "week": "8", "date": "2026-10-20", "id": "401871092", "away": "South Alabama", "home": "Marshall", "pred_away": "29.1", "pred_home": "32.7"}, {"season": "2026", "league": "CFB", "week": "8", "date": "2026-10-21", "id": "401871070", "away": "New Mexico State", "home": "Sam Houston", "pred_away": "27.7", "pred_home": "24.9"}, {"season": "2026", "league": "CFB", "week": "8", "date": "2026-10-22", "id": "401871056", "away": "Liberty", "home": "Kennesaw State", "pred_away": "31.5", "pred_home": "19.5"}, {"season": "2026", "league": "CFB", "week": "8", "date": "2026-10-22", "id": "401869845", "away": "James Madison", "home": "App State", "pred_away": "36.7", "pred_home": "20.3"}, {"season": "2026", "league": "CFB", "week": "8", "date": "2026-10-22", "id": "401862807", "away": "East Carolina", "home": "Memphis", "pred_away": "21.3", "pred_home": "34.3"}, {"season": "2026", "league": "CFB", "week": "8", "date": "2026-10-23", "id": "401861965", "away": "Massachusetts", "home": "UConn", "pred_away": "20.2", "pred_home": "33.6"}, {"season": "2026", "league": "CFB", "week": "8", "date": "2026-10-23", "id": "401858271", "away": "Duke", "home": "Virginia", "pred_away": "19.6", "pred_home": "24.4"}, {"season": "2026", "league": "CFB", "week": "8", "date": "2026-10-23", "id": "401862808", "away": "Army", "home": "Tulsa", "pred_away": "30.9", "pred_home": "24.7"}, {"season": "2026", "league": "CFB", "week": "8", "date": "2026-10-23", "id": "401864525", "away": "Air Force", "home": "Wyoming", "pred_away": "26.1", "pred_home": "22.4"}, {"season": "2026", "league": "CFB", "week": "8", "date": "2026-10-23", "id": "401858272", "away": "NC State", "home": "Stanford", "pred_away": "33.0", "pred_home": "23.0"}, {"season": "2026", "league": "CFB", "week": "8", "date": "2026-10-24", "id": "401856728", "away": "LSU", "home": "Auburn", "pred_away": "28.6", "pred_home": "20.5"}, {"season": "2026", "league": "CFB", "week": "8", "date": "2026-10-24", "id": "401856841", "away": "West Virginia", "home": "TCU", "pred_away": "17.4", "pred_home": "33.6"}, {"season": "2026", "league": "CFB", "week": "8", "date": "2026-10-24", "id": "401856840", "away": "Texas Tech", "home": "Cincinnati", "pred_away": "35.4", "pred_home": "23.1"}, {"season": "2026", "league": "CFB", "week": "8", "date": "2026-10-24", "id": "401866450", "away": "Western Michigan", "home": "Toledo", "pred_away": "23.4", "pred_home": "29.5"}, {"season": "2026", "league": "CFB", "week": "8", "date": "2026-10-24", "id": "401862809", "away": "Rice", "home": "Florida Atlantic", "pred_away": "21.0", "pred_home": "34.8"}, {"season": "2026", "league": "CFB", "week": "8", "date": "2026-10-24", "id": "401858270", "away": "California", "home": "SMU", "pred_away": "16.6", "pred_home": "35.2"}, {"season": "2026", "league": "CFB", "week": "8", "date": "2026-10-24", "id": "401858274", "away": "Pittsburgh", "home": "Miami", "pred_away": "16.7", "pred_home": "32.3"}, {"season": "2026", "league": "CFB", "week": "8", "date": "2026-10-24", "id": "401858496", "away": "Indiana", "home": "Michigan", "pred_away": "28.1", "pred_home": "18.3"}, {"season": "2026", "league": "CFB", "week": "8", "date": "2026-10-24", "id": "401858498", "away": "Rutgers", "home": "Northwestern", "pred_away": "21.0", "pred_home": "38.4"}, {"season": "2026", "league": "CFB", "week": "8", "date": "2026-10-24", "id": "401866446", "away": "Akron", "home": "Kent State", "pred_away": "22.8", "pred_home": "27.9"}, {"season": "2026", "league": "CFB", "week": "8", "date": "2026-10-24", "id": "401856834", "away": "Baylor", "home": "Kansas", "pred_away": "23.7", "pred_home": "28.8"}, {"season": "2026", "league": "CFB", "week": "8", "date": "2026-10-24", "id": "401866476", "away": "Miami (OH)", "home": "Central Michigan", "pred_away": "24.6", "pred_home": "24.3"}, {"season": "2026", "league": "CFB", "week": "8", "date": "2026-10-24", "id": "401858495", "away": "Oregon", "home": "Illinois", "pred_away": "30.7", "pred_home": "22.7"}, {"season": "2026", "league": "CFB", "week": "8", "date": "2026-10-24", "id": "401856727", "away": "Texas A&M", "home": "Alabama", "pred_away": "19.5", "pred_home": "33.2"}, {"season": "2026", "league": "CFB", "week": "8", "date": "2026-10-24", "id": "401856730", "away": "Oklahoma", "home": "Mississippi State", "pred_away": "23.1", "pred_home": "22.9"}, {"season": "2026", "league": "CFB", "week": "8", "date": "2026-10-24", "id": "401858499", "away": "Michigan State", "home": "UCLA", "pred_away": "21.2", "pred_home": "31.3"}, {"season": "2026", "league": "CFB", "week": "8", "date": "2026-10-24", "id": "401858273", "away": "Boston College", "home": "Georgia Tech", "pred_away": "22.1", "pred_home": "27.8"}, {"season": "2026", "league": "CFB", "week": "8", "date": "2026-10-24", "id": "401856731", "away": "Tennessee", "home": "South Carolina", "pred_away": "26.5", "pred_home": "24.7"}, {"season": "2026", "league": "CFB", "week": "8", "date": "2026-10-24", "id": "401864526", "away": "Hawai'i", "home": "Northern Illinois", "pred_away": "29.3", "pred_home": "25.9"}, {"season": "2026", "league": "CFB", "week": "8", "date": "2026-10-24", "id": "401866448", "away": "Bowling Green", "home": "Buffalo", "pred_away": "22.2", "pred_home": "29.9"}, {"season": "2026", "league": "CFB", "week": "8", "date": "2026-10-24", "id": "401866447", "away": "Sacramento State", "home": "Ball State", "pred_away": "26.6", "pred_home": "32.1"}, {"season": "2026", "league": "CFB", "week": "8", "date": "2026-10-24", "id": "401856835", "away": "BYU", "home": "UCF", "pred_away": "26.9", "pred_home": "18.9"}, {"season": "2026", "league": "CFB", "week": "8", "date": "2026-10-24", "id": "401862810", "away": "North Texas", "home": "Navy", "pred_away": "30.2", "pred_home": "26.8"}, {"season": "2026", "league": "CFB", "week": "8", "date": "2026-10-24", "id": "401858497", "away": "Iowa", "home": "Minnesota", "pred_away": "30.6", "pred_home": "19.2"}, {"season": "2026", "league": "CFB", "week": "8", "date": "2026-10-24", "id": "401856839", "away": "Kansas State", "home": "Arizona State", "pred_away": "29.4", "pred_home": "26.1"}, {"season": "2026", "league": "CFB", "week": "8", "date": "2026-10-24", "id": "401871094", "away": "UL Monroe", "home": "Troy", "pred_away": "18.1", "pred_home": "36.9"}, {"season": "2026", "league": "CFB", "week": "8", "date": "2026-10-24", "id": "401866449", "away": "Eastern Michigan", "home": "Ohio", "pred_away": "21.3", "pred_home": "33.5"}, {"season": "2026", "league": "CFB", "week": "8", "date": "2026-10-24", "id": "401864528", "away": "San Jos\u00e9 State", "home": "Nevada", "pred_away": "22.3", "pred_home": "30.2"}, {"season": "2026", "league": "CFB", "week": "8", "date": "2026-10-24", "id": "401869967", "away": "Louisiana", "home": "Southern Miss", "pred_away": "33.0", "pred_home": "19.4"}, {"season": "2026", "league": "CFB", "week": "8", "date": "2026-10-24", "id": "401871093", "away": "Old Dominion", "home": "Louisiana Tech", "pred_away": "19.0", "pred_home": "28.4"}, {"season": "2026", "league": "CFB", "week": "8", "date": "2026-10-24", "id": "401860907", "away": "Boise State", "home": "Washington State", "pred_away": "31.1", "pred_home": "21.0"}, {"season": "2026", "league": "CFB", "week": "8", "date": "2026-10-24", "id": "401860905", "away": "San Diego State", "home": "Colorado State", "pred_away": "29.6", "pred_home": "31.0"}, {"season": "2026", "league": "CFB", "week": "8", "date": "2026-10-24", "id": "401858276", "away": "Virginia Tech", "home": "Clemson", "pred_away": "24.1", "pred_home": "25.7"}, {"season": "2026", "league": "CFB", "week": "8", "date": "2026-10-24", "id": "401869935", "away": "Georgia State", "home": "Arkansas State", "pred_away": "30.2", "pred_home": "30.4"}, {"season": "2026", "league": "CFB", "week": "8", "date": "2026-10-24", "id": "401856836", "away": "Colorado", "home": "Oklahoma State", "pred_away": "21.7", "pred_home": "31.0"}, {"season": "2026", "league": "CFB", "week": "8", "date": "2026-10-24", "id": "401856729", "away": "Vanderbilt", "home": "Kentucky", "pred_away": "23.5", "pred_home": "32.3"}, {"season": "2026", "league": "CFB", "week": "8", "date": "2026-10-24", "id": "401856838", "away": "Iowa State", "home": "Arizona", "pred_away": "22.2", "pred_home": "27.7"}, {"season": "2026", "league": "CFB", "week": "8", "date": "2026-10-24", "id": "401860906", "away": "Utah State", "home": "Texas State", "pred_away": "21.8", "pred_home": "30.2"}, {"season": "2026", "league": "CFB", "week": "8", "date": "2026-10-24", "id": "401858500", "away": "USC", "home": "Wisconsin", "pred_away": "29.3", "pred_home": "25.1"}, {"season": "2026", "league": "CFB", "week": "8", "date": "2026-10-24", "id": "401856732", "away": "Ole Miss", "home": "Texas", "pred_away": "21.0", "pred_home": "28.0"}, {"season": "2026", "league": "CFB", "week": "8", "date": "2026-10-24", "id": "401858275", "away": "Syracuse", "home": "North Carolina", "pred_away": "21.7", "pred_home": "31.8"}, {"season": "2026", "league": "CFB", "week": "8", "date": "2026-10-24", "id": "401862811", "away": "UTSA", "home": "Tulane", "pred_away": "22.1", "pred_home": "24.3"}, {"season": "2026", "league": "CFB", "week": "8", "date": "2026-10-24", "id": "401864527", "away": "North Dakota State", "home": "New Mexico", "pred_away": "23.8", "pred_home": "24.5"}, {"season": "2026", "league": "CFB", "week": "8", "date": "2026-10-24", "id": "401856837", "away": "Houston", "home": "Utah", "pred_away": "22.0", "pred_home": "32.3"}, {"season": "2026", "league": "NFL", "week": "7", "date": "2026-10-25", "id": "401873011", "away": "PIT", "home": "NO", "pred_away": "23.2", "pred_home": "20.8"}, {"season": "2026", "league": "NFL", "week": "7", "date": "2026-10-25", "id": "401873017", "away": "SF", "home": "ATL", "pred_away": "28.0", "pred_home": "23.4"}, {"season": "2026", "league": "NFL", "week": "7", "date": "2026-10-25", "id": "401873012", "away": "CIN", "home": "BAL", "pred_away": "23.9", "pred_home": "21.5"}, {"season": "2026", "league": "NFL", "week": "7", "date": "2026-10-25", "id": "401873018", "away": "TB", "home": "CAR", "pred_away": "17.7", "pred_home": "22.0"}, {"season": "2026", "league": "NFL", "week": "7", "date": "2026-10-25", "id": "401873016", "away": "NYG", "home": "HOU", "pred_away": "19.8", "pred_home": "27.0"}, {"season": "2026", "league": "NFL", "week": "7", "date": "2026-10-25", "id": "401873014", "away": "IND", "home": "MIN", "pred_away": "19.7", "pred_home": "23.6"}, {"season": "2026", "league": "NFL", "week": "7", "date": "2026-10-25", "id": "401873015", "away": "MIA", "home": "NYJ", "pred_away": "18.9", "pred_home": "21.1"}, {"season": "2026", "league": "NFL", "week": "7", "date": "2026-10-25", "id": "401873013", "away": "CLE", "home": "TEN", "pred_away": "19.7", "pred_home": "17.1"}, {"season": "2026", "league": "NFL", "week": "7", "date": "2026-10-25", "id": "401873019", "away": "DEN", "home": "ARI", "pred_away": "24.6", "pred_home": "21.2"}, {"season": "2026", "league": "NFL", "week": "7", "date": "2026-10-25", "id": "401873020", "away": "GB", "home": "DET", "pred_away": "24.3", "pred_home": "28.1"}, {"season": "2026", "league": "NFL", "week": "7", "date": "2026-10-25", "id": "401873021", "away": "LA", "home": "LV", "pred_away": "26.2", "pred_home": "24.5"}, {"season": "2026", "league": "NFL", "week": "7", "date": "2026-10-25", "id": "401873022", "away": "KC", "home": "SEA", "pred_away": "22.3", "pred_home": "21.2"}, {"season": "2026", "league": "NFL", "week": "7", "date": "2026-10-26", "id": "401873009", "away": "DAL", "home": "PHI", "pred_away": "23.7", "pred_home": "21.1"}], "names": {"cfb_total_gap7": "CFB model total off by 7+", "cfb_tz_home": "CFB east team flying west (home)", "cfb_tz_home_late": "CFB east team west, late kick (home)", "cfb_wind_under": "CFB wind 13+ mph under", "nfl_wind_under_10_14": "NFL wind 10-14 mph under", "nfl_wind_under_15plus": "NFL wind 15+ mph under", "nfl_side_gap4": "NFL side lean (model gap 4+)"}};
+const SNAP = DATA.snapshot, RULES = SNAP.rules, BR = RULES.betting, BE = 0.524;
+const $ = s => document.querySelector(s), $$ = s => [...document.querySelectorAll(s)];
+const esc = s => String(s ?? '').replace(/[&<>"]/g, c => ({'&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;'}[c]));
+const fmt$ = v => (v < 0 ? '-$' : '$') + Math.abs(v).toFixed(2);
+const pct = v => (v * 100).toFixed(1) + '%';
+const sgn = v => v == null || isNaN(v) ? '–' : (v > 0 ? '+' : '') + (+v).toFixed(1).replace('.0', '');
+const lineTxt = v => v == null || isNaN(v) ? '–' : (v > 0 ? '+' : '') + (+v);
+const ctDate = iso => new Date(iso).toLocaleDateString('en-CA', {timeZone: 'America/Chicago'});
+const ctTime = iso => new Date(iso).toLocaleString('en-US', {timeZone: 'America/Chicago', weekday: 'short', hour: 'numeric', minute: '2-digit'});
+const ctHour = iso => { const p = new Date(iso).toLocaleString('en-US', {timeZone: 'America/Chicago', hour: 'numeric', minute: 'numeric', hour12: false}).split(':'); return (+p[0] % 24) + (+p[1]) / 60; };
+const etHour = iso => +new Date(iso).toLocaleString('en-US', {timeZone: 'America/New_York', hour: 'numeric', hour12: false}) % 24;
+const started = iso => Date.now() >= new Date(iso).getTime();
+const payout = o => o < 0 ? 100 / Math.abs(o) : o / 100;
+const dayLbl = d => new Date(d + 'T12:00:00').toLocaleDateString('en-US', {weekday: 'short', month: 'short', day: 'numeric'});
+const today = () => ctDate(new Date().toISOString());
+
+// ---------------- state ----------------
+const KEY = 'bt-state-v2';
+let ST = {key: '', budget: BR.daily_budget, struck: {}, ov: {}, frozen: {}, frozenPicks: {}, finals: {}, odds: {}, wx: {}, inputs: {}, espnOdds: {}, qbnews: {}, nflInj: null};
+try { Object.assign(ST, JSON.parse(localStorage.getItem(KEY) || '{}')); } catch (e) {}
+const save = () => { try { localStorage.setItem(KEY, JSON.stringify(ST)); } catch (e) {} };
+try { const t = localStorage.getItem('bt-theme'); if (t) document.documentElement.dataset.theme = t; } catch (e) {}
+$('#theme').onclick = () => { const r = document.documentElement, dark = r.dataset.theme === 'dark';
+  r.dataset.theme = dark ? 'light' : 'dark'; try { localStorage.setItem('bt-theme', r.dataset.theme); } catch (e) {} renderAll(); };
+
+// ---------------- names ----------------
+const norm = s => String(s || '').toLowerCase().normalize('NFD').replace(/[̀-ͯ]/g, '').replace(/&/g, ' and ').replace(/[^a-z0-9 ]/g, ' ').replace(/\s+/g, ' ').trim();
+const CFB_ALIAS = {'appalachian state': 'App State', 'louisiana monroe': 'UL Monroe', 'ul monroe': 'UL Monroe', 'southern mississippi': 'Southern Miss', 'massachusetts': 'UMass',
+  'connecticut': 'UConn', 'florida international': 'Florida International', 'fiu': 'Florida International', 'louisiana lafayette': 'Louisiana',
+  'texas san antonio': 'UTSA', 'central florida': 'UCF', 'brigham young': 'BYU', 'southern california': 'USC', 'mississippi': 'Ole Miss', 'sam houston state': 'Sam Houston',
+  'hawaii': "Hawai'i", 'san jose state': 'San José State', 'nc state': 'NC State', 'north carolina state': 'NC State'};
+const CFB_TEAMS = [...new Set(SNAP.cfb.games.flatMap(g => [g.away, g.home]))];
+const CFB_NORM = CFB_TEAMS.map(t => [norm(t), t]).sort((a, b) => b[0].length - a[0].length);
+function cfbTeam(name) {
+  const n = norm(name);
+  for (const [nt, t] of CFB_NORM) if (n === nt || n.startsWith(nt + ' ')) {
+    // prefer an alias when the alias is a longer match (e.g. "Mississippi State" vs "Mississippi")
+    return t;
+  }
+  for (const [a, t] of Object.entries(CFB_ALIAS)) if (n === a || n.startsWith(a + ' ')) return t;
+  return null;
+}
+const NFL_FULL = {'Arizona Cardinals': 'ARI', 'Atlanta Falcons': 'ATL', 'Baltimore Ravens': 'BAL', 'Buffalo Bills': 'BUF', 'Carolina Panthers': 'CAR', 'Chicago Bears': 'CHI',
+  'Cincinnati Bengals': 'CIN', 'Cleveland Browns': 'CLE', 'Dallas Cowboys': 'DAL', 'Denver Broncos': 'DEN', 'Detroit Lions': 'DET', 'Green Bay Packers': 'GB', 'Houston Texans': 'HOU',
+  'Indianapolis Colts': 'IND', 'Jacksonville Jaguars': 'JAX', 'Kansas City Chiefs': 'KC', 'Las Vegas Raiders': 'LV', 'Los Angeles Chargers': 'LAC', 'Los Angeles Rams': 'LA',
+  'Miami Dolphins': 'MIA', 'Minnesota Vikings': 'MIN', 'New England Patriots': 'NE', 'New Orleans Saints': 'NO', 'New York Giants': 'NYG', 'New York Jets': 'NYJ',
+  'Philadelphia Eagles': 'PHI', 'Pittsburgh Steelers': 'PIT', 'San Francisco 49ers': 'SF', 'Seattle Seahawks': 'SEA', 'Tampa Bay Buccaneers': 'TB', 'Tennessee Titans': 'TEN',
+  'Washington Commanders': 'WAS'};
+const ESPN_NFL = {WSH: 'WAS', LAR: 'LA', JAC: 'JAX'};
+const nflAbbr = a => ESPN_NFL[a] || a;
+
+// ---------------- fetchers ----------------
+let STATUS = {};
+const setStatus = (k, v) => { STATUS[k] = v; renderStatus(); };
+async function getJSON(url) { const r = await fetch(url); if (!r.ok) throw new Error(r.status + ' ' + r.statusText); return r.json(); }
+const ymd = d => d.replace(/-/g, '');
+async function espnDay(lg, d) {
+  const base = lg === 'CFB' ? 'https://site.api.espn.com/apis/site/v2/sports/football/college-football/scoreboard?groups=80&limit=400&dates='
+                            : 'https://site.api.espn.com/apis/site/v2/sports/football/nfl/scoreboard?dates=';
+  const j = await getJSON(base + ymd(d));
+  for (const ev of j.events || []) {
+    const c = ev.competitions?.[0]; if (!c) continue;
+    const H = c.competitors.find(x => x.homeAway === 'home'), A = c.competitors.find(x => x.homeAway === 'away');
+    const edate = ev.date ? ctDate(ev.date) : d;
+    const rec = {lg, id: ev.id, date: edate, home: H.team.location, away: A.team.location, habbr: nflAbbr(H.team.abbreviation), aabbr: nflAbbr(A.team.abbreviation),
+                 hs: +H.score, as: +A.score, done: !!ev.status?.type?.completed};
+    if (rec.done) ST.finals[lg + ':' + ev.id] = rec;
+    const o = c.odds?.[0];
+    if (o && !rec.done) {
+      let sp = typeof o.spread === 'number' ? o.spread : null;
+      if (sp != null) { if (o.homeTeamOdds?.favorite) sp = -Math.abs(sp); else if (o.awayTeamOdds?.favorite) sp = Math.abs(sp); }
+      ST.espnOdds[lg + ':' + ev.id] = {spread: sp, total: o.overUnder ?? null, src: 'ESPN (' + (o.provider?.name || 'listed') + ')'};
+    }
+  }
+}
+function finalFor(lg, gameId, date, away, home) {
+  if (lg === 'CFB') return ST.finals['CFB:' + gameId];
+  const g = SNAP.nfl.games.find(x => x.id === gameId);
+  if (g && g.espn && ST.finals['NFL:' + g.espn]) return ST.finals['NFL:' + g.espn];
+  if (ST.finals['NFL:' + gameId]) return ST.finals['NFL:' + gameId];
+  return Object.values(ST.finals).find(f => f.lg === 'NFL' && f.aabbr === away && f.habbr === home && Math.abs(new Date(f.date) - new Date(date)) < 3 * 864e5);
+}
+async function refreshFinals() {
+  const t = today(), need = {CFB: new Set(), NFL: new Set()};
+  const add = (lg, d) => { if (d && d <= t) need[lg].add(d); };
+  [...DATA.bets, ...DATA.picks].forEach(r => { if (!r.result && !finalFor(r.league, r.game_id, r.date, r.away, r.home)) add(r.league, r.date); });
+  Object.values(ST.frozen).concat(Object.values(ST.frozenPicks)).forEach(r => { if (!finalFor(r.league, r.game_id, r.date, r.away, r.home)) add(r.league, r.date); });
+  DATA.predlog.forEach(r => { if (!finalFor(r.league, r.id, r.date, r.away, r.home)) add(r.league, r.date); });
+  // this week's dates (finals + ESPN-listed lines)
+  SNAP.cfb.games.forEach(g => need.CFB.add(ctDate(g.kick)));
+  SNAP.nfl.games.forEach(g => need.NFL.add(new Date(g.kick).toLocaleDateString('en-CA', {timeZone: 'America/New_York'})));
+  let n = 0, fail = 0;
+  const jobs = [];
+  for (const lg of ['CFB', 'NFL']) for (const d of need[lg]) jobs.push(espnDay(lg, d).then(() => n++, () => fail++));
+  await Promise.all(jobs);
+  save(); setStatus('scores', fail && !n ? '<b>Scores:</b> ESPN unreachable right now' : `<b>Scores:</b> ESPN (${n} day${n === 1 ? '' : 's'} checked)`);
+}
+async function refreshOdds(force) {
+  if (!ST.key) { setStatus('lines', '<b>Lines:</b> ESPN-listed / consensus (add an Odds API key in Settings for DraftKings)'); return; }
+  const sports = {CFB: 'americanfootball_ncaaf', NFL: 'americanfootball_nfl'};
+  let left = '';
+  for (const lg of ['CFB', 'NFL']) {
+    const c = ST.odds[lg]; if (!force && c && Date.now() - c.ts < 10 * 60e3) continue;
+    try {
+      const r = await fetch(`https://api.the-odds-api.com/v4/sports/${sports[lg]}/odds?apiKey=${encodeURIComponent(ST.key)}&regions=us&markets=spreads,totals&bookmakers=draftkings&oddsFormat=american`);
+      if (!r.ok) throw new Error(r.status === 401 ? 'key rejected' : r.status === 429 ? 'monthly limit reached' : 'error ' + r.status);
+      left = r.headers.get('x-requests-remaining') || left;
+      ST.odds[lg] = {ts: Date.now(), data: await r.json()};
+    } catch (e) { setStatus('lines', '<b>Lines:</b> Odds API ' + esc(e.message) + ', using ESPN/consensus'); save(); return; }
+  }
+  save();
+  const age = Math.round((Date.now() - Math.min(...['CFB', 'NFL'].map(l => ST.odds[l]?.ts || Date.now()))) / 60e3);
+  setStatus('lines', `<b>Lines:</b> DraftKings via Odds API (${age ? age + ' min old' : 'just now'}${left ? ', ' + left + ' requests left this month' : ''})`);
+}
+function dkLine(lg, g) {
+  const ev = (ST.odds[lg]?.data || []).find(e => lg === 'NFL' ? (NFL_FULL[e.home_team] === g.home && NFL_FULL[e.away_team] === g.away)
+    : ((cfbTeam(e.home_team) === g.home && cfbTeam(e.away_team) === g.away) || (g.neutral && cfbTeam(e.home_team) === g.away && cfbTeam(e.away_team) === g.home)));
+  const bk = ev?.bookmakers?.find(b => b.key === 'draftkings'); if (!bk) return null;
+  const out = {src: 'DraftKings'};
+  const sp = bk.markets.find(m => m.key === 'spreads'), to = bk.markets.find(m => m.key === 'totals');
+  const isHome = n => lg === 'NFL' ? NFL_FULL[n] === g.home : cfbTeam(n) === g.home;
+  if (sp) { const h = sp.outcomes.find(o => isHome(o.name)), a = sp.outcomes.find(o => !isHome(o.name)); if (h) { out.spread = h.point; out.homePrice = h.price; out.awayPrice = a?.price; } }
+  if (to) { const ov = to.outcomes.find(o => o.name === 'Over'), un = to.outcomes.find(o => o.name === 'Under'); if (ov) { out.total = ov.point; out.overPrice = ov.price; out.underPrice = un?.price; } }
+  return out;
+}
+async function refreshWeather(force) {
+  const games = [...SNAP.cfb.games.map(g => ['CFB', g]), ...SNAP.nfl.games.map(g => ['NFL', g])]
+    .filter(([lg, g]) => g.lat != null && !started(g.kick) && (lg === 'NFL' ? g.outdoor : !g.dome) && new Date(g.kick) - Date.now() < 15 * 864e5);
+  const todo = games.filter(([lg, g]) => force || !ST.wx[lg + ':' + g.id] || Date.now() - ST.wx[lg + ':' + g.id].ts > 60 * 60e3);
+  if (!todo.length) { setStatus('wx', '<b>Weather:</b> Open-Meteo kickoff forecasts'); return; }
+  try {
+    for (let i = 0; i < todo.length; i += 50) {
+      const chunk = todo.slice(i, i + 50);
+      const url = `https://api.open-meteo.com/v1/forecast?latitude=${chunk.map(([, g]) => g.lat).join(',')}&longitude=${chunk.map(([, g]) => g.lon).join(',')}` +
+        '&hourly=temperature_2m,wind_speed_10m,wind_gusts_10m,precipitation_probability&wind_speed_unit=mph&temperature_unit=fahrenheit&timezone=GMT&forecast_days=16';
+      let j = await getJSON(url); if (!Array.isArray(j)) j = [j];
+      chunk.forEach(([lg, g], k) => {
+        const h = j[k].hourly, t = new Date(g.kick); t.setUTCMinutes(0, 0, 0);
+        const ix = h.time.indexOf(t.toISOString().slice(0, 13) + ':00');
+        if (ix >= 0) ST.wx[lg + ':' + g.id] = {ts: Date.now(), wind: Math.round(h.wind_speed_10m[ix]), gust: Math.round(h.wind_gusts_10m[ix]), rain: h.precipitation_probability[ix] ?? 0, temp: Math.round(h.temperature_2m[ix])};
+      });
+    }
+    save(); setStatus('wx', `<b>Weather:</b> Open-Meteo kickoff forecasts (${todo.length} games updated)`);
+  } catch (e) { setStatus('wx', '<b>Weather:</b> Open-Meteo unreachable, enter wind by hand'); }
+}
+
+
+// ---------------- QB status (injury reports + news) ----------------
+const NFL_ID = {ARI: 22, ATL: 1, BAL: 33, BUF: 2, CAR: 29, CHI: 3, CIN: 4, CLE: 5, DAL: 6, DEN: 7, DET: 8, GB: 9, HOU: 34, IND: 11, JAX: 30, KC: 12, LV: 13, LAC: 24, LA: 14,
+  MIA: 15, MIN: 16, NE: 17, NO: 18, NYG: 19, NYJ: 20, PHI: 21, PIT: 23, SF: 25, SEA: 26, TB: 27, TEN: 10, WAS: 28};
+const QB_VAL = 5;   // college: points between a team's established starter and a backup
+const PAT = {
+  out: /\b(ruled out|will not (play|start|suit up|dress)|won'?t (play|start)|not expected to (play|start)|out (for|against|vs\.?|this|sunday|saturday|monday|thursday|friday|indefinitely|several|multiple)|is out\b|(placed|lands?|going|goes|put|moved) (him )?on (ir|injured reserve)|season[- ]ending|torn (acl|achilles)|underwent surgery|out for the (year|season)|sidelined)/i,
+  doubt: /\b(doubtful|unlikely to (play|start|go))/i,
+  quest: /\b(questionable|game[- ]time decision|day[- ]to[- ]day|limited in practice|did not practice|uncertain|status (is )?(unclear|uncertain)|banged up)/i,
+  start: /\b(will start|to start|set to start|expected to start|in line to start|named (the )?starter|gets the (nod|start)|draws? the start|making (his )?(first |second |third )?(career )?start|will get the start)/i,
+  back: /\b(returns?|returning|back (at|under|for|in)|cleared|activated|good to go|full participant|practic(ed|ing) (fully|in full)|expected to play|will play|on track to play|set to return)/i
+};
+let QBX = {};
+const lastName = n => String(n || '').replace(/\s+(jr|sr|ii|iii|iv)\.?$/i, '').trim().split(/[\s.]+/).pop();
+function sentences(a) { return (a.h + '. ' + (a.d || '')).split(/(?<=[.!?])\s+/); }
+function newsStatus(articles, name) {   // most recent article that says something about this QB
+  const ln = lastName(name); if (!ln || ln.length < 3) return null;
+  const re = new RegExp('\\b' + ln.replace(/[.*+?^${}()|[\]\\]/g, '\\$&') + '\\b', 'i'), first = String(name).split(/[\s.]+/)[0];
+  for (const a of articles) {
+    const tagged = (a.ath || []).some(x => lastName(x).toLowerCase() === ln.toLowerCase());
+    const sents = sentences(a).filter(s => re.test(s)); if (!sents.length && !tagged) continue;
+    const txt = (sents.length ? sents : [a.h]).join(' ');
+    if (!sents.length && !re.test(a.h + ' ' + a.d)) continue;
+    if (first && first.length > 2 && !new RegExp('\\b' + first[0], 'i').test(a.h + ' ' + a.d)) { /* last name only, keep but weaker */ }
+    for (const k of ['out', 'doubt', 'start', 'back', 'quest']) if (PAT[k].test(txt)) return {kind: k, a, txt: txt.slice(0, 220)};
+  }
+  return null;
+}
+function startedNamed(articles, candidates) {   // "X will start" for any known QB
+  for (const a of articles) for (const s of sentences(a)) if (PAT.start.test(s)) {
+    for (const c of candidates) { const ln = lastName(c); if (ln && new RegExp('\\b' + ln + '\\b', 'i').test(s) && !PAT.out.test(s) && !/\bnot\b/i.test(s)) return {name: c, a, txt: s.slice(0, 220)}; }
+  }
+  return null;
+}
+async function newsFor(lg, teamId) {
+  const k = lg + ':' + teamId, c = ST.qbnews[k];
+  if (c && Date.now() - c.ts < 3 * 3600e3) return c.articles;
+  const url = `https://site.api.espn.com/apis/site/v2/sports/football/${lg === 'CFB' ? 'college-football' : 'nfl'}/news?team=${teamId}&limit=25`;
+  const j = await getJSON(url), cut = Date.now() - 9 * 864e5;
+  const articles = (j.articles || []).filter(a => new Date(a.published) >= cut).sort((a, b) => b.published.localeCompare(a.published))
+    .map(a => ({h: a.headline || '', d: a.description || '', date: a.published, link: a.links?.web?.href || '', ath: (a.categories || []).filter(x => x.type === 'athlete').map(x => x.description || x.athlete?.displayName || '')}));
+  ST.qbnews[k] = {ts: Date.now(), articles}; return articles;
+}
+async function refreshQB(force) {
+  if (force) ST.qbnews = {};
+  const soon = g => !started(g.kick) && new Date(g.kick) - Date.now() < 7 * 864e5;
+  const jobs = [];
+  // NFL official injury report (one call)
+  if (force || !ST.nflInj || Date.now() - ST.nflInj.ts > 2 * 3600e3) jobs.push(getJSON('https://site.api.espn.com/apis/site/v2/sports/football/nfl/injuries').then(j => {
+    const by = {};
+    (j.injuries || []).forEach(t => (t.injuries || []).forEach(x => { const a = x.athlete || {}; if ((a.position?.abbreviation || '') !== 'QB') return;
+      const ab = nflAbbr(a.team?.abbreviation || ''); (by[ab] = by[ab] || []).push({name: a.displayName, short: (a.shortName || '').replace(/\.\s+/, '.'), status: x.status, comment: x.shortComment || x.longComment || '', date: x.date}); }));
+    ST.nflInj = {ts: Date.now(), by};
+  }));
+  const teams = [];
+  SNAP.nfl.games.filter(soon).forEach(g => teams.push(['NFL', NFL_ID[g.away]], ['NFL', NFL_ID[g.home]]));
+  SNAP.cfb.games.filter(soon).forEach(g => { if (g.espn_a) teams.push(['CFB', g.espn_a]); if (g.espn_h) teams.push(['CFB', g.espn_h]); });
+  let ok = 0, bad = 0, i = 0;
+  const worker = async () => { while (i < teams.length) { const [lg, id] = teams[i++]; try { await newsFor(lg, id); ok++; } catch (e) { bad++; } } };
+  jobs.push(...Array.from({length: 6}, worker));
+  await Promise.allSettled(jobs); save();
+  setStatus('qb', bad && !ok ? '<b>QB news:</b> ESPN news unreachable' : `<b>QB news:</b> ESPN injury report + team news (${teams.length} teams)`);
+}
+function computeQB() {
+  QBX = {};
+  const cfbId = {}; SNAP.cfb.games.forEach(g => { cfbId[g.away] = g.espn_a; cfbId[g.home] = g.espn_h; });
+  for (const g of SNAP.cfb.games) for (const t of [g.away, g.home]) {
+    const q = SNAP.cfb.qbs?.[t]; if (!q || QBX['CFB:' + t]) continue;
+    const arts = ST.qbnews['CFB:' + cfbId[t]]?.articles || [];
+    let exp = q.last, why = [], link = '', status = 'ok';
+    const named = startedNamed(arts, [q.primary, q.last]);
+    const sp = q.primary !== q.last ? newsStatus(arts, q.primary) : null;
+    if (named) { exp = named.name; why.push(`news: ${named.txt}`); link = named.a.link; }
+    else if (sp && sp.kind === 'back') { exp = q.primary; why.push(`${q.primary} may return: ${sp.txt}`); link = sp.a.link; status = 'check'; }
+    const se = newsStatus(arts, exp);
+    let isPrimary = exp === q.primary;
+    if (se && (se.kind === 'out' || se.kind === 'doubt')) { why.push(`${exp} ${se.kind === 'out' ? 'out' : 'doubtful'}: ${se.txt}`); link = se.a.link; status = se.kind; isPrimary = false; exp = 'backup'; }
+    else if (se && se.kind === 'quest') { why.push(`${exp} questionable: ${se.txt}`); link = link || se.a.link; status = 'quest'; }
+    // healthy season starter still starting: stats already reflect him (no adjustment)
+    const delta = isPrimary && exp === q.last ? 0 : Math.round(QB_VAL * ((isPrimary ? 1 : 0) - q.share_primary) * 10) / 10;
+    const lbl = exp === 'backup' ? `backup for ${q.last}` : exp + (exp !== q.primary ? ` (season starter ${q.primary})` : '');
+    QBX['CFB:' + t] = {team: t, qb: exp, label: lbl, delta, status, why: why.join(' · '), link};
+  }
+  const inj = ST.nflInj?.by || {};
+  for (const g of SNAP.nfl.games) for (const [t, dflt] of [[g.away, g.qa], [g.home, g.qh]]) {
+    const prim = SNAP.nfl.primary?.[t] || dflt, arts = ST.qbnews['NFL:' + NFL_ID[t]]?.articles || [];
+    const injOf = n => (inj[t] || []).find(x => x.short.toLowerCase() === String(n).toLowerCase() || lastName(x.name).toLowerCase() === lastName(n).toLowerCase());
+    const cands = [...new Set([prim, dflt, ...(SNAP.nfl.team_qbs?.[t] || []), ...Object.keys(SNAP.nfl.qbs)])];
+    let exp = prim, why = [], link = '', status = 'ok';
+    const others = new Set(Object.entries(SNAP.nfl.primary || {}).filter(([tt]) => tt !== t).map(([, n]) => n).concat(SNAP.nfl.games.flatMap(x => [x.away === t ? null : x.qa, x.home === t ? null : x.qh]).filter(Boolean)));
+    const named = startedNamed(arts, cands.filter(c => !others.has(c) || (SNAP.nfl.team_qbs?.[t] || []).includes(c)));
+    const pi = injOf(prim), pn = newsStatus(arts, prim);
+    const primOut = (pi && /out|injured reserve|doubtful|suspen|physically unable|non-football/i.test(pi.status)) || (pn && (pn.kind === 'out' || pn.kind === 'doubt'));
+    if (named && named.name !== prim) { exp = named.name; why.push(`news: ${named.txt}`); link = named.a.link; }
+    else if (primOut) {
+      exp = dflt !== prim ? dflt : ((SNAP.nfl.team_qbs?.[t] || []).find(n => n !== prim) || 'backup');
+      why.push(`${prim} ${pi ? pi.status.toLowerCase() : pn.kind}${pi?.comment ? ': ' + pi.comment : pn ? ': ' + pn.txt : ''}`); link = pn?.a.link || ''; status = 'out';
+    }
+    const ei = injOf(exp), en = newsStatus(arts, exp);
+    if (exp !== 'backup' && ((ei && /questionable/i.test(ei.status)) || (en && en.kind === 'quest'))) { status = status === 'ok' ? 'quest' : status; why.push(`${exp} questionable${ei?.comment ? ': ' + ei.comment : en ? ': ' + en.txt : ''}`); link = link || en?.a.link || ''; }
+    QBX['NFL:' + t] = {team: t, qb: exp === 'backup' ? '' : exp, label: exp, status, why: why.join(' · '), link, changed: exp !== dflt};
+  }
+}
+
+// ---------------- model ----------------
+function cfbWx(w, gust, rain) { const R = RULES.cfb.wx_total_adj; let a = 0; R.wind.forEach(([lo, hi, v]) => { if (w >= lo && w < hi) a += v; }); if (gust >= 25) a += R.gust25; if (rain >= 40) a += R.rain40; return a; }
+function inputsOf(lg, g) { return ST.inputs[lg + ':' + g.id] || {}; }
+function lineFor(lg, g) {
+  const inp = inputsOf(lg, g), dk = ST.key ? dkLine(lg, g) : null;
+  const espn = lg === 'CFB' ? ST.espnOdds['CFB:' + g.id] : (g.espn ? ST.espnOdds['NFL:' + g.espn] : null);
+  let spread = null, total = null, src = '', prices = {};
+  if (dk) { spread = dk.spread ?? null; total = dk.total ?? null; src = 'DraftKings'; prices = dk; }
+  if (spread == null && espn?.spread != null) { spread = espn.spread; src = src || espn.src; }
+  if (total == null && espn?.total != null) { total = espn.total; src = src || espn.src; }
+  if (lg === 'NFL') { if (spread == null && g.line_spread != null) { spread = g.line_spread; src = src || 'consensus'; } if (total == null && g.line_total != null) { total = g.line_total; src = src || 'consensus'; } }
+  if (inp.spread !== undefined) { spread = +inp.spread; src = 'entered'; }
+  if (inp.total !== undefined) { total = +inp.total; src = 'entered'; }
+  return {spread, total, src, prices};
+}
+function predict(lg, g) {
+  const inp = inputsOf(lg, g), wx = ST.wx[lg + ':' + g.id];
+  let wind = inp.wind !== undefined ? +inp.wind : wx?.wind, gust = wx?.gust || 0, rain = wx?.rain || 0;
+  let pa = g.pa, ph = g.ph; const notes = [];
+  if (lg === 'CFB') {
+    const AA = QBX['CFB:' + g.away], AH = QBX['CFB:' + g.home];
+    const qa = inp.qa !== undefined ? +inp.qa : (AA?.delta || 0), qh = inp.qh !== undefined ? +inp.qh : (AH?.delta || 0), [s1, s2] = RULES.cfb.qb_split;
+    pa += s1 * qa - s2 * qh; ph += s1 * qh - s2 * qa;
+    if (qa) notes.push(`${g.away} QB ${inp.qa !== undefined ? '(entered)' : (AA?.label || '')} ${sgn(qa)}`); if (qh) notes.push(`${g.home} QB ${inp.qh !== undefined ? '(entered)' : (AH?.label || '')} ${sgn(qh)}`);
+    if (g.dome) wind = null;
+    const wa = g.dome ? 0 : cfbWx(wind || 0, gust, rain); pa += wa / 2; ph += wa / 2;
+  } else {
+    const C = SNAP.nfl.coef, Q = SNAP.nfl.qbs, dflt = SNAP.nfl.qb_default;
+    if (!g.outdoor) wind = null;
+    const w = g.outdoor ? (wind ?? 8) : 0; pa += C.wind * w; ph += C.wind * w;
+    const NA = QBX['NFL:' + g.away], NH = QBX['NFL:' + g.home];
+    const qbA = inp.qbA || (NA?.changed ? (NA.qb || '?') : ''), qbH = inp.qbH || (NH?.changed ? (NH.qb || '?') : '');
+    const va = qbA ? (Q[qbA] ?? dflt) : g.qa0, vh = qbH ? (Q[qbH] ?? dflt) : g.qh0;
+    pa += C.qb_own * (va - g.qa0) + C.qb_opp * (vh - g.qh0); ph += C.qb_own * (vh - g.qh0) + C.qb_opp * (va - g.qa0);
+    if (qbA) notes.push(`${g.away} QB ${qbA === '?' ? 'backup' : qbA}${inp.qbA ? ' (entered)' : ' (auto)'}`); if (qbH) notes.push(`${g.home} QB ${qbH === '?' ? 'backup' : qbH}${inp.qbH ? ' (entered)' : ' (auto)'}`);
+  }
+  return {pa, ph, total: pa + ph, hs: pa - ph, wind: wind == null || isNaN(wind) ? null : wind, wxd: wx, notes};
+}
+function flagsFor(lg, g, P, L) {
+  const out = [];
+  if (lg === 'CFB') {
+    if (L.total != null && Math.abs(P.total - L.total) >= RULES.cfb.total_gap_min)
+      out.push({rule: 'cfb_total_gap7', market: 'total', side: P.total > L.total ? 'over' : 'under', line: L.total, text: `${P.total > L.total ? 'Over' : 'Under'} ${L.total}, model ${P.total.toFixed(1)}`});
+    if (!g.neutral && g.tz_home != null && g.tz_away != null && g.tz_home - g.tz_away <= -RULES.cfb.tz_spot.min_tz_west && L.spread != null) {
+      const late = etHour(g.kick) >= 22, agree = (P.ph - P.pa) + L.spread > 0;
+      out.push({rule: 'cfb_tz_home' + (late ? '_late' : '') + (agree ? '' : '_model_disagrees'), market: 'spread', side: 'home', line: L.spread, text: `${g.home} ${lineTxt(L.spread)}, east team flying west${agree ? '' : ' (model disagrees)'}`});
+    }
+    if (P.wind != null && P.wind >= RULES.cfb.wind_under_mph && L.total != null)
+      out.push({rule: 'cfb_wind_under', market: 'total', side: 'under', line: L.total, text: `Under ${L.total}, wind ${P.wind} mph`});
+  } else {
+    if (g.outdoor && P.wind != null && P.wind >= RULES.nfl.wind_under_mph && L.total != null)
+      out.push({rule: P.wind < 15 ? 'nfl_wind_under_10_14' : 'nfl_wind_under_15plus', market: 'total', side: 'under', line: L.total, text: `Under ${L.total}, wind ${P.wind} mph`});
+    if (L.spread != null && Math.abs(P.hs - L.spread) >= RULES.nfl.side_gap_lean) {
+      const away = P.hs - L.spread > 0;
+      out.push({rule: 'nfl_side_gap4', market: 'spread', side: away ? 'away' : 'home', line: L.spread, text: `${away ? g.away : g.home} ${lineTxt(away ? -L.spread : L.spread)}, lean only (gap ${Math.abs(P.hs - L.spread).toFixed(1)})`});
+    }
+  }
+  return out;
+}
+function betText(r) {
+  if (r.market === 'total') return `${r.away}/${r.home} ${String(r.side).toUpperCase()} ${r.line}`;
+  const ln = r.side === 'home' ? +r.line : -r.line; return `${r.side === 'home' ? r.home : r.away} ${ln > 0 ? '+' : ''}${ln}`;
+}
+function RNAME(r) { const base = String(r).replace('_model_disagrees', ''); return (DATA.names[base] || base) + (String(r).endsWith('_model_disagrees') ? ', model disagreed' : ''); }
+
+// ---------------- board -> bets & picks ----------------
+let BOARD = [], BETS = [], PICKS = [];
+function buildBoard() {
+  computeQB();
+  BOARD = [];
+  for (const lg of ['CFB', 'NFL']) for (const g of SNAP[lg.toLowerCase()].games) { const L = lineFor(lg, g), P = predict(lg, g); BOARD.push({lg, g, L, P, F: flagsFor(lg, g, P, L)}); }
+}
+function kellyOf(b) { const r = BR.rules[b.rule] || {p: +b.hit_rate, n: +b.n || 50}; const ps = (r.p * r.n + 0.5 * BR.shrink_k) / (r.n + BR.shrink_k); return Math.max(ps - (1 - ps) / payout(+b.odds || -110), 0.001); }
+function buildBets() {
+  const cands = [], picks = [];
+  for (const {lg, g, L, P, F} of BOARD) for (const f of F) {
+    const base = {date: ctDate(g.kick), kick: g.kick, league: lg, week: SNAP[lg.toLowerCase()].week, game_id: g.id, game: `${g.away} @ ${g.home}`, away: g.away, home: g.home,
+      away_conf: g.away_conf, home_conf: g.home_conf, kick_hour: ctHour(g.kick), wind: P.wind ?? '', line_spread: L.spread ?? '', line_total: L.total ?? '',
+      model_total: P.total.toFixed(1), model_home_spread: P.hs.toFixed(1), rule: f.rule, market: f.market, side: f.side, line: f.line, src: 'model', result: ''};
+    base.id = base.date + '|' + base.game_id + '|' + base.rule;
+    picks.push(Object.assign({}, base));
+    const r = BR.rules[f.rule]; if (!r || r.p < (lg === 'CFB' ? BR.cfb_min_hit : BR.nfl_min_hit)) continue;
+    const price = f.market === 'total' ? (f.side === 'over' ? L.prices.overPrice : L.prices.underPrice) : (f.side === 'home' ? L.prices.homePrice : L.prices.awayPrice);
+    cands.push(Object.assign(base, {hit_rate: r.p, n: r.n, odds: price || BR.default_odds}));
+  }
+  const kickOf = {}; BOARD.forEach(x => kickOf[x.g.id] = x.g.kick);
+  const byId = {};
+  DATA.bets.forEach(b => { const id = b.date + '|' + b.game_id + '|' + b.rule; byId[id] = Object.assign({}, b, {id, src: 'log', kick: kickOf[b.game_id] || b.date + 'T23:59:00-05:00'}); });
+  Object.values(ST.frozen).forEach(b => { if (!byId[b.id]) byId[b.id] = Object.assign({}, b); });
+  const fresh = cands.filter(b => !started(b.kick)).sort((a, b) => b.hit_rate - a.hit_rate || kellyOf(b) - kellyOf(a));
+  const live = () => Object.values(byId).filter(b => !ST.struck[b.id]);
+  for (const b of fresh) {
+    if (byId[b.id]) { const o = byId[b.id]; if (o.src !== 'log') { o.line = b.line; o.odds = b.odds; } continue; }
+    if (ST.struck[b.id]) { byId[b.id] = b; continue; }   // keep it visible (struck) so it can be undone
+    const L = live();
+    if (L.some(x => x.date === b.date && x.game_id === b.game_id)) continue;
+    if (L.filter(x => x.date === b.date).length >= BR.max_bets_per_day) continue;
+    byId[b.id] = b;
+  }
+  const all = Object.values(byId);
+  all.forEach(b => { const o = ST.ov[b.id] || {}; b.locked = false;
+    if (o.odds !== undefined && o.odds !== '') b.odds = +o.odds; if (o.stake !== undefined && o.stake !== '') { b.stake = +o.stake; b.locked = true; } if (o.line !== undefined && o.line !== '') b.line = +o.line;
+    b.odds = +b.odds || -110; b.hit_rate = +b.hit_rate || (BR.rules[b.rule] || {}).p || 0; b.bet = betText(b); });
+  const days = {}; all.filter(b => !ST.struck[b.id]).forEach(b => (days[b.date] = days[b.date] || []).push(b));
+  for (const list of Object.values(days)) {
+    const liveL = list.filter(b => !started(b.kick) && !b.locked); if (!liveL.length) continue;
+    const fixed = list.filter(b => started(b.kick) || b.locked).reduce((s, b) => s + (+b.stake || 0), 0);
+    const room = Math.max(Math.round(+ST.budget - fixed), 0), ks = liveL.map(kellyOf), sum = ks.reduce((a, c) => a + c, 0);
+    const st = liveL.map((b, i) => Math.max(BR.min_stake, Math.round(room * ks[i] / sum)));
+    if (room > 0) st[st.indexOf(Math.max(...st))] += room - st.reduce((a, c) => a + c, 0);
+    liveL.forEach((b, i) => b.stake = room > 0 ? Math.max(st[i], 0) : 0);
+  }
+  all.forEach(b => { b.to_win = (+b.stake || 0) * payout(b.odds);
+    if (!b.result) { const f = finalFor(b.league, b.game_id, b.date, b.away, b.home); if (f) b.result = grade(b, f); }
+    if (b.src === 'model' && started(b.kick) && !ST.frozen[b.id] && !ST.struck[b.id]) ST.frozen[b.id] = Object.assign({}, b); });
+  BETS = all;
+  const pk = {};
+  DATA.picks.forEach(p => { const id = p.date + '|' + p.game_id + '|' + p.rule; pk[id] = Object.assign({}, p, {id}); });
+  Object.values(ST.frozenPicks).forEach(p => { if (!pk[p.id]) pk[p.id] = p; });
+  picks.forEach(p => { if (!pk[p.id]) pk[p.id] = p; else if (!started(p.kick)) pk[p.id].line = p.line;
+    if (started(p.kick) && !ST.frozenPicks[p.id] && !DATA.picks.some(q => q.date + '|' + q.game_id + '|' + q.rule === p.id)) ST.frozenPicks[p.id] = p; });
+  PICKS = Object.values(pk).map(p => { if (!p.result) { const f = finalFor(p.league, p.game_id, p.date, p.away, p.home); if (f) p.result = grade(p, f); } return p; });
+  save();
+}
+function grade(b, f) {
+  const line = +b.line; let d;
+  if (b.market === 'total') { d = f.hs + f.as - line; if (b.side === 'under') d = -d; } else { d = f.hs - f.as + line; if (b.side === 'away') d = -d; }
+  return d > 0 ? 'W' : d < 0 ? 'L' : 'P';
+}
+
+// ---------------- THIS WEEK ----------------
+let LG = 'CFB', SHOW = 'flag';
+function renderStatus() { $('#status').innerHTML = Object.values(STATUS).map(s => `<span>${s}</span>`).join(''); }
+function renderWeek() {
+  const cut = ctDate(new Date(Date.now() - 2 * 864e5).toISOString()), dates = {};
+  BETS.filter(b => b.date >= cut).forEach(b => (dates[b.date] = dates[b.date] || []).push(b));
+  const days = Object.keys(dates).sort();
+  $('#keynote').innerHTML = ST.key ? '' : '<div class="note">No Odds API key yet. Lines come from ESPN\'s listing (and the nflverse consensus for NFL). Add a free key in Settings to price everything off DraftKings.</div>';
+  $('#betboard').innerHTML = !days.length ? '<div class="empty">No qualifying bets right now. They appear once lines and weather are in.</div>' : days.map(d => {
+    const list = dates[d].sort((a, b) => (!!ST.struck[a.id]) - (!!ST.struck[b.id]) || (+b.stake || 0) - (+a.stake || 0));
+    const live = list.filter(b => !ST.struck[b.id]), tot = live.reduce((s, b) => s + (+b.stake || 0), 0);
+    return `<div class="dayhead"><span>${dayLbl(d)}</span><span class="small">$${tot.toFixed(0)} of $${(+ST.budget).toFixed(0)} · ${live.length} bet${live.length === 1 ? '' : 's'}</span></div>
+    <div class="tablewrap"><table class="cards"><thead><tr><th>Kick</th><th>Bet</th><th class="why">Why</th><th class="num">Backtest</th><th class="num">Odds</th><th class="num">Stake $</th><th class="num">To win</th><th>Result</th><th></th></tr></thead><tbody>` +
+    list.map(b => { const s = !!ST.struck[b.id], go = started(b.kick);
+      return `<tr class="${s ? 'struck' : ''}"><td data-label="Kick">${ctTime(b.kick)}</td><td class="full first" data-label=""><b>${esc(b.bet)}</b><div class="small">${esc(b.game)}</div>${(() => { const qs = [b.away, b.home].map(t => QBX[b.league + ':' + t]).filter(q => q && ['quest', 'out', 'doubt', 'check'].includes(q.status)); return qs.map(q => `<span class="chip no" title="${esc(q.why)}">QB: ${esc(q.team)} ${q.status === 'quest' ? 'questionable' : q.status === 'check' ? 'check' : 'starter out'}</span>`).join(''); })()}</td><td class="why full" data-label="Why">${esc(RNAME(b.rule))}</td>
+      <td class="num" data-label="Backtest">${pct(+b.hit_rate)}</td>
+      <td class="num" data-label="Odds">${go || s ? (b.odds > 0 ? '+' : '') + b.odds : `<input class="num" data-ov="odds" data-id="${esc(b.id)}" value="${b.odds}">`}</td>
+      <td class="num" data-label="Stake $">${go || s ? '$' + (+b.stake || 0).toFixed(0) : `<input class="num" data-ov="stake" data-id="${esc(b.id)}" value="${(+b.stake || 0).toFixed(0)}"${b.locked ? ' title="Locked. Clear the box to let it auto-size."' : ''}>`}</td>
+      <td class="num" data-label="To win">${s ? '–' : fmt$(b.to_win)}</td><td data-label="Result">${b.result ? `<span class="pill ${b.result}">${b.result}</span>` : go ? '<span class="pill O">live</span>' : ''}</td>
+      <td class="keep" data-label="">${s ? `<button class="btn small" data-unstrike="${esc(b.id)}">Undo</button>` : `<button class="btn small" data-strike="${esc(b.id)}">Strike</button>`}</td></tr>`; }).join('') + '</tbody></table></div>';
+  }).join('');
+  $$('#betboard [data-strike]').forEach(el => el.onclick = () => { if (confirmStrike(el.dataset.strike)) { ST.struck[el.dataset.strike] = Date.now(); save(); recompute(); } });
+  $$('#betboard [data-unstrike]').forEach(el => el.onclick = () => { delete ST.struck[el.dataset.unstrike]; save(); recompute(); });
+  $$('#betboard input[data-ov]').forEach(el => el.onchange = () => { const o = ST.ov[el.dataset.id] = ST.ov[el.dataset.id] || {}; if (el.value.trim() === '') delete o[el.dataset.ov]; else o[el.dataset.ov] = el.value.trim(); save(); recompute(); });
+  renderGames();
+}
+
+function qbChips(lg, g) {
+  const out = [];
+  for (const t of [g.away, g.home]) {
+    const q = QBX[lg + ':' + t]; if (!q) continue;
+    const manual = lg === 'CFB' ? inputsOf(lg, g)[t === g.away ? 'qa' : 'qh'] !== undefined : !!inputsOf(lg, g)[t === g.away ? 'qbA' : 'qbH'];
+    const show = q.status !== 'ok' || (lg === 'CFB' ? Math.abs(q.delta) >= 0.5 : q.changed);
+    if (!show) continue;
+    const cls = q.status === 'quest' || q.status === 'check' ? 'no' : q.status === 'out' || q.status === 'doubt' ? 'no' : 'lean';
+    const txt = lg === 'CFB' ? `${t}: ${q.label}${Math.abs(q.delta) >= 0.5 ? ` (${sgn(q.delta)})` : ''}${q.status === 'quest' ? ', questionable' : q.status === 'check' ? ', check' : ''}`
+                             : `${t}: ${q.status === 'quest' ? q.label + ' questionable' : (q.qb ? q.qb + ' starting' : 'backup starting')}`;
+    out.push(`<span class="chip ${cls}" title="${esc(q.why || 'from play-by-play: season starter vs last starter')}">${esc(txt)}${manual ? ' · overridden' : ''}</span>${q.link ? ` <a class="small" href="${esc(q.link)}" target="_blank" rel="noopener">news</a>` : ''}`);
+  }
+  return out.join(' ');
+}
+
+const P4 = ['SEC', 'Big Ten', 'Big 12', 'ACC'];
+function confMatch(g, c) {
+  if (!c) return true;
+  const cs = [g.away_conf, g.home_conf], ind = [g.away, g.home].includes('Notre Dame');
+  if (c === 'Power 4 (+ Notre Dame)') return cs.some(x => P4.includes(x)) || ind;
+  if (c === 'SEC + Big Ten + Notre Dame') return cs.some(x => x === 'SEC' || x === 'Big Ten') || ind;
+  if (c === 'Group of 5') return cs.every(x => x && !P4.includes(x) && x !== 'FBS Independents');
+  if (c === 'AFC' || c === 'NFC') return cs.some(x => String(x).startsWith(c));
+  return cs.includes(c);
+}
+function initGameFilters() {
+  const sel = $('#g-conf'), cur = sel.value, isN = LG === 'NFL';
+  const confs = [...new Set(SNAP[LG.toLowerCase()].games.flatMap(g => [g.away_conf, g.home_conf]).filter(Boolean))].sort();
+  const groups = isN ? ['AFC', 'NFC'] : ['SEC + Big Ten + Notre Dame', 'Power 4 (+ Notre Dame)', 'Group of 5'];
+  sel.innerHTML = '<option value="">All</option>' + groups.map(c => `<option>${esc(c)}</option>`).join('') + '<option disabled>──────</option>' + confs.map(c => `<option>${esc(c)}</option>`).join('');
+  sel.value = [...sel.options].some(o => o.value === cur) ? cur : '';
+  $('#gteams').innerHTML = [...new Set(SNAP[LG.toLowerCase()].games.flatMap(g => [g.away, g.home]))].sort().map(t => `<option value="${esc(t)}">`).join('');
+}
+['g-conf', 'g-team', 'g-sort', 'g-when'].forEach(id => document.getElementById(id).addEventListener('input', () => { try { localStorage.setItem('bt-' + id + '-' + LG, document.getElementById(id).value); } catch (e) {} renderGames(); }));
+function renderGames() {
+  initGameFilters();
+  let rows = BOARD.filter(x => x.lg === LG);
+  if (SHOW === 'flag') rows = rows.filter(x => x.F.length); else if (SHOW === 'lines') rows = rows.filter(x => x.L.spread != null || x.L.total != null);
+  const C = $('#g-conf').value, TM = $('#g-team').value.trim().toLowerCase(), SO = $('#g-sort').value, WH = $('#g-when').value;
+  rows = rows.filter(x => confMatch(x.g, C) && (!TM || [x.g.away, x.g.home].some(t => t.toLowerCase().includes(TM))));
+  if (WH === 'upcoming') rows = rows.filter(x => !started(x.g.kick)); else if (WH === 'today') rows = rows.filter(x => ctDate(x.g.kick) === today());
+  const tg = x => x.L.total == null ? -1 : Math.abs(x.P.total - x.L.total), sg = x => x.L.spread == null ? -1 : Math.abs(x.P.hs - x.L.spread);
+  const sorters = {kick: (a, b) => a.g.kick.localeCompare(b.g.kick), tgap: (a, b) => tg(b) - tg(a), sgap: (a, b) => sg(b) - sg(a),
+    flags: (a, b) => b.F.length - a.F.length || a.g.kick.localeCompare(b.g.kick), conf: (a, b) => (a.g.home_conf || '').localeCompare(b.g.home_conf || '') || a.g.kick.localeCompare(b.g.kick),
+    total: (a, b) => b.P.total - a.P.total, margin: (a, b) => Math.abs(b.P.hs) - Math.abs(a.P.hs)};
+  rows = rows.slice().sort(sorters[SO] || sorters.kick);
+  if (!rows.length) { $('#games').innerHTML = `<div class="empty">${SHOW === 'flag' ? 'No flagged games yet. Flags need lines and weather, so refresh or switch to All.' : 'No games.'}</div>`; return; }
+  const isN = LG === 'NFL', val = (x, k) => esc(inputsOf(x.lg, x.g)[k] ?? '');
+  $('#games').innerHTML = `<table class="cards"><thead><tr><th>Kick (CT)</th><th>Game</th><th class="num">Model score</th><th class="num">Line</th><th class="num">Model likes</th><th class="num">Wind</th><th>Flags</th></tr></thead><tbody>` +
+    rows.map((x, i) => { const {g, L, P, F} = x, fin = finalFor(x.lg, g.id, ctDate(g.kick), g.away, g.home);
+      const gapT = L.total != null ? P.total - L.total : null, gapS = L.spread != null ? P.hs - L.spread : null;
+      const wx = P.wind == null ? ((isN && !g.outdoor) || (!isN && g.dome) ? 'indoors' : '–') : P.wind + (P.wxd?.gust >= 20 ? ` (g${P.wxd.gust})` : '');
+      return `<tr data-row="${i}" style="cursor:pointer"><td data-label="Kick (CT)">${ctTime(g.kick)}${g.neutral ? '<div class="small">neutral</div>' : ''}</td>
+        <td class="full first" data-label=""><b>${esc(g.away)}</b> @ <b>${esc(g.home)}</b><div class="small">${esc(g.away_conf === g.home_conf ? g.home_conf : (g.away_conf || '?') + ' vs ' + (g.home_conf || '?'))}</div>${isN ? `<div class="small">QBs ${esc(inputsOf('NFL', g).qbA || (QBX['NFL:' + g.away]?.changed ? QBX['NFL:' + g.away].qb || 'backup' : g.qa))} / ${esc(inputsOf('NFL', g).qbH || (QBX['NFL:' + g.home]?.changed ? QBX['NFL:' + g.home].qb || 'backup' : g.qh))}</div>` : ''}<div>${qbChips(x.lg, g)}</div>${fin ? `<div class="small"><b>Final ${fin.as}-${fin.hs}</b></div>` : ''}</td>
+        <td class="num" data-label="Model score">${P.pa.toFixed(1)} - ${P.ph.toFixed(1)}<div class="small">total ${P.total.toFixed(1)}</div></td>
+        <td class="num" data-label="Line">${L.spread == null ? '–' : 'home ' + lineTxt(L.spread)}<div class="small">O/U ${L.total ?? '–'} · ${esc(L.src || 'no line')}</div></td>
+        <td class="num" data-label="Model likes">${gapS == null ? '–' : (gapS < 0 ? esc(g.home) : esc(g.away)) + ' +' + Math.abs(gapS).toFixed(1)}<div class="small">${gapT == null ? '' : 'total ' + sgn(gapT)}</div></td>
+        <td class="num" data-label="Wind">${wx}</td>
+        <td class="full" data-label="Flags">${F.map(f => `<span class="chip ${f.rule === 'nfl_side_gap4' ? 'lean' : f.rule.endsWith('disagrees') ? 'no' : ''}">${esc(f.text)}</span>`).join('') || '<span class="small">–</span>'}</td></tr>
+        <tr class="edit" data-edit="${i}"><td colspan="7"><div class="editgrid">
+          <label class="f">Home line (− = home fav)<input class="num" data-in="spread" value="${val(x, 'spread')}" placeholder="${L.spread ?? ''}"></label>
+          <label class="f">Total<input class="num" data-in="total" value="${val(x, 'total')}" placeholder="${L.total ?? ''}"></label>
+          <label class="f">Wind mph<input class="num" data-in="wind" value="${val(x, 'wind')}" placeholder="${P.wind ?? ''}"></label>
+          ${isN ? `<label class="f">${esc(g.away)} QB<input data-in="qbA" list="qbl" value="${val(x, 'qbA')}" placeholder="${esc(g.qa)}"></label>
+                   <label class="f">${esc(g.home)} QB<input data-in="qbH" list="qbl" value="${val(x, 'qbH')}" placeholder="${esc(g.qh)}"></label>`
+                : `<label class="f">${esc(g.away)} QB/injury pts<input class="num" data-in="qa" value="${val(x, 'qa')}" placeholder="0"></label>
+                   <label class="f">${esc(g.home)} QB/injury pts<input class="num" data-in="qh" value="${val(x, 'qh')}" placeholder="0"></label>`}
+          <button class="btn small" data-clear="${i}">Clear</button><span class="small">${isN ? 'QB names as in play-by-play, e.g. T.Huntley' : 'Backup QB is about −3 to −7'}${P.wxd ? ` · forecast ${P.wxd.temp}°F, wind ${P.wxd.wind}, gusts ${P.wxd.gust}, rain ${P.wxd.rain}%` : ''}</span>
+        </div></td></tr>`; }).join('') + `</tbody></table><datalist id="qbl">${Object.keys(SNAP.nfl.qbs).sort().map(q => `<option value="${esc(q)}">`).join('')}</datalist>`;
+  $$('#games tr[data-row]').forEach(tr => tr.onclick = () => $(`#games tr[data-edit="${tr.dataset.row}"]`).classList.toggle('open'));
+  $$('#games tr.edit').forEach(tr => {
+    const x = rows[+tr.dataset.edit], key = x.lg + ':' + x.g.id;
+    tr.querySelectorAll('input[data-in]').forEach(el => el.onchange = () => { const o = ST.inputs[key] = ST.inputs[key] || {}; const v = el.value.trim(); if (v === '') delete o[el.dataset.in]; else o[el.dataset.in] = v; save(); recompute(true); });
+    tr.querySelector('[data-clear]').onclick = () => { delete ST.inputs[key]; save(); recompute(); };
+  });
+}
+function restoreGF() { initGameFilters(); ['g-conf', 'g-team', 'g-sort', 'g-when'].forEach(id => { try { const v = localStorage.getItem('bt-' + id + '-' + LG); document.getElementById(id).value = v ?? (id === 'g-sort' ? 'kick' : id === 'g-when' ? 'upcoming' : ''); } catch (e) {} }); }
+$$('#lg button').forEach(b => b.onclick = () => { LG = b.dataset.l; $$('#lg button').forEach(x => x.classList.toggle('on', x === b)); restoreGF(); renderGames(); });
+$$('#show button').forEach(b => b.onclick = () => { SHOW = b.dataset.s; $$('#show button').forEach(x => x.classList.toggle('on', x === b)); renderGames(); });
+function confirmStrike(id) { const b = BETS.find(x => x.id === id); return !b || !b.result || window.confirm(`Strike ${b.bet}? It already has a result (${b.result}), so striking removes it from your record.`); }
+
+// ---------------- TRACKER ----------------
+let MODE = 'bets', SORT = {k: 'date', dir: -1};
+function enrich(r, isBet) {
+  const o = Object.assign({}, r);
+  o.odds = +r.odds || -110; o.stake = isBet ? (+r.stake || 0) : 1; o.result = r.result || '';
+  o.profit = o.result === 'W' ? o.stake * payout(o.odds) : o.result === 'L' ? -o.stake : 0;
+  const h = +r.kick_hour || 0;
+  o.kickw = h < 13 ? 'Early (before 1 pm CT)' : h < 17 ? 'Afternoon (1-5 pm CT)' : 'Night (5 pm CT or later)';
+  const d = new Date(r.date + 'T12:00:00'); o.dow = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'][d.getDay()]; o.month = d.toLocaleString('en-US', {month: 'long'});
+  const line = +r.line;
+  if (r.market === 'total') { o.type = r.side === 'over' ? 'Over' : 'Under'; o.size = line < 42 ? 'Total under 42' : line < 50 ? 'Total 42-49.5' : line < 58 ? 'Total 50-57.5' : 'Total 58+';
+    const g = Math.abs(+r.model_total - (r.line_total === '' || r.line_total == null ? line : +r.line_total)); o.gap = isNaN(g) ? 'n/a' : g < 3 ? 'Model gap under 3' : g < 5 ? 'Model gap 3-5' : g < 7 ? 'Model gap 5-7' : 'Model gap 7+'; }
+  else { const sl = r.side === 'home' ? line : -line; o.type = sl < 0 ? 'Favorite' : sl > 0 ? 'Underdog' : "Pick 'em"; const a = Math.abs(line);
+    o.size = a <= 3 ? 'Spread 0-3' : a <= 7 ? 'Spread 3.5-7' : a <= 14 ? 'Spread 7.5-14' : 'Spread 14+';
+    const g = Math.abs(+r.model_home_spread - (r.line_spread === '' || r.line_spread == null ? line : +r.line_spread)); o.gap = isNaN(g) ? 'n/a' : g < 3 ? 'Model gap under 3' : g < 5 ? 'Model gap 3-5' : g < 7 ? 'Model gap 5-7' : 'Model gap 7+'; }
+  o.homeaway = r.market === 'total' ? 'Total (no side)' : (r.side === 'home' ? 'Home team' : 'Road team');
+  const w = r.wind === '' || r.wind == null ? NaN : +r.wind; o.windband = isNaN(w) ? 'No forecast' : w < 10 ? 'Wind under 10 mph' : w < 15 ? 'Wind 10-14 mph' : 'Wind 15+ mph';
+  o.confs = [...new Set([r.away_conf, r.home_conf].filter(Boolean))]; o.confgame = r.away_conf && r.away_conf === r.home_conf ? 'Same conference / division' : 'Cross conference';
+  o.teams = [r.away, r.home].filter(Boolean);
+  const hr = +r.hit_rate || (BR.rules[r.rule] || {}).p || 0; o.hit = hr;
+  o.tier = !hr ? 'n/a' : hr >= 0.6 ? 'Backtest 60%+' : hr >= 0.57 ? 'Backtest 57-59.9%' : hr >= 0.55 ? 'Backtest 55-56.9%' : 'Backtest under 55%';
+  o.stakeband = !isBet ? '' : o.stake < 20 ? 'Stake under $20' : o.stake < 50 ? 'Stake $20-49' : 'Stake $50+';
+  o.rulename = RNAME(r.rule); o.weeklbl = r.league + ' week ' + r.week; o.bettext = r.bet || betText(r);
+  o.betlbl = isBet ? 'Bet' : (BETS.some(b => b.id === r.id && !ST.struck[b.id]) ? 'Bet' : (r.skipped === 'Y' ? 'Passed on purpose' : 'Not bet'));
+  return o;
+}
+const SLICES = [['rulename', 'Rule'], ['league', 'League'], ['conf', 'Conference / division'], ['team', 'Team'], ['kickw', 'Kickoff window'], ['dow', 'Day of week'],
+  ['type', 'Bet type'], ['homeaway', 'Home vs road'], ['size', 'Line size'], ['gap', 'Model vs line gap'], ['windband', 'Wind'], ['tier', 'Backtest hit rate'],
+  ['confgame', 'Conference game?'], ['weeklbl', 'Week'], ['month', 'Month'], ['stakeband', 'Stake size'], ['betlbl', 'Bet or not']];
+function trackerRows() { return MODE === 'bets' ? BETS.filter(b => !ST.struck[b.id]).map(b => enrich(b, true)) : PICKS.map(p => enrich(p, false)); }
+function initFilters() {
+  const opts = (sel, vals, lbl) => { const cur = sel.value; sel.innerHTML = `<option value="">${lbl}</option>` + vals.map(v => `<option>${esc(v)}</option>`).join(''); sel.value = cur; };
+  const all = BETS.map(b => enrich(b, true)).concat(PICKS.map(p => enrich(p, false)));
+  const u = f => [...new Set(all.flatMap(f))].filter(Boolean).sort();
+  opts($('#f-league'), u(r => [r.league]), 'All'); opts($('#f-rule'), u(r => [r.rulename]), 'All rules'); opts($('#f-conf'), u(r => r.confs), 'All');
+  opts($('#f-kick'), ['Early (before 1 pm CT)', 'Afternoon (1-5 pm CT)', 'Night (5 pm CT or later)'], 'Any time'); opts($('#f-type'), ['Over', 'Under', 'Favorite', 'Underdog'], 'All types');
+  $('#teams').innerHTML = u(r => r.teams).map(t => `<option value="${esc(t)}">`).join('');
+  const sl = $('#slice'); if (!sl.options.length) { sl.innerHTML = SLICES.map(([k, n]) => `<option value="${k}">${n}</option>`).join(''); try { const s = localStorage.getItem('bt-slice'); if (s) sl.value = s; } catch (e) {} }
+}
+$$('#filters select,#filters input,#slice').forEach(el => el.addEventListener('input', () => { try { localStorage.setItem('bt-slice', $('#slice').value); } catch (e) {} renderTracker(); }));
+$('#reset').onclick = () => { $$('#filters select,#filters input').forEach(el => el.value = ''); renderTracker(); };
+$$('#mode button').forEach(b => b.onclick = () => { MODE = b.dataset.m; $$('#mode button').forEach(x => x.classList.toggle('on', x === b)); renderTracker(); });
+function filtered() {
+  const L = $('#f-league').value, F = $('#f-from').value, T = $('#f-to').value, R = $('#f-rule').value, C = $('#f-conf').value, TM = $('#f-team').value.trim().toLowerCase(),
+        K = $('#f-kick').value, TY = $('#f-type').value, S = $('#f-status').value;
+  return trackerRows().filter(r => (!L || r.league === L) && (!F || r.date >= F) && (!T || r.date <= T) && (!R || r.rulename === R) && (!C || r.confs.includes(C)) &&
+    (!TM || r.teams.some(t => t.toLowerCase().includes(TM))) && (!K || r.kickw === K) && (!TY || r.type === TY) && (!S || (S === 'settled' ? r.result : !r.result)));
+}
+function stats(list) {
+  const s = {n: list.length, W: 0, L: 0, P: 0, open: 0, staked: 0, profit: 0, won: 0, lost: 0, risk: 0};
+  list.forEach(r => { if (!r.result) { s.open++; s.risk += r.stake; return; } s[r.result]++; s.staked += r.stake; s.profit += r.profit; if (r.profit > 0) s.won += r.profit; else s.lost -= r.profit; });
+  s.winrate = s.W + s.L ? s.W / (s.W + s.L) : null; s.roi = s.staked ? s.profit / s.staked : null;
+  let run = 0, peak = 0, dd = 0, st = 0, worst = 0;
+  list.filter(r => r.result).sort((a, b) => a.date.localeCompare(b.date)).forEach(r => { run += r.profit; peak = Math.max(peak, run); dd = Math.min(dd, run - peak);
+    st = r.result === 'L' ? st + 1 : r.result === 'W' ? 0 : st; worst = Math.max(worst, st); });
+  s.dd = dd; s.streak = worst; return s;
+}
+const money = v => MODE === 'bets' ? fmt$(v) : (v > 0 ? '+' : '') + v.toFixed(2) + 'u';
+const tip = $('#tip');
+const showTip = (e, h) => { tip.innerHTML = h; tip.style.opacity = 1; tip.style.left = Math.min(e.clientX + 14, innerWidth - 270) + 'px'; tip.style.top = (e.clientY + 14) + 'px'; };
+const hideTip = () => tip.style.opacity = 0;
+function renderTracker() {
+  initFilters();
+  const list = filtered(), s = stats(list), isB = MODE === 'bets', cls = v => v > 0 ? 'pos' : v < 0 ? 'neg' : '';
+  const T = [['Record', `${s.W}-${s.L}-${s.P}`, s.open ? `${s.open} still open` : 'W-L-P', ''],
+    ['Win rate', s.winrate == null ? '–' : pct(s.winrate), s.winrate == null ? 'nothing settled yet' : (s.winrate >= BE ? 'above' : 'below') + ' 52.4% break-even', s.winrate == null ? '' : s.winrate >= BE ? 'pos' : 'neg'],
+    ['Net', money(s.profit), isB ? 'after losses' : 'units at -110', cls(s.profit)], ['ROI', s.roi == null ? '–' : (s.roi > 0 ? '+' : '') + pct(s.roi), isB ? `on ${fmt$(s.staked)} settled` : 'per unit risked', cls(s.roi || 0)],
+    [isB ? 'Money won' : 'Units won', money(s.won), 'winning bets', s.won ? 'pos' : ''], [isB ? 'Money lost' : 'Units lost', isB ? '$' + s.lost.toFixed(2) : s.lost.toFixed(2) + 'u', 'losing bets', s.lost ? 'neg' : ''],
+    ['Worst drop', money(s.dd), 'from the high point', cls(s.dd)], ['Losing streak', s.streak, 'longest in a row', '']];
+  if (isB) T.push(['Open', `${s.open}`, `${fmt$(s.risk)} at risk`, '']);
+  $('#tiles').innerHTML = T.map(([k, v, n, c]) => `<div class="tile"><div class="k">${k}</div><div class="v ${c}">${v}</div><div class="n">${n}</div></div>`).join('');
+  const key = $('#slice').value || 'rulename'; $('#slicename').textContent = SLICES.find(x => x[0] === key)[1].toLowerCase();
+  const groups = {}; list.forEach(r => (key === 'conf' ? r.confs : key === 'team' ? r.teams : [r[key] || 'n/a']).forEach(g => (groups[g] = groups[g] || []).push(r)));
+  const G = Object.entries(groups).map(([g, l]) => Object.assign({g}, stats(l))).sort((a, b) => (b.W + b.L) - (a.W + a.L) || b.n - a.n || a.g.localeCompare(b.g));
+  drawBars(G); drawSliceTable(G, key); drawRun(list); drawList(list);
+  $('#foot').textContent = key === 'team' || key === 'conf' ? 'Team and conference slices count a bet for both teams (or conferences) in the game, so groups add up to more than the total.' : '';
+}
+function drawBars(G) {
+  const el = $('#bars'), shown = G.slice(0, 18);
+  if (!shown.length) { el.innerHTML = '<div class="empty">Nothing matches these filters.</div>'; return; }
+  const W = Math.max(el.clientWidth, 280), compact = W < 600, rowH = compact ? 46 : 30, left = compact ? 6 : 190, right = compact ? 10 : 150, H = shown.length * rowH + 30, pw = W - left - right, x = v => left + v * pw;
+  let svg = `<svg width="${W}" height="${H}" role="img" aria-label="Win rate by group">`;
+  [0, .25, .5, .75, 1].forEach(t => svg += `<line x1="${x(t)}" x2="${x(t)}" y1="6" y2="${H - 22}" stroke="var(--border)"/><text x="${x(t)}" y="${H - 6}" text-anchor="${t === 0 ? 'start' : t === 1 ? 'end' : 'middle'}">${t * 100}%</text>`);
+  shown.forEach((g, i) => {
+    const y = 8 + i * rowH, small = g.W + g.L < 5, wr = g.winrate, maxc = compact ? 30 : 28, label = esc(g.g.length > maxc ? g.g.slice(0, maxc - 1) + '…' : g.g);
+    const val = wr == null ? `${g.open} open, no results yet` : `${pct(wr)} · ${g.W}-${g.L}${g.P ? '-' + g.P : ''}${g.open ? ` · ${g.open} open` : ''}`, by = compact ? y + 20 : y + 4;
+    svg += compact ? `<text x="${left}" y="${y + 12}" style="fill:var(--ink)">${label}</text><text x="${W - right}" y="${y + 12}" text-anchor="end">${val}</text>`
+                   : `<text x="${left - 8}" y="${y + 15}" text-anchor="end" style="fill:var(--ink)">${label}</text><text x="${left + pw + 8}" y="${y + 15}">${val}</text>`;
+    if (wr) { const w = Math.max(wr * pw, 6); svg += `<path d="M${left},${by} h${w - 4} a4,4 0 0 1 4,4 v8 a4,4 0 0 1 -4,4 h-${w - 4} z" fill="${small ? 'var(--muted-bar)' : 'var(--series)'}"/>`; }
+    else svg += `<line x1="${left}" x2="${left}" y1="${by}" y2="${by + 16}" stroke="var(--ink-3)" stroke-width="2"/>`;
+    svg += `<rect x="0" y="${y}" width="${W}" height="${rowH}" fill="transparent" data-i="${i}"/>`;
+  });
+  el.innerHTML = svg + `<line x1="${x(BE)}" x2="${x(BE)}" y1="4" y2="${H - 22}" stroke="var(--ink-2)" stroke-dasharray="4 3" stroke-width="1.5"/></svg>`;
+  el.querySelectorAll('rect[data-i]').forEach(r => { const g = shown[+r.dataset.i];
+    r.onmousemove = e => showTip(e, `<b>${esc(g.g)}</b><br>${g.W}-${g.L}-${g.P} (${g.winrate == null ? 'no results' : pct(g.winrate)})<br>Net ${money(g.profit)}${g.roi != null ? ' · ROI ' + pct(g.roi) : ''}<br>${g.open} open`); r.onmouseleave = hideTip; });
+}
+function drawSliceTable(G, key) {
+  $('#slicetable').innerHTML = `<table><thead><tr><th>${SLICES.find(x => x[0] === key)[1]}</th><th class="num">Bets</th><th class="num">W</th><th class="num">L</th><th class="num">P</th><th class="num">Open</th><th class="num">Win rate</th><th class="num">${MODE === 'bets' ? 'Staked' : 'Units'}</th><th class="num">Net</th><th class="num">ROI</th></tr></thead><tbody>` +
+    G.map(g => `<tr><td>${esc(g.g)}</td><td class="num">${g.n}</td><td class="num">${g.W}</td><td class="num">${g.L}</td><td class="num">${g.P}</td><td class="num">${g.open}</td>
+      <td class="num ${g.winrate == null ? '' : g.winrate >= BE ? 'pos' : 'neg'}">${g.winrate == null ? '–' : pct(g.winrate)}</td><td class="num">${MODE === 'bets' ? fmt$(g.staked) : g.staked.toFixed(0)}</td>
+      <td class="num ${g.profit > 0 ? 'pos' : g.profit < 0 ? 'neg' : ''}">${money(g.profit)}</td><td class="num">${g.roi == null ? '–' : pct(g.roi)}</td></tr>`).join('') + '</tbody></table>';
+}
+function drawRun(list) {
+  const el = $('#run'), days = {}; $('#runtitle').textContent = MODE === 'bets' ? 'Running profit ($)' : 'Running result (units)';
+  list.filter(r => r.result).forEach(r => (days[r.date] = days[r.date] || []).push(r));
+  const D = Object.keys(days).sort();
+  if (!D.length) { el.innerHTML = '<div class="empty">Nothing settled yet.<br>Results fill in automatically from ESPN once games go final.</div>'; return; }
+  let run = 0; const pts = D.map(d => { const s = stats(days[d]); run += s.profit; return {d, day: s.profit, run, s}; });
+  const W = Math.max(el.clientWidth, 280), H = 240, l = 56, r = 30, t = 12, b = 30, ys = pts.map(p => p.run).concat([0]), lo = Math.min(...ys), hi = Math.max(...ys), pad = (hi - lo) * 0.12 || 10;
+  const y = v => t + (hi + pad - v) / ((hi + pad) - (lo - pad)) * (H - t - b), x = i => pts.length === 1 ? (l + W - r) / 2 : l + i * (W - l - r) / (pts.length - 1);
+  let svg = `<svg width="${W}" height="${H}" role="img" aria-label="Running profit">`;
+  for (let k = 0; k <= 4; k++) { const v = lo - pad + k * ((hi + pad) - (lo - pad)) / 4; svg += `<line x1="${l}" x2="${W - r}" y1="${y(v)}" y2="${y(v)}" stroke="var(--border)"/><text x="${l - 6}" y="${y(v) + 4}" text-anchor="end">${MODE === 'bets' ? (Math.round(v) < 0 ? '-$' : '$') + Math.abs(Math.round(v)) : v.toFixed(1)}</text>`; }
+  svg += `<line x1="${l}" x2="${W - r}" y1="${y(0)}" y2="${y(0)}" stroke="var(--ink-3)"/><path d="${pts.map((p, i) => (i ? 'L' : 'M') + x(i) + ',' + y(p.run)).join(' ')}" fill="none" stroke="var(--series)" stroke-width="2"/>`;
+  pts.forEach((p, i) => { svg += `<circle cx="${x(i)}" cy="${y(p.run)}" r="4.5" fill="var(--series)" stroke="var(--surface)" stroke-width="2"/>`;
+    if (pts.length <= 12 || i % Math.ceil(pts.length / 8) === 0) svg += `<text x="${x(i)}" y="${H - 10}" text-anchor="${pts.length > 1 && i === pts.length - 1 ? 'end' : i === 0 && pts.length > 1 ? 'start' : 'middle'}">${new Date(p.d + 'T12:00:00').toLocaleDateString('en-US', {month: 'short', day: 'numeric'})}</text>`;
+    svg += `<rect x="${x(i) - 14}" y="${t}" width="28" height="${H - t - b}" fill="transparent" data-i="${i}"/>`; });
+  el.innerHTML = svg + '</svg>';
+  el.querySelectorAll('rect[data-i]').forEach(rc => { const p = pts[+rc.dataset.i]; rc.onmousemove = e => showTip(e, `<b>${dayLbl(p.d)}</b><br>Day: ${money(p.day)} (${p.s.W}-${p.s.L}-${p.s.P})<br>Running: ${money(p.run)}`); rc.onmouseleave = hideTip; });
+}
+function drawList(list) {
+  const isB = MODE === 'bets'; $('#listtitle').textContent = isB ? 'Bets' : 'Every flagged pick';
+  const cols = isB ? [['date', 'Date'], ['league', 'Lg'], ['game', 'Game'], ['bettext', 'Bet'], ['rulename', 'Rule'], ['hit', 'Backtest', 'num'], ['odds', 'Odds', 'num'], ['stake', 'Stake', 'num'], ['result', 'Result'], ['profit', 'Profit', 'num'], ['x', '']]
+                   : [['date', 'Date'], ['league', 'Lg'], ['game', 'Game'], ['bettext', 'Pick'], ['rulename', 'Rule'], ['betlbl', 'Bet?'], ['result', 'Result'], ['profit', 'Units', 'num']];
+  const sorted = list.slice().sort((a, b) => { const A = a[SORT.k], B = b[SORT.k]; return (A > B ? 1 : A < B ? -1 : 0) * SORT.dir; });
+  const cell = (r, k) => k === 'result' ? `<span class="pill ${r.result || 'O'}">${r.result || 'open'}</span>` : k === 'profit' ? (r.result ? `<span class="${r.profit > 0 ? 'pos' : r.profit < 0 ? 'neg' : ''}">${money(r.profit)}</span>` : '<span class="small">–</span>')
+    : k === 'stake' ? fmt$(r.stake) : k === 'hit' ? (r.hit ? pct(r.hit) : '–') : k === 'odds' ? (r.odds > 0 ? '+' : '') + r.odds : k === 'date' ? dayLbl(r.date) : k === 'bettext' ? `<b>${esc(r.bettext)}</b>`
+    : k === 'x' ? `<button class="btn small" data-strike="${esc(r.id)}">Strike</button>` : esc(r[k] ?? '');
+  const struckList = isB ? BETS.filter(b => ST.struck[b.id]) : [];
+  $('#list').innerHTML = (!sorted.length ? '<div class="empty">Nothing matches these filters.</div>' :
+    `<table class="cards"><thead><tr>${cols.map(([k, n, c]) => `<th class="sort ${c || ''}" data-k="${k}">${n}${SORT.k === k ? (SORT.dir > 0 ? ' ▲' : ' ▼') : ''}</th>`).join('')}</tr></thead><tbody>` +
+    sorted.map(r => `<tr>${cols.map(([k, n, c]) => `<td class="${c || ''}${k === 'bettext' ? ' full first' : ['game', 'rulename'].includes(k) ? ' full' : k === 'x' ? ' keep' : ''}" data-label="${k === 'bettext' || k === 'x' ? '' : n}">${cell(r, k)}</td>`).join('')}</tr>`).join('') + '</tbody></table>') +
+    (struckList.length ? `<div class="small" style="margin-top:10px">Struck: ${struckList.map(b => `${esc(b.bet)} (${dayLbl(b.date)}) <button class="btn small" data-unstrike="${esc(b.id)}">Undo</button>`).join(' · ')}</div>` : '');
+  $$('#list th.sort').forEach(th => th.onclick = () => { const k = th.dataset.k; if (k === 'x') return; SORT = {k, dir: SORT.k === k ? -SORT.dir : -1}; drawList(filtered()); });
+  $$('#list [data-strike]').forEach(el => el.onclick = () => { if (confirmStrike(el.dataset.strike)) { ST.struck[el.dataset.strike] = Date.now(); save(); recompute(); } });
+  $$('#list [data-unstrike]').forEach(el => el.onclick = () => { delete ST.struck[el.dataset.unstrike]; save(); recompute(); });
+}
+
+// ---------------- STATS ----------------
+const WNAME = {ppg: 'points per game', epa: 'EPA per play', success: 'success rate', expl: 'explosive plays', pts_per_opp: 'points per trip inside 40', to_pp: 'turnovers per play',
+  plays: 'plays (pace)', pass_rate: 'pass rate', pass_epa: 'pass EPA', rush_epa: 'rush EPA', pass_oe: 'pass rate over expected', sack_rate: 'sack rate', fum_rate: 'fumble rate',
+  pts_drive: 'points per drive', points: 'points', epa_all: 'EPA (all plays)', home: 'home field', rating: 'Elo rating gap', home_fans: 'home field', home_covid: 'home field in 2020',
+  wind: 'wind', div: 'division game', tz_trav: 'time zones traveled', qb_val: 'QB value', qb_delta: 'QB change vs usual', opp_qb_val: 'opponent QB value', west_early: 'West team, 1pm ET kick'};
+const wname = k => /^o_/.test(k) ? 'Offense: ' + (WNAME[k.slice(2)] || k) : /^d_/.test(k) ? 'Opp. defense: ' + (WNAME[k.slice(2)] || k) : (WNAME[k] || k).replace(/^./, c => c.toUpperCase());
+function renderStats() {
+  const live = {CFB: [], NFL: []};
+  DATA.predlog.forEach(p => { const f = finalFor(p.league, p.id, p.date, p.away, p.home);
+    if (f) live[p.league].push({et: Math.abs(+p.pred_away + +p.pred_home - f.as - f.hs), wrong: Math.sign(+p.pred_home - +p.pred_away) !== Math.sign(f.hs - f.as)}); });
+  const avg = a => a.length ? a.reduce((s, v) => s + v, 0) / a.length : null, T = [];
+  for (const lg of ['CFB', 'NFL']) { const L = live[lg];
+    T.push([`${lg} games graded`, L.length, 'predicted before kickoff, scored by ESPN finals']);
+    T.push([`${lg} total miss`, L.length ? avg(L.map(x => x.et)).toFixed(1) + ' pts' : '–', 'average miss on the game total this season']);
+    T.push([`${lg} winner right`, L.length ? pct(1 - avg(L.map(x => x.wrong ? 1 : 0))) : '–', 'straight up, this season']); }
+  $('#livetiles').innerHTML = T.map(([k, v, n]) => `<div class="tile"><div class="k">${k}</div><div class="v">${v}</div><div class="n">${n}</div></div>`).join('');
+  for (const lg of ['cfb', 'nfl']) { const S = SNAP.stats[lg];
+    $('#stat-' + lg).innerHTML = `<h2>${lg.toUpperCase()} model: backtest</h2><div class="hint">${esc(S.model)}<br>${esc(S.test)}</div><table><thead><tr><th>Measure</th><th class="num">Model</th><th>Note</th></tr></thead><tbody>` +
+      S.rows.map(r => `<tr><td>${esc(r[0])}</td><td class="num">${esc(r[1])}</td><td class="small">${esc(r[2])}</td></tr>`).join('') + '</tbody></table>' +
+      (S.spots ? `<h2 style="margin-top:12px">Situational spots</h2><table><tbody>${S.spots.map(r => `<tr><td>${esc(r[0])}</td><td class="num">${esc(r[1])}</td><td class="small">${esc(r[2])}</td></tr>`).join('')}</tbody></table>` : '');
+    const W = (S.weights || []).slice(0, 14), mx = Math.max(...W.map(w => Math.abs(w[1])), 1);
+    $('#w-' + lg).innerHTML = `<h2>${lg.toUpperCase()}: what moves the predicted score</h2><div class="hint">Points added per one standard deviation of each input. Faded bars push the score down.</div><table><tbody>` +
+      W.map(([k, v]) => `<tr><td>${esc(wname(k))}</td><td style="width:42%"><div style="height:10px;border-radius:0 4px 4px 0;background:var(--series);width:${Math.abs(v) / mx * 100}%;opacity:${v < 0 ? .4 : 1}"></div></td><td class="num">${v > 0 ? '+' : ''}${v.toFixed(2)}</td></tr>`).join('') + '</tbody></table>';
+  }
+  const rec = r => { const l = PICKS.filter(p => p.rule === r && p.result); return [l.filter(p => p.result === 'W').length, l.filter(p => p.result === 'L').length]; };
+  $('#stat-rules').innerHTML = `<h2>Betting rules: backtest vs this season</h2><div class="hint">A rule bets when its backtest hit rate clears the bar (CFB ${pct(BR.cfb_min_hit)}, NFL ${pct(BR.nfl_min_hit)}). The live record counts every flagged pick, bet or not.</div>
+    <table><thead><tr><th>Rule</th><th class="num">Backtest</th><th class="num">Games</th><th>Source</th><th class="num">This season</th><th class="num">Live win rate</th></tr></thead><tbody>` +
+    Object.entries(BR.rules).map(([k, r]) => { const [w, l] = rec(k); return `<tr><td>${esc(RNAME(k))}${r.p < (k.startsWith('cfb') ? BR.cfb_min_hit : BR.nfl_min_hit) ? ' <span class="chip lean">lean only</span>' : ''}</td><td class="num">${pct(r.p)}</td><td class="num">${r.n}</td><td class="small">${esc(r.src)}</td><td class="num">${w}-${l}</td><td class="num ${w + l ? (w / (w + l) >= BE ? 'pos' : 'neg') : ''}">${w + l ? pct(w / (w + l)) : '–'}</td></tr>`; }).join('') + '</tbody></table>';
+}
+
+// ---------------- SETTINGS ----------------
+$('#s-key').value = ST.key || ''; $('#s-budget').value = ST.budget;
+$('#s-savekey').onclick = () => { ST.key = $('#s-key').value.trim(); ST.odds = {}; save(); $('#s-keymsg').textContent = 'Saved.'; refreshAll(true); };
+$('#s-testkey').onclick = async () => { $('#s-keymsg').textContent = 'Testing…';
+  try { const r = await fetch(`https://api.the-odds-api.com/v4/sports?apiKey=${encodeURIComponent($('#s-key').value.trim())}`); $('#s-keymsg').textContent = r.ok ? `Key works. ${r.headers.get('x-requests-remaining') || '?'} requests left this month.` : 'Key rejected (' + r.status + ').'; }
+  catch (e) { $('#s-keymsg').textContent = 'Could not reach the Odds API: ' + e.message; } };
+$('#s-savebudget').onclick = () => { const v = +$('#s-budget').value; if (v > 0) { ST.budget = v; save(); recompute(); } };
+function changes() {
+  return {exported: new Date().toISOString(), built: SNAP.built, budget: ST.budget, struck: Object.keys(ST.struck), overrides: ST.ov, inputs: ST.inputs,
+          bets: BETS.filter(b => !ST.struck[b.id] && (b.src !== 'log' || ST.ov[b.id])).map(b => { const o = Object.assign({}, b); delete o.locked; return o; }),
+          picks: Object.values(ST.frozenPicks)};
+}
+$('#s-export').onclick = async () => {
+  const blob = new Blob([JSON.stringify(changes(), null, 1)], {type: 'application/json'});
+  try {
+    if (window.showSaveFilePicker) { const h = await showSaveFilePicker({suggestedName: 'page_changes.json', id: 'betlogs', types: [{description: 'JSON', accept: {'application/json': ['.json']}}]});
+      const w = await h.createWritable(); await w.write(blob); await w.close(); $('#s-msg').textContent = 'Saved. Make sure it is in Betting Model\\betting_models\\logs.'; return; }
+  } catch (e) { if (e.name === 'AbortError') return; }
+  const a = document.createElement('a'); a.href = URL.createObjectURL(blob); a.download = 'page_changes.json'; a.click();
+  $('#s-msg').textContent = 'Downloaded page_changes.json. Move it into Betting Model\\betting_models\\logs.';
+};
+$('#s-import').onchange = async e => { const f = e.target.files[0]; if (!f) return;
+  try { const j = JSON.parse(await f.text()); (j.struck || []).forEach(id => ST.struck[id] = ST.struck[id] || Date.now()); Object.assign(ST.ov, j.overrides || {}); Object.assign(ST.inputs, j.inputs || {});
+    (j.bets || []).forEach(b => { if (started(b.kick)) ST.frozen[b.id] = ST.frozen[b.id] || b; }); (j.picks || []).forEach(p => ST.frozenPicks[p.id] = ST.frozenPicks[p.id] || p);
+    if (j.budget) ST.budget = j.budget; save(); recompute(); $('#s-msg').textContent = 'Loaded.'; } catch (err) { $('#s-msg').textContent = 'Could not read that file.'; } };
+$('#s-clear').onclick = () => { ST.finals = {}; ST.odds = {}; ST.wx = {}; ST.espnOdds = {}; save(); $('#s-msg').textContent = 'Cache cleared. Strikes and edits kept.'; refreshAll(true); };
+$('#s-about').innerHTML = `Model snapshot built ${new Date(SNAP.built).toLocaleString()}: CFB week ${SNAP.cfb.week} (${SNAP.cfb.games.length} games), NFL week ${SNAP.nfl.week} (${SNAP.nfl.games.length} games). Team ratings refresh every Tuesday morning from play-by-play data. Scores, lines, weather and bets refresh live on this page. Sources: ESPN scoreboard (scores, listed lines), The Odds API (DraftKings), Open-Meteo (weather).`;
+
+// ---------------- boot ----------------
+let TAB = 'week';
+$$('#tabs button').forEach(b => b.onclick = () => { TAB = b.dataset.t; $$('#tabs button').forEach(x => x.classList.toggle('on', x === b)); ['week', 'track', 'stats', 'settings'].forEach(t => $('#t-' + t).classList.toggle('hide', t !== TAB)); renderAll(); });
+function recompute(keepOpen) { const open = keepOpen ? $$('#games tr.edit.open').map(t => t.dataset.edit) : []; buildBoard(); buildBets(); renderAll(); open.forEach(i => $(`#games tr[data-edit="${i}"]`)?.classList.add('open')); }
+function renderAll() {
+  $('#sub').textContent = `Ratings through CFB week ${SNAP.cfb.week - 1} and NFL week ${SNAP.nfl.week - 1} · $${(+ST.budget).toFixed(0)} a day`;
+  if (TAB === 'week') renderWeek(); else if (TAB === 'track') renderTracker(); else if (TAB === 'stats') renderStats();
+}
+async function refreshAll(force) {
+  $('#refresh').disabled = true; $('#refresh').textContent = 'Refreshing…';
+  await Promise.allSettled([refreshFinals(), refreshOdds(force), refreshWeather(force), refreshQB(force)]);
+  recompute(); $('#refresh').disabled = false; $('#refresh').textContent = 'Refresh data';
+}
+$('#refresh').onclick = () => refreshAll(true);
+setStatus('scores', '<b>Scores:</b> loading…'); setStatus('lines', '<b>Lines:</b> loading…'); setStatus('wx', '<b>Weather:</b> loading…'); setStatus('qb', '<b>QB news:</b> loading…');
+restoreGF(); recompute(); refreshAll(false);
+let rt; addEventListener('resize', () => { clearTimeout(rt); rt = setTimeout(renderAll, 150); });
+</script>
+</body>
+</html>
