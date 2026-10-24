@@ -90,6 +90,7 @@ tr.struck td.keep{text-decoration:none;opacity:1}
 .sbg .st{display:flex;justify-content:space-between;gap:8px;margin-top:4px;font-size:14px;color:var(--ink-2)}
 .sbg .st.live{color:var(--bad-ink);font-weight:700}
 .sbg .bets{margin-top:6px}
+.sbh{grid-column:1/-1;font-weight:700;font-size:16px;margin-top:6px;color:var(--ink-2)}
 .sline{margin-top:3px;font-weight:700;font-variant-numeric:tabular-nums}.sline .small{font-weight:400}
 .sline.in::before{content:"";display:inline-block;width:8px;height:8px;border-radius:50%;background:var(--bad-ink);margin-right:6px;vertical-align:1px}
 .lv{border:1px solid var(--border);border-radius:12px;padding:12px 14px;margin-top:10px;background:var(--surface);border-left-width:6px}
@@ -200,7 +201,7 @@ a{color:var(--series)}
       <div class="cardhead"><div><h2>Scoreboard</h2></div>
         <div style="display:flex;gap:8px;flex-wrap:wrap"><div class="seg" id="sb-lg"><button data-l="CFB" class="on">College</button><button data-l="NFL">NFL</button></div>
         <div class="seg" id="sb-show"><button data-v="all" class="on">All</button><button data-v="live">Live</button><button data-v="top">Top 25</button><button data-v="mine">My bets</button></div></div></div>
-      <div class="filters" style="margin:8px 0 10px;padding:10px"><label class="f">Day<select id="sb-day"></select></label><label class="f">Team<input id="sb-team" placeholder="any team"></label></div>
+      <div class="filters" style="margin:8px 0 10px;padding:10px"><label class="f">Day<select id="sb-day"></select></label><label class="f">Conference<select id="sb-conf"></select></label><label class="f">Sort<select id="sb-sort"><option value="live">Live first</option><option value="kick">Kickoff</option><option value="conf">Conference</option></select></label><label class="f">Team<input id="sb-team" placeholder="any team"></label></div>
       <div id="scoreboard"></div>
     </div>
     <div class="card">
@@ -409,6 +410,7 @@ let STATUS = {};
 const setStatus = (k, v) => { STATUS[k] = v; renderStatus(); };
 async function getJSON(url) { const r = await fetch(url); if (!r.ok) throw new Error(r.status + ' ' + r.statusText); return r.json(); }
 const ymd = d => d.replace(/-/g, '');
+const ESPN_CONF = {1: 'ACC', 4: 'Big 12', 5: 'Big Ten', 8: 'SEC', 9: 'Pac-12', 12: 'Conference USA', 15: 'MAC', 17: 'Mountain West', 18: 'FBS Independents', 37: 'Sun Belt', 151: 'American'};
 async function espnDay(lg, d) {
   const base = lg === 'CFB' ? 'https://site.api.espn.com/apis/site/v2/sports/football/college-football/scoreboard?groups=80&limit=400&dates='
                             : 'https://site.api.espn.com/apis/site/v2/sports/football/nfl/scoreboard?dates=';
@@ -421,7 +423,7 @@ async function espnDay(lg, d) {
                  hs: +H.score, as: +A.score, done: !!ev.status?.type?.completed};
     if (rec.done) ST.finals[lg + ':' + ev.id] = rec;
     (ST.slate[lg + ':' + d] = ST.slate[lg + ':' + d] || {})[ev.id] = {id: ev.id, kick: ev.date, away: A.team.location, home: H.team.location, aabbr: rec.aabbr, habbr: rec.habbr, done: rec.done, as: rec.as, hs: rec.hs, state: ev.status?.type?.state || '', detail: ev.status?.type?.shortDetail || '', ts: Date.now(),
-      ar: A.curatedRank?.current < 26 ? A.curatedRank.current : '', hr: H.curatedRank?.current < 26 ? H.curatedRank.current : '', tv: (c.broadcasts?.[0]?.names || []).join('/'), lg};
+      ar: A.curatedRank?.current < 26 ? A.curatedRank.current : '', hr: H.curatedRank?.current < 26 ? H.curatedRank.current : '', tv: (c.broadcasts?.[0]?.names || []).join('/'), lg, ac: ESPN_CONF[A.team.conferenceId] || '', hc: ESPN_CONF[H.team.conferenceId] || ''};
     const o = c.odds?.[0];
     if (o && !rec.done) {
       let sp = typeof o.spread === 'number' ? o.spread : null;
@@ -1262,7 +1264,7 @@ async function refreshLive() {
 $('#live-refresh').onclick = refreshLive;
 function scoreLine(g) { if (!g || !(g.state === 'in' || g.state === 'post' || g.done)) return '';
   return `<div class="sline ${g.state === 'in' ? 'in' : ''}">${g.as} – ${g.hs} <span class="small">${esc(g.detail || 'Final')}</span></div>`; }
-const PAGE_VER = "20261024130532";   // stamped by tracker.py; a newer published page reloads itself
+const PAGE_VER = "20261024130742";   // stamped by tracker.py; a newer published page reloads itself
 // ---------------- AUTO REFRESH (while the page is open) ----------------
 const busy = () => { const a = document.activeElement; return a && ['INPUT', 'SELECT', 'TEXTAREA'].includes(a.tagName) || $('#m-form').classList.contains('open'); };
 let tickN = 0;
@@ -1302,13 +1304,23 @@ function renderScoreboard() {
   const all = sbGames(SB.lg), days = [...new Set(all.map(g => ctDate(g.kick)))].sort(), sel = $('#sb-day');
   const want = SB.day && days.includes(SB.day) ? SB.day : days.includes(today()) ? today() : days.find(d => d >= today()) || days[days.length - 1] || '';
   sel.innerHTML = days.map(d => `<option value="${d}">${dayLbl(d)}${d === today() ? ' (today)' : ''}</option>`).join('') || '<option>no games loaded yet</option>'; sel.value = want;
+  const nflConf = {}; SNAP.nfl.games.forEach(x => { nflConf[x.away] = x.away_conf; nflConf[x.home] = x.home_conf; });
+  const cf = g => SB.lg === 'NFL' ? {away_conf: nflConf[g.aabbr] || '', home_conf: nflConf[g.habbr] || '', away: g.away, home: g.home} : {away_conf: g.ac, home_conf: g.hc, away: g.away, home: g.home};
+  const csel = $('#sb-conf'), confs = [...new Set(all.flatMap(g => { const c = cf(g); return [c.away_conf, c.home_conf]; }).filter(Boolean))].sort();
+  const groups = SB.lg === 'NFL' ? ['AFC', 'NFC'] : ['SEC + Big Ten + Notre Dame', 'Power 4 (+ Notre Dame)', 'Group of 5'];
+  csel.innerHTML = '<option value="">All</option>' + groups.map(c => `<option>${esc(c)}</option>`).join('') + '<option disabled>──────</option>' + confs.map(c => `<option>${esc(c)}</option>`).join('');
+  csel.value = [...csel.options].some(o => o.value === SB.conf) ? SB.conf : ''; $('#sb-sort').value = SB.sort || 'live';
   const TM = $('#sb-team').value.trim().toLowerCase(), BG = betsByGame();
-  let G = all.filter(g => ctDate(g.kick) === want && (!TM || [g.away, g.home].some(t => t.toLowerCase().includes(TM))));
+  let G = all.filter(g => ctDate(g.kick) === want && confMatch(cf(g), csel.value) && (!TM || [g.away, g.home].some(t => t.toLowerCase().includes(TM))));
   if (SB.show === 'live') G = G.filter(g => g.state === 'in'); else if (SB.show === 'top') G = G.filter(g => g.ar || g.hr); else if (SB.show === 'mine') G = G.filter(g => BG[g.id]);
   const rank = g => g.state === 'in' ? 0 : g.state === 'pre' || (!g.state && !g.done) ? 1 : 2;
-  G.sort((a, b) => rank(a) - rank(b) || a.kick.localeCompare(b.kick) || a.away.localeCompare(b.away));
+  const cname = g => { const c = cf(g); return c.home_conf === c.away_conf ? c.home_conf || 'Other' : [c.away_conf, c.home_conf].filter(Boolean).sort().join(' vs ') || 'Other'; };
+  const SO = SB.sort || 'live';
+  G.sort((a, b) => (SO === 'conf' ? cname(a).localeCompare(cname(b)) : 0) || (SO !== 'kick' ? rank(a) - rank(b) : 0) || a.kick.localeCompare(b.kick) || a.away.localeCompare(b.away));
   const nLive = all.filter(g => ctDate(g.kick) === want && g.state === 'in').length;
+  let lastC = null;
   $('#scoreboard').innerHTML = (nLive ? `<div class="small" style="margin-bottom:8px">${nLive} live now · updates every minute</div>` : '') + (!G.length ? '<div class="empty">No games match.</div>' : '<div class="sb">' + G.map(g => {
+    const head = SO === 'conf' && cname(g) !== lastC ? `<div class="sbh">${esc(lastC = cname(g))}</div>` : '';
     const live = g.state === 'in', fin = g.done || g.state === 'post', pre = !live && !fin, aL = !pre && g.as > g.hs, hL = !pre && g.hs > g.as;
     const chips = (BG[g.id] || []).map(x => { let c = '', w = '';
       if (!pre) { const st = standing(x.b, g); c = st.m > 0 ? 'pos' : st.m < 0 ? 'neg' : ''; w = fin ? (st.m > 0 ? ' · won' : st.m < 0 ? ' · lost' : ' · push') : st.m > 0 ? ' · winning' : st.m < 0 ? ' · losing' : ' · even'; }
@@ -1317,12 +1329,14 @@ function renderScoreboard() {
       <div class="tm ${aL ? 'lead' : ''}"><span>${g.ar ? `<span class="rk">${g.ar}</span>` : ''}${esc(g.away)}</span><span>${pre ? '' : g.as}</span></div>
       <div class="tm ${hL ? 'lead' : ''}"><span>${g.hr ? `<span class="rk">${g.hr}</span>` : ''}${esc(g.home)}</span><span>${pre ? '' : g.hs}</span></div>
       <div class="st ${live ? 'live' : ''}"><span>${pre ? ctTime(g.kick) : esc(g.detail || (fin ? 'Final' : ''))}</span><span class="small">${esc(g.tv || '')}</span></div>
-      ${chips ? `<div class="bets">${chips}</div>` : ''}</div>`; }).join('') + '</div>');
+      ${chips ? `<div class="bets">${chips}</div>` : ''}</div>`.replace(/^/, head); }).join('') + '</div>');
 }
 $$('#sb-lg button').forEach(b => b.onclick = () => { SB.lg = b.dataset.l; SB.day = ''; sbSave(); renderScoreboard(); sbLoad(); });
 $$('#sb-show button').forEach(b => b.onclick = () => { SB.show = b.dataset.v; sbSave(); renderScoreboard(); });
 $('#sb-day').onchange = () => { SB.day = $('#sb-day').value; sbSave(); renderScoreboard(); sbLoad(); };
 $('#sb-team').oninput = renderScoreboard;
+$('#sb-conf').onchange = () => { SB.conf = $('#sb-conf').value; sbSave(); renderScoreboard(); };
+$('#sb-sort').onchange = () => { SB.sort = $('#sb-sort').value; sbSave(); renderScoreboard(); };
 async function sbLoad() {   // make sure the chosen day's full slate is loaded
   const d = SB.day || today(); const k = SB.lg + ':' + d;
   if (!ST.slate[k] || Date.now() - Math.max(0, ...Object.values(ST.slate[k]).map(g => g.ts || 0)) > 90e3) { try { await espnDay(SB.lg, SB.lg === 'NFL' ? d : d); save(); renderScoreboard(); } catch (e) {} }
