@@ -53,6 +53,9 @@ input.num{width:64px;padding:4px 6px;text-align:right}
 @media (max-width:860px){.grid2{grid-template-columns:1fr}}
 .card{background:var(--surface);border:1px solid var(--border);border-radius:12px;padding:14px;margin-bottom:14px}
 .hint{color:var(--ink-3);font-size:14px;margin-bottom:8px}
+.rep{font-size:17px;line-height:1.5}.rep p{margin:0 0 12px}.rep ul{margin:0 0 12px;padding-left:20px}.rep li{margin-bottom:4px}
+.rep h3{font-size:18px;margin:4px 0 10px}
+#tabs button .newdot{display:inline-block;width:8px;height:8px;border-radius:50%;background:var(--series);margin-left:5px;vertical-align:middle}
 .cardhead{display:flex;justify-content:space-between;align-items:flex-start;gap:10px;flex-wrap:wrap}
 svg text{fill:var(--ink-2);font-size:13px}
 .tip{position:fixed;pointer-events:none;background:var(--ink);color:var(--surface);padding:7px 9px;border-radius:8px;font-size:14px;line-height:1.35;opacity:0;transition:opacity .08s;z-index:10;max-width:260px}
@@ -172,6 +175,7 @@ a{color:var(--series)}
   <div class="tabs" id="tabs">
     <button data-t="week" class="on">Week</button>
     <button data-t="live">Scores</button>
+    <button data-t="reports">Reports</button>
     <button data-t="track">Tracker</button>
     <button data-t="stats">Stats</button>
     <button data-t="rules">Rules</button>
@@ -234,6 +238,14 @@ a{color:var(--series)}
         <div class="seg" id="sb-show"><button data-v="all" class="on">All</button><button data-v="live">Live</button><button data-v="major">Major</button><button data-v="top">Top 25</button><button data-v="mine">My bets</button><button data-v="settled">Settled</button></div></div></div>
       <div class="filters" style="margin:8px 0 10px;padding:10px"><label class="f">Day<select id="sb-day"></select></label><label class="f">Conference<select id="sb-conf"></select></label><label class="f">Sort<select id="sb-sort"><option value="live">Live first</option><option value="kick">Kickoff</option><option value="conf">Conference</option></select></label><label class="f">Team<input id="sb-team" placeholder="any team"></label></div>
       <div id="scoreboard"></div>
+    </div>
+  </section>
+
+  <section id="t-reports" class="hide">
+    <div class="card">
+      <div class="cardhead"><div><h2>Game reports</h2><div class="small" id="rep-when"></div></div>
+        <div style="display:flex;gap:8px;flex-wrap:wrap;align-items:center"><select id="rep-pick" aria-label="Pick a report"></select><button class="btn small" id="rep-refresh">Refresh</button></div></div>
+      <div class="rep" id="rep-body"><div class="hint">Loading reports…</div></div>
     </div>
   </section>
 
@@ -1506,13 +1518,60 @@ $$('.ftoggle').forEach(b => { const box = document.getElementById(b.dataset.for)
   b.onclick = () => { open = !open; try { localStorage.setItem('bt-open-' + b.dataset.for, open ? '1' : '0'); } catch (e) {} set(); };
   b._set = set; box.addEventListener('input', set); box.addEventListener('click', () => setTimeout(set, 0)); set(); });
 
+// ---------------- REPORTS (written by Claude's scheduled runs to reports.json on the sync branch) ----------------
+let REPS = null, repSel = null, repErr = '';
+const repSeenKey = 'bt-rep-seen';
+function repMd(t) {
+  const inl = x => esc(x).replace(/\*\*(.+?)\*\*/g, '<b>$1</b>').replace(/(^|[^*])\*([^*\s][^*]*?)\*(?!\*)/g, '$1<i>$2</i>');
+  let out = '', list = false;
+  String(t || '').split('\n').forEach(line => {
+    const l = line.trim();
+    if (/^[-•*] /.test(l)) { if (!list) { out += '<ul>'; list = true; } out += '<li>' + inl(l.slice(2)) + '</li>'; return; }
+    if (list) { out += '</ul>'; list = false; }
+    if (!l || /^-{3,}$/.test(l)) return;
+    out += /^#{1,4} /.test(l) ? '<h3>' + inl(l.replace(/^#+ /, '')) + '</h3>' : '<p>' + inl(l) + '</p>';
+  });
+  return out + (list ? '</ul>' : '');
+}
+function repDot() {
+  let seen = ''; try { seen = localStorage.getItem(repSeenKey) || ''; } catch (e) {}
+  const b = $('#tabs button[data-t="reports"]'); if (!b) return;
+  const fresh = REPS && REPS.length && REPS[0].id !== seen && TAB !== 'reports';
+  b.innerHTML = 'Reports' + (fresh ? '<span class="newdot" aria-label="new report"></span>' : '');
+}
+async function repLoad() {
+  try {
+    const r = await fetch(ghUrl(`contents/reports.json?ref=${GH.branch}&t=${Date.now()}`), {headers: ghHead(), cache: 'no-store'});
+    if (r.status === 404) { REPS = []; repErr = ''; }
+    else if (!r.ok) throw new Error('GitHub said ' + r.status);
+    else { const j = JSON.parse(b64d((await r.json()).content)); REPS = (j.reports || []).slice().sort((a, b) => String(b.time).localeCompare(String(a.time))); repErr = ''; }
+  } catch (e) { repErr = 'Could not load reports (' + e.message + ').'; }
+  if (TAB === 'reports') renderReports(); else repDot();
+}
+function renderReports() {
+  const body = $('#rep-body'), pick = $('#rep-pick');
+  if (REPS === null) { body.innerHTML = '<div class="hint">' + (repErr ? esc(repErr) : 'Loading reports…') + '</div>'; return; }
+  if (!REPS.length) { pick.innerHTML = ''; $('#rep-when').textContent = ''; body.innerHTML = '<div class="hint">' + (repErr ? esc(repErr) : 'No reports yet. They show up here after each scheduled game report runs.') + '</div>'; return; }
+  if (!REPS.some(x => x.id === repSel)) repSel = REPS[0].id;
+  const fmt = t => new Date(t).toLocaleString([], {weekday: 'short', month: 'short', day: 'numeric', hour: 'numeric', minute: '2-digit'});
+  pick.innerHTML = REPS.map(x => `<option value="${esc(x.id)}"${x.id === repSel ? ' selected' : ''}>${esc(fmt(x.time) + (x.league ? ' · ' + x.league : ''))}</option>`).join('');
+  const cur = REPS.find(x => x.id === repSel);
+  $('#rep-when').textContent = fmt(cur.time) + (cur.league ? ' · ' + cur.league : '') + (cur.id === REPS[0].id ? ' · latest' : '');
+  body.innerHTML = (cur.title ? '<h3>' + esc(cur.title) + '</h3>' : '') + repMd(cur.text) + (repErr ? '<div class="hint">' + esc(repErr) + '</div>' : '');
+  try { localStorage.setItem(repSeenKey, REPS[0].id); } catch (e) {}
+  repDot();
+}
+$('#rep-pick').onchange = e => { repSel = e.target.value; renderReports(); };
+$('#rep-refresh').onclick = () => { $('#rep-refresh').textContent = 'Refreshing…'; repLoad().finally(() => { $('#rep-refresh').textContent = 'Refresh'; }); };
+document.addEventListener('visibilitychange', () => { if (document.visibilityState === 'visible') repLoad(); });
+
 // ---------------- boot ----------------
 let TAB = 'week';
-$$('#tabs button').forEach(b => b.onclick = () => { TAB = b.dataset.t; if (TAB === 'live') setTimeout(refreshLive, 0); $$('#tabs button').forEach(x => x.classList.toggle('on', x === b)); ['week', 'live', 'track', 'stats', 'rules', 'settings'].forEach(t => $('#t-' + t).classList.toggle('hide', t !== TAB)); renderAll(); });
+$$('#tabs button').forEach(b => b.onclick = () => { TAB = b.dataset.t; if (TAB === 'live') setTimeout(refreshLive, 0); if (TAB === 'reports') setTimeout(repLoad, 0); $$('#tabs button').forEach(x => x.classList.toggle('on', x === b)); ['week', 'live', 'reports', 'track', 'stats', 'rules', 'settings'].forEach(t => $('#t-' + t).classList.toggle('hide', t !== TAB)); renderAll(); });
 function recompute(keepOpen) { const open = keepOpen ? $$('#games tr.edit.open').map(t => t.dataset.edit) : []; buildBoard(); buildBets(); buildMine(); renderAll(); open.forEach(i => $(`#games tr[data-edit="${i}"]`)?.classList.add('open')); }
 function renderAll() {
   $('#sub').textContent = `Ratings through CFB week ${SNAP.cfb.week - 1} and NFL week ${SNAP.nfl.week - 1} · $${(+ST.budget).toFixed(0)} a day`;
-  if (TAB === 'week') renderWeek(); else if (TAB === 'live') renderLive(); else if (TAB === 'track') renderTracker(); else if (TAB === 'stats') renderStats();
+  if (TAB === 'week') renderWeek(); else if (TAB === 'live') renderLive(); else if (TAB === 'track') renderTracker(); else if (TAB === 'stats') renderStats(); else if (TAB === 'reports') renderReports();
 }
 async function refreshAll(force) {
   $('#refresh').disabled = true; $('#refresh').textContent = 'Refreshing…';
@@ -1521,7 +1580,7 @@ async function refreshAll(force) {
 }
 $('#refresh').onclick = () => { refreshAll(true); syncCycle(); };
 setStatus('scores', '<b>Scores:</b> loading…'); setStatus('lines', '<b>Lines:</b> loading…'); setStatus('wx', '<b>Weather:</b> loading…'); setStatus('qb', '<b>QB news:</b> loading…');
-themeLbl(); sbLoad(); restoreGF(); $$('.ftoggle').forEach(b => b._set && b._set()); recompute(); refreshAll(false); syncCycle();
+themeLbl(); sbLoad(); restoreGF(); $$('.ftoggle').forEach(b => b._set && b._set()); recompute(); refreshAll(false); syncCycle(); repLoad();
 if (screen.width <= 700 && innerWidth >= 900) $('#dsnote').innerHTML = '<div class="note">Your phone is showing the desktop version, so everything is tiny. In Chrome tap <b>⋮</b> and uncheck <b>Desktop site</b>.</div>';
 let rt; addEventListener('resize', () => { clearTimeout(rt); rt = setTimeout(renderAll, 150); });
 </script>
