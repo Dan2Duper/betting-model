@@ -71,6 +71,7 @@ button.scc .r{font-size:18px;font-weight:700;color:var(--ink)}
 button.scc .p{font-size:14px;color:var(--ink-2)}
 button.scc .m{font-size:14px;font-weight:600}
 .scnone{color:var(--ink-3)}
+#t-stats .card{overflow-x:auto}
 button.scc .pos{color:var(--good-ink)}button.scc .neg{color:var(--bad-ink)}
 .bl{border-top:1px solid var(--border)}
 .bi{display:flex;justify-content:space-between;align-items:flex-start;gap:12px;padding:11px 0;border-bottom:1px solid var(--border)}
@@ -1211,8 +1212,8 @@ function renderModelCard() {
       if (ln && ln.spread != null) { const side = Math.sign((ph - pa) + ln.spread), r = (f.hs - f.as) + ln.spread; if (side) add(lg, 'ats', r === 0 ? 'P' : Math.sign(r) === side ? 'W' : 'L'); }
       if (ln && ln.total != null) { const side = Math.sign(ph + pa - ln.total), r = f.hs + f.as - ln.total; if (side) add(lg, 'ou', r === 0 ? 'P' : Math.sign(r) === side ? 'W' : 'L'); } } });
   const cell = (t, be) => !t ? '–' : `${t.W}-${t.L}${t.P ? '-' + t.P : ''} <span class="${t.W + t.L ? (t.W / (t.W + t.L) >= be ? 'pos' : 'neg') : ''}">${t.W + t.L ? pct(t.W / (t.W + t.L)) : ''}</span>`;
-  $('#modelcard').innerHTML = `<h2>Model report card: every modeled game</h2><div class="small" style="margin-bottom:8px">Every game the model scored this season, whether or not it was an AI-LOX. Against the spread and over/under use the last line saved before kickoff (saved from Oct 24, 2026 on). Break-even is 52.4%.</div>
-    <table class="cmp" style="max-width:none"><thead><tr><th></th><th class="num">Straight up</th><th class="num">Against the spread</th><th class="num">Over / under</th></tr></thead><tbody>` +
+  $('#modelcard').innerHTML = `<h2>Model report card: every modeled game</h2><div class="small" style="margin-bottom:8px">Every game the model scored this season, whether or not it was an AI-LOX. ATS (against the spread) and O/U (over/under) use the last line saved before kickoff (saved from Oct 24, 2026 on). Break-even is 52.4%.</div>
+    <table class="cmp" style="max-width:none"><thead><tr><th></th><th class="num">Straight up</th><th class="num">ATS</th><th class="num">O/U</th></tr></thead><tbody>` +
     ['All', 'CFB', 'NFL'].map(lg => `<tr><td>${lg === 'All' ? 'Both' : lg}</td><td class="num">${cell((R[lg] || {}).su, 0.5)}</td><td class="num">${cell((R[lg] || {}).ats, 0.524)}</td><td class="num">${cell((R[lg] || {}).ou, 0.524)}</td></tr>`).join('') + '</tbody></table>';
 }
 function renderStats() {
