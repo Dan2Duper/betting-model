@@ -1409,7 +1409,7 @@ async function refreshLive() {
 }
 function scoreLine(g) { if (!g || !(g.state === 'in' || g.state === 'post' || g.done)) return '';
   return `<div class="sline ${g.state === 'in' ? 'in' : ''}">${g.as} – ${g.hs} <span class="small">${esc(g.detail || 'Final')}</span></div>`; }
-const PAGE_VER = "20261025103311";   // stamped by tracker.py; a newer published page reloads itself
+const PAGE_VER = "20261025103716";   // stamped by tracker.py; a newer published page reloads itself
 // ---------------- AUTO REFRESH (while the page is open) ----------------
 const busy = () => { const a = document.activeElement; return a && ['INPUT', 'SELECT', 'TEXTAREA'].includes(a.tagName) || $('#m-form').classList.contains('open'); };
 let tickN = 0;
@@ -1472,7 +1472,7 @@ function renderScoreboard() {
     if (bx) { const P = bx.P, L = bx.L, gS = L.spread != null ? P.hs - L.spread : null, gT = L.total != null ? P.total - L.total : null;
       mdl = `<div class="mdl"><b>Model</b> avg ${P.pa.toFixed(1)}-${P.ph.toFixed(1)}, total ${P.total.toFixed(1)}${!pre ? ` (real ${g.as + g.hs})` : ''}` +
         (gS != null ? ` · likes <b>${esc(gS < 0 ? bx.g.home : bx.g.away)}</b> by ${Math.abs(gS).toFixed(1)} vs line` : '') + (gT != null && Math.abs(gT) >= 3 ? ` · ${gT > 0 ? 'over' : 'under'} by ${Math.abs(gT).toFixed(1)}` : '') +
-        (bx.F.length ? ` · ${bx.F.map(f => `<span class="chip">${esc(f.text)}</span>`).join('')}` : '') + '</div>'; }
+        (bx.F.length ? ` · ${bx.F.map(f => `<span class="chip">${live ? 'Live line: ' : fin ? 'Last line: ' : ''}${esc(f.text)}</span>`).join('')}` : '') + '</div>'; }
     const chips = (BG[g.id] || []).map(x => { let c = '', w = '';
       if (!pre) { const st = standing(x.b, g); c = st.m > 0 ? 'pos' : st.m < 0 ? 'neg' : ''; w = fin ? (st.m > 0 ? ' · won' : st.m < 0 ? ' · lost' : ' · push') : st.m > 0 ? ' · winning' : st.m < 0 ? ' · losing' : ' · even'; }
       const money = x.p ? (() => { const st = +x.p.stake || 0, pay = +x.p.to_pay || st * (1 + payout(+x.p.odds || -110)); return ` · $${st.toFixed(2)} to pay $${pay.toFixed(2)}`; })() : '';
