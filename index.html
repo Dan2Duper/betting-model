@@ -665,9 +665,10 @@ function coverProb(lg, kind, model, line, b) {   // kind m: P(home covers) with 
   else for (let k = 0; k <= 140; k++) { const p = npdf(k, mu, par.sd) * K.wt[k]; tot += p; if (k > line) win += p; else if (k === line) push += p; }
   return {win: win / tot, push: push / tot, lose: 1 - (win + push) / tot};
 }
-function likelyScore(lg, pa, ph) {   // most likely real football score near the model's averages
-  const K = KEYS && KEYS[lg]; if (!K) return null; let best = null, bv = -1;
-  for (let a = 0; a <= 70; a++) { const va = npdf(a, pa, 4) * K.wp[a]; for (let h = 0; h <= 70; h++) { if (a === h) continue; const v = va * npdf(h, ph, 4) * K.wp[h]; if (v > bv) { bv = v; best = [a, h]; } } }
+function likelyScore(lg, pa, ph) {   // most likely real final score that fits the model's margin AND total (key margins 3/7, key totals, real team scores)
+  const K = KEYS && KEYS[lg]; if (!K) return null; let best = null, bv = -1; const M = ph - pa, T = pa + ph;
+  for (let a = 0; a <= 70; a++) for (let h = 0; h <= 70; h++) { if (a === h) continue; const d = h - a, t = a + h; if (Math.abs(d) > 80 || t > 140) continue;
+    const v = npdf(d, M, 2.5) * K.wm[Math.abs(d)] * npdf(t, T, 3.5) * K.wt[t] * K.wp[a] * K.wp[h]; if (v > bv) { bv = v; best = [a, h]; } }
   return best;
 }
 function sideProb(lg, b) {   // cover probability of the bet's side at its line (spread: line is the HOME line; total: the total)
@@ -1413,7 +1414,7 @@ async function refreshLive() {
 }
 function scoreLine(g) { if (!g || !(g.state === 'in' || g.state === 'post' || g.done)) return '';
   return `<div class="sline ${g.state === 'in' ? 'in' : ''}">${g.as} – ${g.hs} <span class="small">${esc(g.detail || 'Final')}</span></div>`; }
-const PAGE_VER = "20261024214615";   // stamped by tracker.py; a newer published page reloads itself
+const PAGE_VER = "20261025094403";   // stamped by tracker.py; a newer published page reloads itself
 // ---------------- AUTO REFRESH (while the page is open) ----------------
 const busy = () => { const a = document.activeElement; return a && ['INPUT', 'SELECT', 'TEXTAREA'].includes(a.tagName) || $('#m-form').classList.contains('open'); };
 let tickN = 0;
