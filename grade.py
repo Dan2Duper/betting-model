@@ -84,4 +84,5 @@ for name in ('picks_log', 'bets_log', 'my_bets_log'):
         days = gg.groupby('date').profit.sum(); print('  by day: ' + ', '.join(f'{d} ${v:+.2f}' for d, v in days.items()))
     print(t.to_string())
 import subprocess
+subprocess.run([sys.executable, '-I', f'{PKG}/rules_learn.py'], check=False)   # live results update each rule's hit rate / kill switch
 subprocess.run([sys.executable, '-I', f'{PKG}/tracker.py'], check=False)

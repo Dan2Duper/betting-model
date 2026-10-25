@@ -11,6 +11,11 @@ RULES = json.load(open(f'{PKG}/rules.json'))
 snap = dict(built=dt.datetime.now(dt.timezone.utc).isoformat(), season=S, rules=RULES, stats=json.load(open(f'{PKG}/stats/stats.json')))
 snap['keys'] = json.load(open(f'{PKG}/keys.json'))   # key-number score distributions for cover %, likely scores, NFL key-number lean
 preds_out = []
+# college team-game stats for this season (read by the CFB model and the challenger); rebuilt from the fresh play-by-play each run
+import subprocess
+_rds = f'{DATA}/cfb/repo/data/rds/pbp_players_pos_{S}.rds'; _tg = f'{DATA}/cfb/tg_{S}.parquet'
+if os.path.exists(_rds) and (not os.path.exists(_tg) or os.path.getmtime(_rds) > os.path.getmtime(_tg)):
+    subprocess.run([sys.executable, '-I', f'{PKG}/cfb/features.py', str(S)], check=True, stdout=subprocess.DEVNULL)
 
 # ---------------- CFB ----------------
 import importlib.util as iu
@@ -130,6 +135,30 @@ for t, g in recent.groupby('posteam'):
         top = cs[cs == cs.max()].index; prim[t] = names[max(top, key=lambda q: two.get(q, 0))]
 snap['nfl'] = dict(week=nw, games=ng, coef=coef, qbs=qbs, team_qbs=team_qbs, primary=prim, qb_default=-0.06)
 print('NFL week', nw, len(ng), 'games')
+
+# ---------------- CHALLENGER (self-learning ratings + weekly learning layer) replaces the displayed scores ----------------
+# The previous model's numbers stay on each game as pa0/ph0 (used by the totals rule and as one of the learner's inputs).
+import importlib.util as iu2
+try:
+    spec2 = iu2.spec_from_file_location('challenger', f'{PKG}/ch/challenger.py'); CH = iu2.module_from_spec(spec2); spec2.loader.exec_module(CH)
+    snap['engine'] = 'challenger'; snap['stats']['learned'] = {}
+    for lgk, games, fn, idk in (('cfb', cg, CH.predict_cfb, 'id'), ('nfl', ng, CH.predict_nfl, 'id')):
+        try:
+            P, Wt = fn(S, [g[idk] for g in games]); n = 0
+            for g in games:
+                k = str(g[idk])
+                if k in P or g[idk] in P:
+                    pa_, ph_ = P.get(k, P.get(g[idk])); g['pa0'], g['ph0'] = g['pa'], g['ph']; g['pa'], g['ph'] = pa_, ph_; n += 1
+            snap['stats']['learned'][lgk] = Wt; print('challenger', lgk, n, 'of', len(games), 'games')
+        except Exception as e: print('challenger', lgk, 'failed, keeping the previous model:', repr(e))
+    for r in preds_out:   # log what is displayed, keep the previous model alongside
+        lst = cg if r['league'] == 'CFB' else ng
+        g = next((x for x in lst if str(x.get('espn') if r['league'] == 'NFL' and x.get('espn') else x['id']) == str(r['id']) or str(x['id']) == str(r['id'])), None)
+        if g and 'pa0' in g:
+            r['pred_away0'], r['pred_home0'] = r['pred_away'], r['pred_home']
+            r['pred_away'], r['pred_home'] = round(g['pa'], 1), round(g['ph'], 1)
+    if any('pa0' in g for g in ng): snap['nfl']['wind_base'] = 8.0   # the learner already reflects a typical 8 mph day
+except Exception as e: print('challenger unavailable, keeping the previous model:', repr(e))
 
 # factor weights for the stats tab
 CM = json.load(open(f'{PKG}/cfb/model.json'))

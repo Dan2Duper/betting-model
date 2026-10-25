@@ -66,95 +66,163 @@
     "p": 0.505,
     "n": 182,
     "src": "leave-one-season-out 2023-25 vs closing totals (2023 44.7%/94, 2024 52.9%/34, 2025 59.3%/54); was 60%/55 on 2025 alone",
-    "lean_only": true
+    "lean_only": true,
+    "p_bt": 0.505,
+    "n_bt": 182,
+    "live_w": 0,
+    "live_n": 0
    },
    "cfb_tz_home": {
     "p": 0.55,
     "n": 129,
-    "src": "our 2015-25 CFB backtest; re-tested 2015-25: 115-84 (57.8%)"
+    "src": "our 2015-25 CFB backtest; re-tested 2015-25: 115-84 (57.8%)",
+    "p_bt": 0.55,
+    "n_bt": 129,
+    "live_w": 0,
+    "live_n": 0
    },
    "cfb_tz_home_late": {
     "p": 0.623,
     "n": 69,
-    "src": "our 2015-25 CFB backtest (kick 10pm ET+)"
+    "src": "our 2015-25 CFB backtest (kick 10pm ET+)",
+    "p_bt": 0.623,
+    "n_bt": 69,
+    "live_w": 0,
+    "live_n": 0
    },
    "cfb_wind_under": {
     "p": 0.57,
     "n": 150,
-    "src": "published CFB wind studies (n discounted - not our data)"
+    "src": "published CFB wind studies (n discounted - not our data)",
+    "p_bt": 0.57,
+    "n_bt": 150,
+    "live_w": 0,
+    "live_n": 0
    },
    "nfl_wind_under_10_14": {
     "p": 0.591,
     "n": 465,
-    "src": "our 2014-25 NFL backtest"
+    "src": "our 2014-25 NFL backtest",
+    "p_bt": 0.591,
+    "n_bt": 465,
+    "live_w": 0,
+    "live_n": 0
    },
    "nfl_wind_under_15plus": {
     "p": 0.547,
     "n": 234,
-    "src": "our 2014-25 NFL backtest"
+    "src": "our 2014-25 NFL backtest",
+    "p_bt": 0.547,
+    "n_bt": 234,
+    "live_w": 0,
+    "live_n": 0
    },
    "nfl_side_gap4": {
     "p": 0.529,
     "n": 68,
-    "src": "our 2025 NFL test (below threshold - lean only)"
+    "src": "our 2025 NFL test (below threshold - lean only)",
+    "p_bt": 0.529,
+    "n_bt": 68,
+    "live_w": 0,
+    "live_n": 0
    },
    "nfl_key_side": {
     "p": 0.614,
     "n": 57,
     "src": "key-number cover probability (Normal around the closing line x historical margin frequencies), edge >= 1 pt over the price, walk-forward 2023-25 at actual closing odds: 35-22, +21% ROI; small sample",
-    "lean_only": true
+    "lean_only": true,
+    "p_bt": 0.614,
+    "n_bt": 57,
+    "live_w": 0,
+    "live_n": 0
    },
    "nfl_teaser_dog": {
     "p": 0.615,
     "n": 252,
     "odds": -120,
-    "src": "2-team 6-pt teaser, underdog legs +1.5/+2.5 with total <= 49: legs 395-109 (78.4%) 2012-26, each era 77-80%; teaser win = 0.784^2 at DK -120 (break-even 73.9% per leg)"
+    "src": "2-team 6-pt teaser, underdog legs +1.5/+2.5 with total <= 49: legs 395-109 (78.4%) 2012-26, each era 77-80%; teaser win = 0.784^2 at DK -120 (break-even 73.9% per leg)",
+    "p_bt": 0.615,
+    "n_bt": 252,
+    "live_w": 0,
+    "live_n": 0
    },
    "nfl_teaser_leg": {
     "p": 0.784,
     "n": 504,
     "src": "single teaser leg record (graded at the teased line); legs are paired into nfl_teaser_dog bets",
-    "lean_only": true
+    "lean_only": true,
+    "p_bt": 0.784,
+    "n_bt": 504,
+    "live_w": 0,
+    "live_n": 0
    },
    "nfl_early_dog": {
     "p": 0.549,
     "n": 437,
     "src": "NFL weeks 1-2 underdogs 2013-26",
-    "lean_only": true
+    "lean_only": true,
+    "p_bt": 0.549,
+    "n_bt": 437,
+    "live_w": 0,
+    "live_n": 0
    },
    "nfl_mnf_under": {
     "p": 0.554,
     "n": 249,
     "src": "Monday night unders 2013-26",
-    "lean_only": true
+    "lean_only": true,
+    "p_bt": 0.554,
+    "n_bt": 249,
+    "live_w": 0,
+    "live_n": 0
    },
    "cfb_total68_under": {
     "p": 0.575,
     "n": 454,
-    "src": "FBS vs FBS closing total 68+: under 261-193, 2015-25 (7 of 10 seasons profitable; higher totals stronger)"
+    "src": "FBS vs FBS closing total 68+: under 261-193, 2015-25 (7 of 10 seasons profitable; higher totals stronger)",
+    "p_bt": 0.575,
+    "n_bt": 454,
+    "live_w": 0,
+    "live_n": 0
    },
    "cfb_letdown": {
     "p": 0.567,
     "n": 480,
     "stake_mult": 0.5,
-    "src": "fade a team the week after it beat an Elo top-20% opponent: 272-208 2015-25 (50.7% in 2015-19, 59.1% in 2021-25) - half stakes"
+    "src": "fade a team the week after it beat an Elo top-20% opponent: 272-208 2015-25 (50.7% in 2015-19, 59.1% in 2021-25) - half stakes",
+    "p_bt": 0.567,
+    "n_bt": 480,
+    "live_w": 0,
+    "live_n": 0
    },
    "cfb_road_bounce28": {
     "p": 0.56,
     "n": 596,
-    "src": "road team off a loss by 28+: 334-262 2015-25 (57.2% 2015-19, 55.4% 2021-25)"
+    "src": "road team off a loss by 28+: 334-262 2015-25 (57.2% 2015-19, 55.4% 2021-25)",
+    "p_bt": 0.56,
+    "n_bt": 596,
+    "live_w": 0,
+    "live_n": 0
    },
    "cfb_late_under": {
     "p": 0.55,
     "n": 418,
     "src": "kickoff 10pm ET or later: under 230-188 2015-25",
-    "lean_only": true
+    "lean_only": true,
+    "p_bt": 0.55,
+    "n_bt": 418,
+    "live_w": 0,
+    "live_n": 0
    },
    "cfb_secb1g_road_bounce": {
     "p": 0.599,
     "n": 212,
     "stake_mult": 0.5,
-    "src": "SEC/Big Ten conference games: road team off a 21+ point loss or on a 3+ game losing streak, 127-85 2015-25 (53.4% 2015-19, 63.3% 2021-25) - half stakes"
+    "src": "SEC/Big Ten conference games: road team off a 21+ point loss or on a 3+ game losing streak, 127-85 2015-25 (53.4% 2015-19, 63.3% 2021-25) - half stakes",
+    "p_bt": 0.599,
+    "n_bt": 212,
+    "live_w": 0,
+    "live_n": 0
    }
   },
   "excluded": "time-zone spots where the model disagrees; any game passed with --skip",

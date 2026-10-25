@@ -643,14 +643,15 @@ function predict(lg, g) {
   } else {
     const C = SNAP.nfl.coef, Q = SNAP.nfl.qbs, dflt = SNAP.nfl.qb_default;
     if (!g.outdoor) wind = null;
-    const w = g.outdoor ? (wind ?? 8) : 0; pa += C.wind * w; ph += C.wind * w;
+    const w = g.outdoor ? (wind ?? 8) - (SNAP.nfl.wind_base || 0) : 0; pa += C.wind * w; ph += C.wind * w;   // challenger scores already assume a typical 8 mph day
     const NA = QBX['NFL:' + g.away], NH = QBX['NFL:' + g.home];
     const qbA = inp.qbA || (NA?.changed ? (NA.qb || '?') : ''), qbH = inp.qbH || (NH?.changed ? (NH.qb || '?') : '');
     const va = qbA ? (Q[qbA] ?? dflt) : g.qa0, vh = qbH ? (Q[qbH] ?? dflt) : g.qh0;
     pa += C.qb_own * (va - g.qa0) + C.qb_opp * (vh - g.qh0); ph += C.qb_own * (vh - g.qh0) + C.qb_opp * (va - g.qa0);
     if (qbA) notes.push(`${g.away} QB ${qbA === '?' ? 'backup' : qbA}${inp.qbA ? ' (entered)' : ' (auto)'}`); if (qbH) notes.push(`${g.home} QB ${qbH === '?' ? 'backup' : qbH}${inp.qbH ? ' (entered)' : ' (auto)'}`);
   }
-  return {pa, ph, total: pa + ph, hs: pa - ph, wind: wind == null || isNaN(wind) ? null : wind, wxd: wx, notes};
+  const total0 = g.pa0 != null ? pa + ph - g.pa - g.ph + g.pa0 + g.ph0 : pa + ph;   // previous model's total (the totals rule was backtested on it)
+  return {pa, ph, total: pa + ph, total0, hs: pa - ph, wind: wind == null || isNaN(wind) ? null : wind, wxd: wx, notes};
 }
 // ---------- key-number score distributions (keys.json, fitted on historical finals) ----------
 const KEYS = SNAP.keys || null;
@@ -678,8 +679,8 @@ function sideProb(lg, b) {   // cover probability of the bet's side at its line 
 function flagsFor(lg, g, P, L) {
   const out = [];
   if (lg === 'CFB') {
-    if (L.total != null && Math.abs(P.total - L.total) >= RULES.cfb.total_gap_min)
-      out.push({rule: 'cfb_total_gap7', market: 'total', side: P.total > L.total ? 'over' : 'under', line: L.total, text: `${P.total > L.total ? 'Over' : 'Under'} ${L.total}, model ${P.total.toFixed(1)}`});
+    if (L.total != null && Math.abs(P.total0 - L.total) >= RULES.cfb.total_gap_min)
+      out.push({rule: 'cfb_total_gap7', market: 'total', side: P.total0 > L.total ? 'over' : 'under', line: L.total, text: `${P.total0 > L.total ? 'Over' : 'Under'} ${L.total}, totals model ${P.total0.toFixed(1)}`});
     if (!g.neutral && g.tz_home != null && g.tz_away != null && g.tz_home - g.tz_away <= -RULES.cfb.tz_spot.min_tz_west && L.spread != null) {
       const late = etHour(g.kick) >= 22, agree = (P.ph - P.pa) + L.spread > 0;
       out.push({rule: 'cfb_tz_home' + (late ? '_late' : '') + (agree ? '' : '_model_disagrees'), market: 'spread', side: 'home', line: L.spread, text: `${g.home} ${lineTxt(L.spread)}, east team flying west${agree ? '' : ' (model disagrees)'}`});
@@ -1114,14 +1115,27 @@ function renderStats() {
       (S.spots ? `<h2 style="margin-top:12px">Situational spots</h2><table><tbody>${S.spots.map(r => `<tr><td>${esc(r[0])}</td><td class="num">${esc(r[1])}</td><td class="small">${esc(r[2])}</td></tr>`).join('')}</tbody></table>` : '');
     const W = (S.weights || []).slice(0, 14), mx = Math.max(...W.map(w => Math.abs(w[1])), 1);
     $('#w-' + lg).innerHTML = `<h2>${lg.toUpperCase()}: what moves the predicted score</h2><div class="hint">Points added per one standard deviation of each input. Faded bars push the score down.</div><table><tbody>` +
-      W.map(([k, v]) => `<tr><td>${esc(wname(k))}</td><td style="width:42%"><div style="height:10px;border-radius:0 4px 4px 0;background:var(--series);width:${Math.abs(v) / mx * 100}%;opacity:${v < 0 ? .4 : 1}"></div></td><td class="num">${v > 0 ? '+' : ''}${v.toFixed(2)}</td></tr>`).join('') + '</tbody></table>';
+      W.map(([k, v]) => `<tr><td>${esc(wname(k))}</td><td style="width:42%"><div style="height:10px;border-radius:0 4px 4px 0;background:var(--series);width:${Math.abs(v) / mx * 100}%;opacity:${v < 0 ? .4 : 1}"></div></td><td class="num">${v > 0 ? '+' : ''}${v.toFixed(2)}</td></tr>`).join('') + '</tbody></table>' + learnedHtml(lg);
   }
   const rec = r => { const l = PICKS.filter(p => p.rule === r && p.result); return [l.filter(p => p.result === 'W').length, l.filter(p => p.result === 'L').length]; };
-  $('#stat-rules').innerHTML = `<h2>Betting rules: backtest vs this season</h2><div class="hint">A rule bets when its backtest hit rate clears the bar (CFB ${pct(BR.cfb_min_hit)}, NFL ${pct(BR.nfl_min_hit)}). The live record counts every flagged pick, bet or not.</div>
-    <table><thead><tr><th>Rule</th><th class="num">Backtest</th><th class="num">Games</th><th>Source</th><th class="num">This season</th><th class="num">Live win rate</th></tr></thead><tbody>` +
-    Object.entries(BR.rules).map(([k, r]) => { const [w, l] = rec(k); return `<tr><td>${esc(RNAME(k))}${r.lean_only || r.p < (k.startsWith('cfb') ? BR.cfb_min_hit : BR.nfl_min_hit) ? ' <span class="chip lean">lean only</span>' : ''}</td><td class="num">${pct(r.p)}</td><td class="num">${r.n}</td><td class="small">${esc(r.src)}</td><td class="num">${w}-${l}</td><td class="num ${w + l ? (w / (w + l) >= BE ? 'pos' : 'neg') : ''}">${w + l ? pct(w / (w + l)) : '–'}</td></tr>`; }).join('') + '</tbody></table>';
+  $('#stat-rules').innerHTML = `<h2>Betting rules: backtest vs this season</h2><div class="hint">Each rule's hit rate starts at its backtest and updates with every live result ("Learned now"); stakes follow the learned rate. A rule bets when that rate clears the bar (CFB ${pct(BR.cfb_min_hit)}, NFL ${pct(BR.nfl_min_hit)}). The live record counts every flagged pick, bet or not.</div>
+    <table><thead><tr><th>Rule</th><th class="num">Backtest</th><th class="num">Learned now</th><th class="num">Games</th><th>Source</th><th class="num">This season</th><th class="num">Live win rate</th></tr></thead><tbody>` +
+    Object.entries(BR.rules).map(([k, r]) => { const [w, l] = rec(k); return `<tr><td>${esc(RNAME(k))}${r.lean_only || r.p < (k.startsWith('cfb') ? BR.cfb_min_hit : BR.nfl_min_hit) ? ' <span class="chip lean">lean only</span>' : ''}</td><td class="num">${pct(r.p_bt ?? r.p)}</td><td class="num">${pct(r.p)}${r.retired ? ' <span class="chip lean">retired</span>' : ''}</td><td class="num">${r.n}</td><td class="small">${esc(r.src)}</td><td class="num">${w}-${l}</td><td class="num ${w + l ? (w / (w + l) >= BE ? 'pos' : 'neg') : ''}">${w + l ? pct(w / (w + l)) : '–'}</td></tr>`; }).join('') + '</tbody></table>';
 }
 
+const LNAME = {cm: 'Self-learning team ratings (share)', pm: 'Previous model (share)', elo: 'Elo rating gap (share)', ct: 'Self-learning ratings total (share)', pt: 'Previous model total (share)', one: 'Baseline points',
+  rest_diff: 'Extra rest, per week', bye_diff: 'Coming off a bye', west_early: 'West team in a 1pm ET game', east_west: 'East team travelling west', qb_change: 'New starting QB',
+  bounce: 'Lost big last week (per 14 pts)', luck: 'Close-game luck so far', new_coach: 'New head coach', body_clock: 'Night game body clock (west team)', fum_luck: 'Fumble-recovery luck',
+  team_hfa: 'Stadium-specific home edge', road_trip: '3rd straight road game', short_cross: 'Short week + cross-country', dome: 'Dome', div: 'Division game', late: 'Late season / late kick',
+  tempo: 'Fast-paced matchup', letdown: 'Letdown after beating a top team', tz_travel: 'Time zones crossed', altitude: 'Altitude (visitor from low ground)', south_in_cold: 'Southern team in the cold',
+  north_in_heat: 'Northern team in the heat', to_luck: 'Turnover-margin luck (per 5)', lookahead: 'Big game next week', conf: 'Conference game', early_season: 'Weeks 1-4', late_season: 'Week 10+'};
+function learnedHtml(lg) {
+  const L = SNAP.stats.learned && SNAP.stats.learned[lg]; if (!L) return '';
+  const row = ([k, v]) => `<tr><td>${esc(LNAME[k] || k)}</td><td class="num">${['cm', 'pm', 'elo', 'ct', 'pt'].includes(k) ? Math.round(v * 100) + '%' : (v > 0 ? '+' : '') + v.toFixed(2) + ' pts'}</td></tr>`;
+  const side = (o, base) => Object.entries(o).filter(([k]) => base === ['cm', 'pm', 'elo', 'ct', 'pt', 'one'].includes(k)).sort((a, b) => base ? 0 : Math.abs(b[1]) - Math.abs(a[1])).map(row).join('');
+  return `<h2 style="margin-top:12px">${lg.toUpperCase()}: learning layer (re-weighed every week)</h2><div class="hint">The predicted score blends the self-learning team ratings with the previous model, then adds situational inputs at the weight each has earned on games it had not seen yet. Inputs start at zero and only grow if they keep predicting. Home-team points, per 1 unit of each input.</div>
+    <table><tbody><tr><th colspan="2">Margin (home minus away)</th></tr>${side(L.m, true)}${side(L.m, false)}<tr><th colspan="2">Total points</th></tr>${side(L.t, true)}${side(L.t, false)}</tbody></table>`;
+}
 // ---------------- SETTINGS ----------------
 $('#s-key').value = ST.key || ''; $('#s-budget').value = ST.budget;
 $('#s-savekey').onclick = () => { ST.key = $('#s-key').value.trim(); ST.odds = {}; save(); $('#s-keymsg').textContent = 'Saved.'; refreshAll(true); };

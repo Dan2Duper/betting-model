@@ -1,0 +1,7 @@
+{
+ "_note": "Challenger settings, tuned walk-forward (each season learned only from earlier seasons; these are the values learned through 2025). kalman = [points weight vs EPA, weekly drift, offseason added uncertainty, offseason carryover, game noise, home field, (NFL) QB points per EPA/dropback per dropback | (CFB) starting uncertainty, (NFL) starting uncertainty | (CFB) FCS gap]. learn = learning-layer priors: base_n / ang_n = how many games of evidence the starting weights are worth (situational inputs start at 0), forget = per-game memory (1.0 = never forget). Re-tune in the offseason with: python3 ch/tune.py",
+ "NFL": {"kalman": [0.684, 0.263, 2.065, 0.638, 55.619, 1.523, 0.503, 40.381],
+         "learn": {"m": {"ang_n": 3000, "base_n": 300, "forget": 0.9995}, "t": {"ang_n": 300, "base_n": 100, "forget": 1.0}}},
+ "CFB": {"kalman": [0.904, 0.149, 6.243, 0.505, 27.337, 2.424, 150.0, 37.162],
+         "learn": {"m": {"ang_n": 1000, "base_n": 30, "forget": 1.0}, "t": {"ang_n": 3000, "base_n": 30, "forget": 0.999}}}
+}
