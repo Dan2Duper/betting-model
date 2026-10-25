@@ -74,6 +74,9 @@ tr.struck td.keep{text-decoration:none;opacity:1}
 .empty{padding:24px 10px;text-align:center;color:var(--ink-3)}
 .status{font-size:14px;color:var(--ink-2);display:flex;flex-wrap:wrap;gap:6px 14px;margin-bottom:12px}
 .status span b{color:var(--ink)}
+.statushead{display:flex;justify-content:space-between;align-items:baseline;margin:20px 0 2px;padding-bottom:4px;border-bottom:2px solid var(--border);font-weight:800;font-size:15px;text-transform:uppercase;letter-spacing:.06em;color:var(--ink-2)}
+.statushead:first-child{margin-top:4px}
+.statushead .small{text-transform:none;letter-spacing:0;font-weight:400}
 .dayhead{display:flex;justify-content:space-between;align-items:baseline;margin:14px 0 6px;font-weight:700;font-size:18px}
 .edit{display:none;background:var(--surface-2)}
 .edit.open{display:table-row}
@@ -820,18 +823,32 @@ function renderWeek() {
   BETS.filter(b => b.date >= cut).forEach(b => (dates[b.date] = dates[b.date] || []).push(b));
   const days = Object.keys(dates).sort();
   $('#keynote').innerHTML = ST.key ? '' : '<div class="note">No Odds API key yet. Lines come from ESPN\'s listing (and the nflverse consensus for NFL). Add a free key in Settings to price everything off DraftKings.</div>';
-  $('#betboard').innerHTML = !days.length ? '<div class="empty">No AI-LOX right now. They appear once lines and weather are in.</div>' : days.map(d => {
-    const list = dates[d].sort((a, b) => (+b.stake || 0) - (+a.stake || 0));
-    const tot = list.reduce((s, b) => s + (+b.stake || 0), 0);
-    return `<div class="dayhead"><span>${dayLbl(d)}</span><span class="small">${list.length} lock${list.length === 1 ? '' : 's'} · suggested $${tot.toFixed(0)}</span></div>
-    <div class="tablewrap"><table class="cards"><thead><tr><th>Kick</th><th>Lock</th><th class="why">Why</th><th class="num">Backtest</th><th class="num">Odds</th><th class="num">Suggested $</th><th class="num">To win</th><th>Result</th><th></th></tr></thead><tbody>` +
-    list.map(b => { const s = false, go = started(b.kick), bet = mineFor(b);
+  const row = b => { const s = false, go = started(b.kick), bet = mineFor(b);
       return `<tr class="${s ? 'struck' : ''}"><td data-label="Kick">${ctTime(b.kick)}</td><td class="full first" data-label=""><b>${esc(b.bet)}</b><div class="small">${esc(b.game)}</div>${(() => { const qs = [b.away, b.home].map(t => QBX[b.league + ':' + t]).filter(q => q && ['quest', 'out', 'doubt', 'check'].includes(q.status)); return qs.map(q => `<span class="chip no" title="${esc(q.why)}">QB: ${esc(q.team)} ${q.status === 'quest' ? 'questionable' : q.status === 'check' ? 'check' : 'starter out'}</span>`).join(''); })()}</td><td class="why full" data-label="Why">${esc(RNAME(b.rule))}</td>
       <td class="num" data-label="Backtest">${pct(+b.hit_rate)}${(() => { const c = sideProb(b.league, b); return c && c.push >= 0.02 ? `<div class="small">${pct(c.push)} push chance</div>` : ''; })()}</td>
       <td class="num" data-label="Odds">${(b.odds > 0 ? '+' : '') + b.odds}</td>
       <td class="num" data-label="Suggested $">$${(+b.stake || 0).toFixed(0)}</td>
       <td class="num" data-label="To win">${s ? '–' : fmt$(b.to_win)}</td><td data-label="Result">${b.result ? `<span class="pill ${b.result}">${b.result}</span>` : go ? '<span class="pill O">live</span>' : ''}</td>
-      <td class="keep" data-label="">${bet ? MINE.filter(m => sameBet(m, b)).map(m => `<span class="chip">You bet it: ${esc(m.bet || betText(m))} · $${(+m.stake).toFixed(2)}</span>`).join('') : '<span class="small">Not in your bets</span>'}</td></tr>`; }).join('') + '</tbody></table></div>';
+      <td class="keep" data-label="">${bet ? MINE.filter(m => sameBet(m, b)).map(m => `<span class="chip">You bet it: ${esc(m.bet || betText(m))} · $${(+m.stake).toFixed(2)}</span>`).join('') : '<span class="small">Not in your bets</span>'}</td></tr>`; };
+  const head = '<thead><tr><th>Kick</th><th>Lock</th><th class="why">Why</th><th class="num">Backtest</th><th class="num">Odds</th><th class="num">Suggested $</th><th class="num">To win</th><th>Result</th><th></th></tr></thead>';
+  // Upcoming first (soonest kick on top), then live, then posted results (most recent on top)
+  const stat = b => b.result ? 'post' : started(b.kick) ? 'live' : 'up';
+  const GROUPS = [['up', 'Upcoming', 1], ['live', 'Live', 1], ['post', 'Posted', -1]];
+  const all = days.flatMap(d => dates[d]);
+  $('#betboard').innerHTML = !all.length ? '<div class="empty">No AI-LOX right now. They appear once lines and weather are in.</div>' : GROUPS.map(([k, name, dir]) => {
+    const g = all.filter(b => stat(b) === k); if (!g.length) return '';
+    const byDay = {}; g.forEach(b => (byDay[b.date] = byDay[b.date] || []).push(b));
+    const ds = Object.keys(byDay).sort(); if (dir < 0) ds.reverse();
+    return `<div class="statushead ${k}">${name}<span class="small">${g.length} lock${g.length === 1 ? '' : 's'}</span></div>` + ds.map(d => {
+      const list = byDay[d].sort((a, b) => dir * a.kick.localeCompare(b.kick) || (+b.stake || 0) - (+a.stake || 0));
+      const tot = list.reduce((s, b) => s + (+b.stake || 0), 0);
+      let sum = `${list.length} lock${list.length === 1 ? '' : 's'} · suggested $${tot.toFixed(0)}`;
+      if (k === 'post') { const w = list.filter(b => b.result === 'W').length, l = list.filter(b => b.result === 'L').length, pu = list.filter(b => b.result === 'P').length;
+        const net = list.reduce((s, b) => s + (b.result === 'W' ? (+b.to_win || 0) : b.result === 'L' ? -(+b.stake || 0) : 0), 0);
+        sum = `${w}-${l}${pu ? '-' + pu : ''} · <span class="${net >= 0 ? 'pos' : 'neg'}">${net >= 0 ? '+' : ''}${fmt$(net)}</span> at suggested $`; }
+      return `<div class="dayhead"><span>${dayLbl(d)}</span><span class="small">${sum}</span></div>
+    <div class="tablewrap"><table class="cards">${head}<tbody>${list.map(row).join('')}</tbody></table></div>`;
+    }).join('');
   }).join('');
   renderMine(); renderGames();
 }
