@@ -12,13 +12,13 @@
   color-scheme: light;
   --bg:#f7f7f5; --surface:#fcfcfb; --surface-2:#f0efec; --border:#e2e1dc;
   --ink:#0b0b0b; --ink-2:#52514e; --ink-3:#8a8984;
-  --series:#2a78d6; --muted-bar:#b9b8b2;
+  --series:#2a78d6; --series-2:#d9731a; --muted-bar:#b9b8b2;
   --good-bg:#dff3df; --good-ink:#0a6e0a; --bad-bg:#f8dddd; --bad-ink:#a12a2a; --push-bg:#e9e8e4;
   --warn-bg:#fdf0d2; --warn-ink:#7a5200; --chip:#e7f0fb; --chip-ink:#1c5cab;
 }
 :root[data-theme="dark"]{
   --bg:#121211; --surface:#1a1a19; --surface-2:#242422; --border:#33332f;
-  --ink:#f0efec; --ink-2:#c3c2b7; --ink-3:#8f8e86; --series:#3987e5; --muted-bar:#55544f;
+  --ink:#f0efec; --ink-2:#c3c2b7; --ink-3:#8f8e86; --series:#3987e5; --series-2:#f0a35a; --muted-bar:#55544f;
   --good-bg:#173a17; --good-ink:#7fdc7f; --bad-bg:#432020; --bad-ink:#f2a0a0; --push-bg:#2c2c29;
   --warn-bg:#3a2e12; --warn-ink:#f0c66a; --chip:#1c3a5e; --chip-ink:#a9cdf7; color-scheme: dark;
 }
@@ -55,6 +55,42 @@ input.num{width:64px;padding:4px 6px;text-align:right}
 .hint{color:var(--ink-3);font-size:14px;margin-bottom:8px}
 .rep{font-size:17px;line-height:1.5}.rep p{margin:0 0 12px}.rep ul{margin:0 0 12px;padding-left:20px}.rep li{margin-bottom:4px}
 .rep h3{font-size:18px;margin:4px 0 10px}
+.tk-bar{display:flex;gap:8px;flex-wrap:wrap;margin-bottom:12px}
+table.sc{width:100%;border-collapse:collapse;table-layout:fixed}
+table.sc th{font-size:13px;font-weight:700;text-transform:uppercase;letter-spacing:.04em;color:var(--ink-3);text-align:center;padding:6px 4px;border-bottom:1px solid var(--border)}
+table.sc th:first-child{text-align:left;width:34%}
+table.sc td{padding:4px;border-bottom:1px solid var(--border);vertical-align:middle;text-align:center}
+table.sc td:first-child{text-align:left;font-weight:600;padding-left:0}
+table.sc td:first-child .small{display:block;font-weight:400}
+table.sc tr.tot td{border-bottom:0;border-top:2px solid var(--border)}
+table.sc tr.tot td:first-child{font-weight:700}
+button.scc{all:unset;box-sizing:border-box;display:block;width:100%;padding:8px 4px;border-radius:8px;cursor:pointer;text-align:center;font-variant-numeric:tabular-nums}
+button.scc:hover,button.scc:focus-visible{background:var(--surface-2)}
+button.scc.sel{background:var(--chip);box-shadow:inset 0 0 0 2px var(--series)}
+button.scc .r{font-size:18px;font-weight:700;color:var(--ink)}
+button.scc .p{font-size:14px;color:var(--ink-2)}
+button.scc .m{font-size:14px;font-weight:600}
+.scnone{color:var(--ink-3)}
+button.scc .pos{color:var(--good-ink)}button.scc .neg{color:var(--bad-ink)}
+.bl{border-top:1px solid var(--border)}
+.bi{display:flex;justify-content:space-between;align-items:flex-start;gap:12px;padding:11px 0;border-bottom:1px solid var(--border)}
+.bi .t{font-weight:700;font-size:16px}.bi .d{font-size:14px;color:var(--ink-2);margin-top:2px}
+.bi .rt{text-align:right;white-space:nowrap;font-variant-numeric:tabular-nums}.bi .rt .amt{font-weight:700;font-size:15px;margin-top:3px}
+.bi .picks{display:flex;flex-wrap:wrap;gap:4px 12px;margin-top:5px;font-size:14px;color:var(--ink-2)}
+.bi .picks .pill{font-size:12px;padding:1px 7px;margin-right:3px}
+button.linkbtn{all:unset;cursor:pointer;color:var(--ink-3);font-size:13px;text-decoration:underline;margin-left:8px}
+.morebtn{width:100%;margin-top:10px}
+.sclegend{margin-top:12px;display:grid;gap:4px}
+.sclegend b{color:var(--ink)}
+.selchip{display:inline-flex;align-items:center;gap:6px;background:var(--chip);color:var(--chip-ink);border-radius:999px;padding:3px 4px 3px 10px;font-size:14px;font-weight:600}
+.selchip button{all:unset;cursor:pointer;width:22px;height:22px;border-radius:50%;text-align:center;line-height:22px}
+.selchip button:hover{background:rgba(0,0,0,.08)}
+details.more>summary{cursor:pointer;font-weight:700;font-size:16px;list-style:none}
+details.more>summary::-webkit-details-marker{display:none}
+details.more>summary::before{content:'\25B8';display:inline-block;margin-right:8px;transition:transform .15s}
+details.more[open]>summary::before{transform:rotate(90deg)}
+details.more[open]>summary{margin-bottom:12px}
+@media (max-width:640px){table.sc th{font-size:12px;padding:6px 2px}table.sc th:first-child{width:30%}button.scc{padding:8px 2px}button.scc .r{font-size:17px}button.scc .p,button.scc .m{font-size:14px}table.sc td:first-child{font-size:16px}}
 #tabs button .newdot{display:inline-block;width:8px;height:8px;border-radius:50%;background:var(--series);margin-left:5px;vertical-align:middle}
 .cardhead{display:flex;justify-content:space-between;align-items:flex-start;gap:10px;flex-wrap:wrap}
 svg text{fill:var(--ink-2);font-size:13px}
@@ -250,40 +286,35 @@ a{color:var(--series)}
   </section>
 
   <section id="t-track" class="hide">
-    <div style="display:flex;justify-content:space-between;gap:8px;flex-wrap:wrap;margin-bottom:10px">
-      <button class="btn ftoggle" data-for="filters">Filters</button>
-      <div class="seg" id="mode"><button data-m="mine" class="on">My bets</button><button data-m="minelox">My AI-LOX</button><button data-m="bets">All AI-LOX</button><button data-m="picks">All flags</button></div>
+    <div class="tk-bar">
+      <div class="seg" id="tk-lg"><button data-v="" class="on">Both</button><button data-v="CFB">College</button><button data-v="NFL">NFL</button></div>
+      <div class="seg" id="tk-per"><button data-v="7">7 days</button><button data-v="30">30 days</button><button data-v="all" class="on">Season</button></div>
     </div>
-    <div class="filters" id="filters">
-      <label class="f">League<select id="f-league"></select></label>
-      <label class="f">From<input type="date" id="f-from"></label>
-      <label class="f">To<input type="date" id="f-to"></label>
-      <label class="f">Rule<select id="f-rule"></select></label>
-      <label class="f">Conference / division<select id="f-conf"></select></label>
-      <label class="f">Team<input id="f-team" list="teams" placeholder="any team"></label>
-      <label class="f">Kickoff<select id="f-kick"></select></label>
-      <label class="f">Bet type<select id="f-type"></select></label>
-      <label class="f">Status<select id="f-status"><option value="">All</option><option value="settled">Settled</option><option value="open">Open</option></select></label>
-      <button class="btn" id="reset" style="margin-left:auto">Clear filters</button>
-      <datalist id="teams"></datalist>
+    <div class="card" id="scorecard"></div>
+    <div class="card"><h2 id="runtitle">Profit over time</h2><div class="small" id="runsub" style="margin-bottom:6px"></div><div id="run"></div></div>
+    <div class="card">
+      <div class="cardhead"><div><h2 id="listtitle">Bets</h2><div id="listsub" style="margin-top:4px"></div></div>
+        <div class="seg" id="mode"><button data-m="mine" class="on">My bets</button><button data-m="bets">AI-LOX</button><button data-m="model">Model</button></div></div>
+      <div class="tablewrap" id="list" style="margin-top:10px"></div>
     </div>
-    <div class="card" id="compare"></div>
-    <div class="tiles" id="tiles"></div>
-    <div class="grid2">
-      <div class="card" style="margin:0">
-        <div class="cardhead">
-          <div><h2>Win rate by <span id="slicename"></span></h2></div>
-          <label class="small">Slice by <select id="slice"></select></label>
-        </div>
-        <div id="bars"></div>
+    <details class="card more" id="more">
+      <summary>More detail: filters and breakdowns</summary>
+      <div class="hint">These filters narrow the AI-LOX and My bets numbers on this page (the scorecard, chart and list). The model column only follows League and period.</div>
+      <div class="filters" id="filters" style="padding:0;border:0;background:transparent">
+        <label class="f">Rule<select id="f-rule"></select></label>
+        <label class="f">Conference / division<select id="f-conf"></select></label>
+        <label class="f">Team<input id="f-team" list="teams" placeholder="any team"></label>
+        <label class="f">Kickoff<select id="f-kick"></select></label>
+        <label class="f">Bet type<select id="f-type"></select></label>
+        <label class="f">Status<select id="f-status"><option value="">All</option><option value="settled">Settled</option><option value="open">Open</option></select></label>
+        <button class="btn" id="reset" style="margin-left:auto">Clear filters</button>
+        <datalist id="teams"></datalist>
       </div>
-      <div class="card" style="margin:0">
-        <h2 id="runtitle">Running profit</h2>
-        <div id="run"></div>
-      </div>
-    </div>
-    <div class="card"><h2>Slice detail</h2><div class="tablewrap" id="slicetable"></div></div>
-    <div class="card"><h2 id="listtitle">Bets</h2><div class="tablewrap" id="list"></div></div>
+      <div class="cardhead" style="margin-top:6px"><div><h2>Win rate by <span id="slicename"></span></h2><div class="small" id="slicewho"></div></div>
+        <label class="small">Break down by <select id="slice"></select></label></div>
+      <div id="bars"></div>
+      <div class="tablewrap" id="slicetable" style="margin-top:12px"></div>
+    </details>
     <p class="small" id="foot"></p>
   </section>
 
@@ -977,16 +1008,16 @@ function initFilters() {
   const opts = (sel, vals, lbl) => { const cur = sel.value; sel.innerHTML = `<option value="">${lbl}</option>` + vals.map(v => `<option>${esc(v)}</option>`).join(''); sel.value = cur; };
   const all = BETS.map(b => enrich(b, true)).concat(PICKS.map(p => enrich(p, false)), mineRows());
   const u = f => [...new Set(all.flatMap(f))].filter(Boolean).sort();
-  opts($('#f-league'), u(r => [r.league]), 'All'); opts($('#f-rule'), u(r => [r.rulename]), 'All rules'); opts($('#f-conf'), u(r => r.confs), 'All');
+  opts($('#f-rule'), u(r => [r.rulename]), 'All rules'); opts($('#f-conf'), u(r => r.confs), 'All');
   opts($('#f-kick'), ['Early (before 1 pm CT)', 'Afternoon (1-5 pm CT)', 'Night (5 pm CT or later)'], 'Any time'); opts($('#f-type'), ['Over', 'Under', 'Favorite', 'Underdog'], 'All types');
   $('#teams').innerHTML = u(r => r.teams).map(t => `<option value="${esc(t)}">`).join('');
   const sl = $('#slice'); if (!sl.options.length) { sl.innerHTML = SLICES.map(([k, n]) => `<option value="${k}">${n}</option>`).join(''); try { const s = localStorage.getItem('bt-slice'); if (s) sl.value = s; } catch (e) {} }
 }
 $$('#filters select,#filters input,#slice').forEach(el => el.addEventListener('input', () => { try { localStorage.setItem('bt-slice', $('#slice').value); } catch (e) {} renderTracker(); }));
 $('#reset').onclick = () => { $$('#filters select,#filters input').forEach(el => el.value = ''); renderTracker(); };
-$$('#mode button').forEach(b => b.onclick = () => { MODE = b.dataset.m; $$('#mode button').forEach(x => x.classList.toggle('on', x === b)); renderTracker(); });
+$$('#mode button').forEach(b => b.onclick = () => { MODE = b.dataset.m; CAT = 'all'; LISTN = 25; renderTracker(); });
 function filtered(m) {
-  const L = $('#f-league').value, F = $('#f-from').value, T = $('#f-to').value, R = $('#f-rule').value, C = $('#f-conf').value, TM = $('#f-team').value.trim().toLowerCase(),
+  const L = TK.lg, F = tkFrom(), T = '', R = $('#f-rule').value, C = $('#f-conf').value, TM = $('#f-team').value.trim().toLowerCase(),
         K = $('#f-kick').value, TY = $('#f-type').value, S = $('#f-status').value;
   return trackerRows(m).filter(r => (!L || r.league === L) && (!F || r.date >= F) && (!T || r.date <= T) && (!R || r.rulename === R) && (!C || r.confs.includes(C)) &&
     (!TM || r.teams.some(t => t.toLowerCase().includes(TM))) && (!K || r.kickw === K) && (!TY || r.type === TY) && (!S || (S === 'settled' ? r.result : !r.result)));
@@ -1004,32 +1035,91 @@ const money = v => MODE !== 'picks' ? fmt$(v) : (v > 0 ? '+' : '') + v.toFixed(2
 const tip = $('#tip');
 const showTip = (e, h) => { tip.innerHTML = h; tip.style.opacity = 1; tip.style.left = Math.min(e.clientX + 14, innerWidth - 270) + 'px'; tip.style.top = (e.clientY + 14) + 'px'; };
 const hideTip = () => tip.style.opacity = 0;
+// ---- Tracker: one scorecard (category x who), profit chart, tap-through list ----
+const TK = {lg: '', per: 'all'}; let CAT = 'all', LISTN = 25;
+try { const t = JSON.parse(localStorage.getItem('bt-tk') || '{}'); if (t.lg !== undefined) TK.lg = t.lg; if (t.per) TK.per = t.per; } catch (e) {}
+function tkFrom() { if (TK.per === 'all') return ''; return ctDate(new Date(Date.now() - (+TK.per - 1) * 864e5).toISOString()); }
+function tkSave() { try { localStorage.setItem('bt-tk', JSON.stringify(TK)); } catch (e) {} }
+[['#tk-lg', 'lg'], ['#tk-per', 'per']].forEach(([id, k]) => $$(id + ' button').forEach(b => b.onclick = () => { TK[k] = b.dataset.v; LISTN = 25; tkSave(); renderTracker(); }));
+const CATS = [['su', 'Picking the winner', 'straight up / moneyline'], ['ats', 'Against the spread', ''], ['over', 'Overs', ''], ['under', 'Unders', ''], ['parlay', 'Parlays & teasers', '']];
+const CATNAME = {su: 'Picking the winner', ats: 'Against the spread', over: 'Overs', under: 'Unders', parlay: 'Parlays & teasers', all: 'Everything'};
+const WHO = {model: 'The model', bets: 'AI-LOX', mine: 'My bets'};
+function catOf(r) { return r.market === 'parlay' || r.market === 'teaser' ? 'parlay' : r.market === 'ml' ? 'su' : r.market === 'total' ? (r.side === 'over' ? 'over' : 'under') : 'ats'; }
+// every modeled game, graded three ways (winner, spread pick, total pick) against the pregame line
+function modelGames() {
+  const out = [];
+  DATA.predlog.forEach(p => {
+    const ph = +p.pred_home, pa = +p.pred_away, key = p.league + ':' + p.id;
+    const bx = BOARD.find(x => x.lg === p.league && String(x.lg === 'NFL' ? (x.g.espn || x.g.id) : x.g.id) === String(p.id));
+    const ln = (ST.glines || {})[key] || (bx && (bx.L.spread != null || bx.L.total != null) ? bx.L : null);
+    const f = finalFor(p.league, p.id, p.date, p.away, p.home);
+    const o = {league: p.league, date: p.date, kick: (bx && bx.g.kick) || p.date, game: `${p.away} @ ${p.home}`, away: p.away, home: p.home, pa, ph, f, ln, res: {}, pick: {}};
+    if (Math.sign(ph - pa)) { o.pick.su = (ph > pa ? p.home : p.away) + ' to win'; if (f && f.hs !== f.as) o.res.su = Math.sign(ph - pa) === Math.sign(f.hs - f.as) ? 'W' : 'L'; }
+    if (ln && ln.spread != null) { const side = Math.sign((ph - pa) + ln.spread);
+      if (side) { o.pick.ats = side > 0 ? `${p.home} ${lineTxt(ln.spread)}` : `${p.away} ${lineTxt(-ln.spread)}`; if (f) { const r = (f.hs - f.as) + ln.spread; o.res.ats = r === 0 ? 'P' : Math.sign(r) === side ? 'W' : 'L'; } } }
+    if (ln && ln.total != null) { const side = Math.sign(ph + pa - ln.total), k = side > 0 ? 'over' : 'under';
+      if (side) { o.pick[k] = (side > 0 ? 'Over ' : 'Under ') + ln.total; if (f) { const r = f.hs + f.as - ln.total; o.res[k] = r === 0 ? 'P' : Math.sign(r) === side ? 'W' : 'L'; } } }
+    out.push(o);
+  });
+  const F = tkFrom();
+  return out.filter(g => (!TK.lg || g.league === TK.lg) && (!F || g.date >= F));
+}
+function modelRec(G, cat) {   // W-L-P for the model in one category ('all' = its spread + over/under picks)
+  const s = {W: 0, L: 0, P: 0, open: 0};
+  const ks = cat === 'all' ? ['ats', 'over', 'under'] : [cat];
+  G.forEach(g => ks.forEach(k => { if (!g.pick[k]) return; const r = g.res[k]; if (r) s[r]++; else s.open++; }));
+  s.winrate = s.W + s.L ? s.W / (s.W + s.L) : null; return s;
+}
+function scCell(who, cat, s, money$) {
+  const sel = MODE === who && CAT === cat ? ' sel' : '';
+  if (!s || (!s.W && !s.L && !s.P && !s.open)) return `<td><span class="scnone">–</span></td>`;
+  const be = cat === 'su' ? 0.5 : BE, settled = s.W + s.L + s.P;
+  const pc = s.winrate == null ? '' : who === 'model' ? `<div class="p ${s.winrate >= be ? 'pos' : 'neg'}">${Math.round(s.winrate * 100)}%</div>` : `<div class="p">${Math.round(s.winrate * 100)}%</div>`;
+  const mn = who === 'model' ? '' : settled ? `<div class="m ${s.profit > 0 ? 'pos' : s.profit < 0 ? 'neg' : ''}">${s.profit > 0 ? '+' : ''}${fmt$(s.profit).replace('.00', '')}</div>` : '';
+  const rec = settled ? `${s.W}-${s.L}${s.P ? '-' + s.P : ''}` : `${s.open} open`;
+  const lbl = `${WHO[who]}, ${CATNAME[cat]}: ${rec}`;
+  return `<td><button class="scc${sel}" data-who="${who}" data-cat="${cat}" aria-label="${esc(lbl)}. Show these."><div class="r">${rec}</div>${pc}${mn}</button></td>`;
+}
+function renderScorecard(MG, B, M) {
+  const by = (list, c) => c === 'all' ? list : list.filter(r => catOf(r) === c);
+  const row = (c, name, sub, cls) => `<tr class="${cls || ''}"><td>${name}${sub ? `<span class="small">${sub}</span>` : ''}</td>` +
+    scCell('model', c, c === 'parlay' ? null : c === 'all' ? modelRec(MG, 'all') : modelRec(MG, c)) + scCell('bets', c, stats(by(B, c))) + scCell('mine', c, stats(by(M, c))) + '</tr>';
+  const per = TK.per === 'all' ? 'this season' : `the last ${TK.per} days`, lg = TK.lg === 'CFB' ? 'College' : TK.lg === 'NFL' ? 'NFL' : 'College + NFL';
+  const matched = stats(filtered('minelox'));
+  const ml = matched.n ? `You bet ${matched.n} of the AI-LOX: ${matched.W}-${matched.L}${matched.P ? '-' + matched.P : ''}${matched.W + matched.L + matched.P ? `, <span class="${matched.profit > 0 ? 'pos' : matched.profit < 0 ? 'neg' : ''}">${fmt$(matched.profit)}</span>` : ''}${matched.open ? ` (${matched.open} open)` : ''}.` : 'You haven’t bet any of the AI-LOX in this period.';
+  $('#scorecard').innerHTML = `<h2>Scorecard</h2><div class="small" style="margin-bottom:8px">${lg} · ${per} · record, win rate and money</div>
+    <table class="sc"><thead><tr><th></th><th>Model</th><th>AI-LOX</th><th>My bets</th></tr></thead><tbody>` +
+    CATS.map(([c, n, sub]) => row(c, n, sub)).join('') + row('all', 'Total', '', 'tot') + `</tbody></table>
+    <div class="sclegend small"><div>${ml}</div>
+      <div><b>Model</b>: its predicted score for every game, checked against the final and the pregame line. Green means it beat the 52.4% needed to make money (50% for picking winners).</div>
+      <div><b>AI-LOX</b>: the bets the model picks, at its suggested stakes, whether you bet them or not. <b>My bets</b>: what you actually bet.</div>
+      <div>Tap any number to see the games behind it.</div></div>`;
+  $$('#scorecard button.scc').forEach(b => b.onclick = () => { MODE = b.dataset.who; CAT = b.dataset.cat; LISTN = 25; renderTracker(); document.getElementById('list').closest('.card').scrollIntoView({behavior: 'smooth', block: 'start'}); });
+}
 function renderTracker() {
   initFilters();
-  const list = filtered(), s = stats(list), isB = MODE !== 'picks', cls = v => v > 0 ? 'pos' : v < 0 ? 'neg' : '';
-  const T = [['Record', `${s.W}-${s.L}-${s.P}`, s.open ? `${s.open} still open` : 'W-L-P', ''],
-    ['Win rate', s.winrate == null ? '–' : pct(s.winrate), s.winrate == null ? 'nothing settled yet' : (s.winrate >= BE ? 'above' : 'below') + ' 52.4% break-even', s.winrate == null ? '' : s.winrate >= BE ? 'pos' : 'neg'],
-    ['Net', money(s.profit), isB ? 'after losses' : 'units at -110', cls(s.profit)], ['ROI', s.roi == null ? '–' : (s.roi > 0 ? '+' : '') + pct(s.roi), isB ? `on ${fmt$(s.staked)} settled` : 'per unit risked', cls(s.roi || 0)],
-    [isB ? 'Money won' : 'Units won', money(s.won), 'winning bets', s.won ? 'pos' : ''], [isB ? 'Money lost' : 'Units lost', isB ? '$' + s.lost.toFixed(2) : s.lost.toFixed(2) + 'u', 'losing bets', s.lost ? 'neg' : ''],
-    ['Worst drop', money(s.dd), 'from the high point', cls(s.dd)], ['Losing streak', s.streak, 'longest in a row', '']];
-  if (isB) T.push(['Open', `${s.open}`, `${fmt$(s.risk)} at risk`, '']);
-  drawCompare();
-  $('#tiles').innerHTML = T.map(([k, v, n, c]) => `<div class="tile"><div class="k">${k}</div><div class="v ${c}">${v}</div><div class="n">${n}</div></div>`).join('');
+  $$('#tk-lg button').forEach(b => b.classList.toggle('on', b.dataset.v === TK.lg)); $$('#tk-per button').forEach(b => b.classList.toggle('on', b.dataset.v === TK.per));
+  $$('#mode button').forEach(b => b.classList.toggle('on', b.dataset.m === MODE));
+  const MG = modelGames(), B = filtered('bets'), M = filtered('mine');
+  renderScorecard(MG, B, M);
+  drawRun(B, M);
+  // list
+  const inCat = r => CAT === 'all' || catOf(r) === CAT;
+  $('#listsub').innerHTML = CAT === 'all' ? '<span class="small">Tap a number in the scorecard to narrow this list.</span>'
+    : `<span class="selchip">${esc(CATNAME[CAT])}<button aria-label="Show everything" id="clearcat">×</button></span>`;
+  const cc = document.getElementById('clearcat'); if (cc) cc.onclick = () => { CAT = 'all'; LISTN = 25; renderTracker(); };
+  if (MODE === 'model') drawModelList(MG.filter(g => CAT === 'all' || g.pick[CAT] || (CAT === 'all')));
+  else drawList((MODE === 'bets' ? B : M).filter(inCat));
+  // breakdowns (bets only)
   const key = $('#slice').value || 'rulename'; $('#slicename').textContent = SLICES.find(x => x[0] === key)[1].toLowerCase();
+  const src = MODE === 'model' ? 'mine' : MODE, list = (src === 'bets' ? B : M).filter(inCat);
+  $('#slicewho').textContent = `${WHO[src]}${CAT === 'all' ? '' : ' · ' + CATNAME[CAT]}${MODE === 'model' ? ' (breakdowns cover bets, not model games)' : ''}`;
   const groups = {}; list.forEach(r => (key === 'conf' ? r.confs : key === 'team' ? r.teams : [r[key] || 'n/a']).forEach(g => (groups[g] = groups[g] || []).push(r)));
   const G = Object.entries(groups).map(([g, l]) => Object.assign({g}, stats(l))).sort((a, b) => (b.W + b.L) - (a.W + a.L) || b.n - a.n || a.g.localeCompare(b.g));
-  drawBars(G); drawSliceTable(G, key); drawRun(list); drawList(list);
-  $('#foot').textContent = key === 'team' || key === 'conf' ? 'Team and conference slices count a bet for both teams (or conferences) in the game, so groups add up to more than the total.' : '';
+  if ($('#more').open) { const m0 = MODE; MODE = src; drawBars(G); drawSliceTable(G, key); MODE = m0; }
+  $('#foot').textContent = key === 'team' || key === 'conf' ? 'Team and conference breakdowns count a bet for both teams (or conferences) in the game, so groups add up to more than the total.' : '';
 }
-function drawCompare() {
-  const a = stats(filtered('bets')), b = stats(filtered('mine'));
-  const row = (n, f) => `<tr><td>${n}</td><td class="num">${f(a)}</td><td class="num">${f(b)}</td></tr>`;
-  const wr = x => x.winrate == null ? '–' : `<span class="${x.winrate >= BE ? 'pos' : 'neg'}">${pct(x.winrate)}</span>`;
-  const nt = x => `<span class="${x.profit > 0 ? 'pos' : x.profit < 0 ? 'neg' : ''}">${fmt$(x.profit)}</span>`;
-  $('#compare').innerHTML = `<h2>AI-LOX vs my bets</h2><table class="cmp"><thead><tr><th></th><th class="num">All AI-LOX</th><th class="num">My bets</th></tr></thead><tbody>` +
-    row('Record', x => `${x.W}-${x.L}-${x.P}`) + row('Win rate', wr) + row('Net', nt) + row('ROI', x => x.roi == null ? '–' : (x.roi > 0 ? '+' : '') + pct(x.roi)) +
-    row('Staked', x => fmt$(x.staked)) + row('Open', x => `${x.open}`) + '</tbody></table>';
-}
+$('#more').addEventListener('toggle', () => { if ($('#more').open) renderTracker(); });
 function drawBars(G) {
   const el = $('#bars'), shown = G.slice(0, 18);
   if (!shown.length) { el.innerHTML = '<div class="empty">Nothing matches these filters.</div>'; return; }
@@ -1055,40 +1145,55 @@ function drawSliceTable(G, key) {
       <td class="num ${g.winrate == null ? '' : g.winrate >= BE ? 'pos' : 'neg'}">${g.winrate == null ? '–' : pct(g.winrate)}</td><td class="num">${MODE !== 'picks' ? fmt$(g.staked) : g.staked.toFixed(0)}</td>
       <td class="num ${g.profit > 0 ? 'pos' : g.profit < 0 ? 'neg' : ''}">${money(g.profit)}</td><td class="num">${g.roi == null ? '–' : pct(g.roi)}</td></tr>`).join('') + '</tbody></table>';
 }
-function drawRun(list) {
-  const el = $('#run'), days = {}; $('#runtitle').textContent = MODE !== 'picks' ? 'Running profit ($)' : 'Running result (units)';
-  list.filter(r => r.result).forEach(r => (days[r.date] = days[r.date] || []).push(r));
-  const D = Object.keys(days).sort();
-  if (!D.length) { el.innerHTML = '<div class="empty">Nothing settled yet.<br>Results fill in automatically from ESPN once games go final.</div>'; return; }
-  let run = 0; const pts = D.map(d => { const s = stats(days[d]); run += s.profit; return {d, day: s.profit, run, s}; });
-  const W = Math.max(el.clientWidth, 280), H = 240, l = 56, r = 30, t = 12, b = 30, ys = pts.map(p => p.run).concat([0]), lo = Math.min(...ys), hi = Math.max(...ys), pad = (hi - lo) * 0.12 || 10;
-  const y = v => t + (hi + pad - v) / ((hi + pad) - (lo - pad)) * (H - t - b), x = i => pts.length === 1 ? (l + W - r) / 2 : l + i * (W - l - r) / (pts.length - 1);
-  let svg = `<svg width="${W}" height="${H}" role="img" aria-label="Running profit">`;
-  for (let k = 0; k <= 4; k++) { const v = lo - pad + k * ((hi + pad) - (lo - pad)) / 4; svg += `<line x1="${l}" x2="${W - r}" y1="${y(v)}" y2="${y(v)}" stroke="var(--border)"/><text x="${l - 6}" y="${y(v) + 4}" text-anchor="end">${MODE === 'bets' ? (Math.round(v) < 0 ? '-$' : '$') + Math.abs(Math.round(v)) : v.toFixed(1)}</text>`; }
-  svg += `<line x1="${l}" x2="${W - r}" y1="${y(0)}" y2="${y(0)}" stroke="var(--ink-3)"/><path d="${pts.map((p, i) => (i ? 'L' : 'M') + x(i) + ',' + y(p.run)).join(' ')}" fill="none" stroke="var(--series)" stroke-width="2"/>`;
-  pts.forEach((p, i) => { svg += `<circle cx="${x(i)}" cy="${y(p.run)}" r="4.5" fill="var(--series)" stroke="var(--surface)" stroke-width="2"/>`;
-    if (pts.length <= 12 || i % Math.ceil(pts.length / 8) === 0) svg += `<text x="${x(i)}" y="${H - 10}" text-anchor="${pts.length > 1 && i === pts.length - 1 ? 'end' : i === 0 && pts.length > 1 ? 'start' : 'middle'}">${new Date(p.d + 'T12:00:00').toLocaleDateString('en-US', {month: 'short', day: 'numeric'})}</text>`;
+function drawRun(B, M) {
+  const el = $('#run');
+  const series = [['AI-LOX', B, 'var(--series)'], ['My bets', M, 'var(--series-2)']].map(([n, list, c]) => {
+    const days = {}; list.filter(r => r.result).forEach(r => (days[r.date] = (days[r.date] || 0) + r.profit)); return {n, c, days}; });
+  const D = [...new Set(series.flatMap(x => Object.keys(x.days)))].sort();
+  $('#runsub').innerHTML = series.map(x => { const t = Object.values(x.days).reduce((a, v) => a + v, 0); return `<span style="color:${x.c};font-weight:700">●</span> ${x.n} <b class="${t > 0 ? 'pos' : t < 0 ? 'neg' : ''}">${fmt$(t)}</b>`; }).join(' &nbsp; ');
+  if (!D.length) { el.innerHTML = '<div class="empty">Nothing settled yet. Results fill in automatically once games go final.</div>'; return; }
+  series.forEach(x => { let run = 0; x.pts = D.map(d => run += (x.days[d] || 0)); });
+  const W = Math.max(el.clientWidth, 280), H = 220, l = 54, r = 16, t = 12, b = 28, all = series.flatMap(x => x.pts).concat([0]), lo = Math.min(...all), hi = Math.max(...all), pad = (hi - lo) * 0.12 || 10;
+  const y = v => t + (hi + pad - v) / ((hi + pad) - (lo - pad)) * (H - t - b), x = i => D.length === 1 ? (l + W - r) / 2 : l + i * (W - l - r) / (D.length - 1);
+  let svg = `<svg width="${W}" height="${H}" role="img" aria-label="Running profit, AI-LOX and my bets">`;
+  for (let k = 0; k <= 3; k++) { const v = lo - pad + k * ((hi + pad) - (lo - pad)) / 3; svg += `<line x1="${l}" x2="${W - r}" y1="${y(v)}" y2="${y(v)}" stroke="var(--border)"/><text x="${l - 6}" y="${y(v) + 4}" text-anchor="end">${(Math.round(v) < 0 ? '-$' : '$') + Math.abs(Math.round(v))}</text>`; }
+  svg += `<line x1="${l}" x2="${W - r}" y1="${y(0)}" y2="${y(0)}" stroke="var(--ink-3)"/>`;
+  series.forEach(s2 => { svg += `<path d="${s2.pts.map((p, i) => (i ? 'L' : 'M') + x(i) + ',' + y(p)).join(' ')}" fill="none" stroke="${s2.c}" stroke-width="2.5"/>`;
+    s2.pts.forEach((p, i) => svg += `<circle cx="${x(i)}" cy="${y(p)}" r="4" fill="${s2.c}" stroke="var(--surface)" stroke-width="2"/>`); });
+  D.forEach((d, i) => { if (D.length <= 8 || i % Math.ceil(D.length / 6) === 0 || i === D.length - 1) svg += `<text x="${x(i)}" y="${H - 8}" text-anchor="${D.length > 1 && i === D.length - 1 ? 'end' : i === 0 && D.length > 1 ? 'start' : 'middle'}">${new Date(d + 'T12:00:00').toLocaleDateString('en-US', {month: 'short', day: 'numeric'})}</text>`;
     svg += `<rect x="${x(i) - 14}" y="${t}" width="28" height="${H - t - b}" fill="transparent" data-i="${i}"/>`; });
   el.innerHTML = svg + '</svg>';
-  el.querySelectorAll('rect[data-i]').forEach(rc => { const p = pts[+rc.dataset.i]; rc.onmousemove = e => showTip(e, `<b>${dayLbl(p.d)}</b><br>Day: ${money(p.day)} (${p.s.W}-${p.s.L}-${p.s.P})<br>Running: ${money(p.run)}`); rc.onmouseleave = hideTip; });
+  el.querySelectorAll('rect[data-i]').forEach(rc => { const i = +rc.dataset.i; rc.onmousemove = e => showTip(e, `<b>${dayLbl(D[i])}</b><br>` + series.map(s2 => `${s2.n}: day ${fmt$(s2.days[D[i]] || 0)}, total ${fmt$(s2.pts[i])}`).join('<br>')); rc.onmouseleave = hideTip; });
+}
+function moreBtn(n) { return n > LISTN ? `<button class="btn morebtn" id="listmore">Show ${Math.min(n - LISTN, 50)} more (${n - LISTN} left)</button>` : ''; }
+function wireMore() { const m = document.getElementById('listmore'); if (m) m.onclick = () => { LISTN += 50; renderTracker(); }; }
+function drawModelList(G) {
+  $('#listtitle').textContent = 'Model picks, game by game';
+  const pill = r => r ? `<span class="pill ${r}">${r}</span>` : '<span class="pill O">open</span>';
+  const ks = CAT === 'all' ? ['su', 'ats', 'over', 'under'] : [CAT], lab = {su: 'Winner', ats: 'Spread', over: 'Total', under: 'Total'};
+  const rows = G.filter(g => ks.some(k => g.pick[k])).sort((a, b) => b.date.localeCompare(a.date) || String(a.kick).localeCompare(String(b.kick)));
+  $('#list').innerHTML = !rows.length ? '<div class="empty">No model games in this period yet.</div>' : '<div class="bl">' +
+    rows.slice(0, LISTN).map(g => `<div class="bi"><div><div class="t">${esc(g.game)}</div><div class="d">${dayLbl(g.date)} · ${g.league} · model ${Math.round(g.pa)}-${Math.round(g.ph)}</div>
+      <div class="picks">${ks.filter(k => g.pick[k]).map(k => `<span>${pill(g.res[k])}${lab[k]}: ${esc(g.pick[k])}</span>`).join('')}</div></div>
+      <div class="rt"><div class="small">Final</div><div class="amt">${g.f ? `${g.f.as}-${g.f.hs}` : '–'}</div></div></div>`).join('') + '</div>' + moreBtn(rows.length);
+  wireMore();
 }
 function drawList(list) {
-  const isB = MODE !== 'picks', isM = MODE === 'mine' || MODE === 'minelox'; $('#listtitle').textContent = MODE === 'mine' ? 'My bets' : MODE === 'minelox' ? 'My bets that were AI-LOX' : isB ? 'All AI-LOX (suggested stakes, whether or not you bet them)' : 'Every model flag, including leans';
-  const cols = isM ? [['date', 'Date'], ['league', 'Lg'], ['game', 'Game'], ['bettext', 'Bet'], ['odds', 'Odds', 'num'], ['stake', 'Stake', 'num'], ['result', 'Result'], ['profit', 'Profit', 'num'], ['x', '']] : isB ? [['date', 'Date'], ['league', 'Lg'], ['game', 'Game'], ['bettext', 'Bet'], ['rulename', 'Rule'], ['hit', 'Backtest', 'num'], ['odds', 'Odds', 'num'], ['stake', 'Stake', 'num'], ['result', 'Result'], ['profit', 'Profit', 'num'], ['x', '']]
-                   : [['date', 'Date'], ['league', 'Lg'], ['game', 'Game'], ['bettext', 'Pick'], ['rulename', 'Rule'], ['betlbl', 'Bet?'], ['result', 'Result'], ['profit', 'Units', 'num']];
-  const sorted = list.slice().sort((a, b) => { const A = a[SORT.k], B = b[SORT.k]; return (A > B ? 1 : A < B ? -1 : 0) * SORT.dir; });
-  const cell = (r, k) => k === 'result' ? `<span class="pill ${r.result || 'O'}">${r.result || 'open'}</span>` : k === 'profit' ? (r.result ? `<span class="${r.profit > 0 ? 'pos' : r.profit < 0 ? 'neg' : ''}">${money(r.profit)}</span>` : '<span class="small">–</span>')
-    : k === 'stake' ? fmt$(r.stake) : k === 'hit' ? (r.hit ? pct(r.hit) : '–') : k === 'odds' ? (r.odds > 0 ? '+' : '') + r.odds : k === 'date' ? dayLbl(r.date) : k === 'bettext' ? `<b>${esc(r.bettext)}</b>`
-    : k === 'x' ? (isM ? `<button class="btn small" data-delmine="${esc(r.id)}">Delete</button>` : '') : esc(r[k] ?? '');
-  const struckList = [];
-  $('#list').innerHTML = (!sorted.length ? '<div class="empty">Nothing matches these filters.</div>' :
-    `<table class="cards"><thead><tr>${cols.map(([k, n, c]) => `<th class="sort ${c || ''}" data-k="${k}">${n}${SORT.k === k ? (SORT.dir > 0 ? ' ▲' : ' ▼') : ''}</th>`).join('')}</tr></thead><tbody>` +
-    sorted.map(r => `<tr>${cols.map(([k, n, c]) => `<td class="${c || ''}${k === 'bettext' ? ' full first' : ['game', 'rulename'].includes(k) ? ' full' : k === 'x' ? ' keep' : ''}" data-label="${k === 'bettext' || k === 'x' ? '' : n}">${cell(r, k)}</td>`).join('')}</tr>`).join('') + '</tbody></table>') +
-    (struckList.length ? `<div class="small" style="margin-top:10px">Struck: ${struckList.map(b => `${esc(b.bet)} (${dayLbl(b.date)}) <button class="btn small" data-unstrike="${esc(b.id)}">Undo</button>`).join(' · ')}</div>` : '');
-  $$('#list th.sort').forEach(th => th.onclick = () => { const k = th.dataset.k; if (k === 'x') return; SORT = {k, dir: SORT.k === k ? -SORT.dir : -1}; drawList(filtered()); });
+  const isM = MODE === 'mine' || MODE === 'minelox';
+  $('#listtitle').textContent = MODE === 'mine' ? 'My bets' : MODE === 'minelox' ? 'My bets that were AI-LOX' : 'AI-LOX (suggested stakes, bet or not)';
+  const rows = list.slice().sort((a, b) => b.date.localeCompare(a.date) || String(b.kick || '').localeCompare(String(a.kick || '')));
+  const od = o => (o > 0 ? '+' : '') + Math.round(o);
+  $('#list').innerHTML = !rows.length ? '<div class="empty">Nothing here for this period.</div>' : '<div class="bl">' +
+    rows.slice(0, LISTN).map(r => {
+      const sub = r.market === 'parlay' || r.market === 'teaser' ? (r.legs || []).map(l => typeof legText === 'function' ? legText(l) : '').filter(Boolean).join(' · ') : (r.game || `${r.away} @ ${r.home}`);
+      const res = r.result ? `<span class="pill ${r.result}">${r.result}</span>` : started(r.kick) ? '<span class="pill O">live</span>' : '<span class="pill O">open</span>';
+      const amt = r.result ? `<div class="amt ${r.profit > 0 ? 'pos' : r.profit < 0 ? 'neg' : ''}">${r.profit > 0 ? '+' : ''}${fmt$(r.profit)}</div>` : `<div class="amt" style="color:var(--ink-3)">to win ${fmt$(r.stake * payout(r.odds))}</div>`;
+      return `<div class="bi"><div><div class="t">${esc(r.bettext)}</div><div class="d">${dayLbl(r.date)} · ${r.league} · ${esc(sub || '')}</div>
+        <div class="d">${fmt$(r.stake)} at ${od(r.odds)}${!isM && r.rulename ? ' · ' + esc(r.rulename) : ''}${isM ? `<button class="linkbtn" data-delmine="${esc(r.id)}">Delete</button>` : ''}</div></div>
+        <div class="rt">${res}${amt}</div></div>`; }).join('') + '</div>' + moreBtn(rows.length);
   $$('#list [data-delmine]').forEach(el => el.onclick = () => delMine(el.dataset.delmine));
+  wireMore();
 }
-
 // ---------------- STATS ----------------
 const WNAME = {ppg: 'points per game', epa: 'EPA per play', success: 'success rate', expl: 'explosive plays', pts_per_opp: 'points per trip inside 40', to_pp: 'turnovers per play',
   plays: 'plays (pace)', pass_rate: 'pass rate', pass_epa: 'pass EPA', rush_epa: 'rush EPA', pass_oe: 'pass rate over expected', sack_rate: 'sack rate', fum_rate: 'fumble rate',
@@ -1421,7 +1526,7 @@ async function refreshLive() {
 }
 function scoreLine(g) { if (!g || !(g.state === 'in' || g.state === 'post' || g.done)) return '';
   return `<div class="sline ${g.state === 'in' ? 'in' : ''}">${g.as} – ${g.hs} <span class="small">${esc(g.detail || 'Final')}</span></div>`; }
-const PAGE_VER = "20261025153211";   // stamped by tracker.py; a newer published page reloads itself
+const PAGE_VER = "20261025155031";   // stamped by tracker.py; a newer published page reloads itself
 // ---------------- AUTO REFRESH (while the page is open) ----------------
 const busy = () => { const a = document.activeElement; return a && ['INPUT', 'SELECT', 'TEXTAREA'].includes(a.tagName) || $('#m-form').classList.contains('open'); };
 let tickN = 0;
