@@ -1211,9 +1211,53 @@ async function syncCycle() {
     if (ST.gh && (res === null || ST.syncPending || syncNeedsPush())) { ST.syncPending = false; await syncPush(); }
     else syncMsg(ST.gh ? 'up to date' : 'reading from GitHub (add a key to save changes)');
   }
+  reportPush();
 }
 let syncRemoteUpdated = 0;
 function syncNeedsPush() { return (ST.updated || 0) > syncRemoteUpdated; }
+
+// ---------------- AI REPORT ----------------
+// report.json on the sync branch: every bet's live/final status plus model-vs-real scores, so Claude can read where things stand.
+// Kept separate from state.json so it never touches the two-device merge.
+let repSha = null, repLast = '', repBusy = false;
+function reportBuild() {
+  const I = liveIndex(), cut = ctDate(new Date(Date.now() - 3 * 864e5).toISOString());
+  const gv = g => g ? {state: g.state || (g.done ? 'post' : 'pre'), away: g.away, home: g.home, as: g.as, hs: g.hs, detail: g.detail || '', date: ctDate(g.kick)} : null;
+  const live = g => g && !(g.state === 'pre' || (!g.state && !g.done));
+  const one = (b, who) => {
+    const o = {who, id: b.id, league: b.league, date: b.date, kick: b.kick, bet: b.bet || betText(b), game: b.game || `${b.away} @ ${b.home}`, market: b.market, side: b.side, line: b.line,
+      odds: +b.odds || -110, stake: +(+b.stake || 0).toFixed(2), to_win: +((+b.stake || 0) * payout(+b.odds || -110)).toFixed(2), result: b.result || '', rule: b.rule || ''};
+    if (b.legs) o.legs = b.legs.map(l => { const g = I[l.espn || l.game_id]; return {bet: legText(l), score: gv(g), margin_vs_line: live(g) ? standing(l, g).m : null}; });
+    else { const g = b.src === 'mine' ? liveGameFor(b, I) : I[espnOf(b.league, b.game_id)]; o.score = gv(g); o.margin_vs_line = live(g) ? standing(b, g).m : null; }
+    return o; };
+  const mine = MINE.filter(b => b.date >= cut).map(b => Object.assign(one(b, 'mine'), {ai_lox: !!loxFor(b)}));
+  const lox = BETS.filter(b => b.date >= cut && !ST.struck[b.id]).map(b => Object.assign(one(b, 'ai-lox'), {hit_rate: b.hit_rate, you_bet: !!mineFor(b)}));
+  const BIX = {}; BOARD.forEach(x => BIX[x.lg + ':' + (x.lg === 'NFL' ? x.g.espn : x.g.id)] = x);
+  const games = [];
+  Object.entries(ST.slate).forEach(([k, day]) => { const lg = k.split(':')[0]; Object.values(day).forEach(g => { if (ctDate(g.kick) < cut) return;
+    const o = {league: lg, id: g.id, date: ctDate(g.kick), kick: g.kick, away: g.away, home: g.home, ar: g.ar || '', hr: g.hr || '', ac: g.ac || '', hc: g.hc || '', state: g.state || (g.done ? 'post' : 'pre'), as: g.as, hs: g.hs, detail: g.detail || ''};
+    const x = BIX[lg + ':' + g.id];
+    if (x) { const LS = likelyScore(lg, x.P.pa, x.P.ph); o.model = {away: +x.P.pa.toFixed(1), home: +x.P.ph.toFixed(1), likely: LS || null, total: +x.P.total.toFixed(1), home_spread: +x.P.hs.toFixed(1),
+      line_spread: x.L.spread ?? null, line_total: x.L.total ?? null, flags: x.F.map(f => f.rule)}; }
+    games.push(o); }); });
+  games.sort((a, b) => a.kick.localeCompare(b.kick));
+  return {mine, ai_lox: lox, games};
+}
+async function reportPush() {
+  if (!ST.gh || repBusy) return; repBusy = true;
+  try {
+    const core = JSON.stringify(reportBuild()); if (core === repLast) { repBusy = false; return; }
+    const body = `{"generated":"${new Date().toISOString()}","device":${JSON.stringify(navigator.userAgent.slice(0, 80))},"page":"${PAGE_VER}",` + core.slice(1);
+    for (let i = 0; i < 2; i++) {
+      if (!repSha) { const g = await fetch(ghUrl(`contents/report.json?ref=${GH.branch}&t=${Date.now()}`), {headers: ghHead(), cache: 'no-store'}); if (g.ok) repSha = (await g.json()).sha; }
+      const r = await fetch(ghUrl('contents/report.json'), {method: 'PUT', headers: ghHead(),
+        body: JSON.stringify({message: 'Bet tracker report for Claude', branch: GH.branch, content: b64e(body), ...(repSha ? {sha: repSha} : {})})});
+      if (r.ok) { repSha = (await r.json()).content.sha; repLast = core; break; }
+      repSha = null; if (r.status !== 409 && r.status !== 422) break;
+    }
+  } catch (e) {}
+  repBusy = false;
+}
 $('#s-gh').value = ST.gh || '';
 $('#s-saveghkey').onclick = async () => { ST.gh = $('#s-gh').value.trim(); try { localStorage.setItem(KEY, JSON.stringify(ST)); } catch (e) {}
   syncMsg('checking key…'); syncSha = null; ST.syncPending = true; await syncCycle(); };
