@@ -55,7 +55,7 @@ input.num{width:64px;padding:4px 6px;text-align:right}
 .hint{color:var(--ink-3);font-size:14px;margin-bottom:8px}
 .rep{font-size:17px;line-height:1.5}.rep p{margin:0 0 12px}.rep ul{margin:0 0 12px;padding-left:20px}.rep li{margin-bottom:4px}
 .rep h3{font-size:18px;margin:4px 0 10px}
-.tk-bar{display:flex;gap:8px;flex-wrap:wrap;margin-bottom:12px}
+.tk-bar{display:flex;gap:8px;flex-wrap:wrap;margin-bottom:12px}.tk-bar .seg button{white-space:nowrap}
 table.sc{width:100%;border-collapse:collapse;table-layout:fixed}
 table.sc th{font-size:13px;font-weight:700;text-transform:uppercase;letter-spacing:.04em;color:var(--ink-3);text-align:center;padding:6px 4px;border-bottom:1px solid var(--border)}
 table.sc th:first-child{text-align:left;width:34%}
@@ -1041,8 +1041,8 @@ try { const t = JSON.parse(localStorage.getItem('bt-tk') || '{}'); if (t.lg !== 
 function tkFrom() { if (TK.per === 'all') return ''; return ctDate(new Date(Date.now() - (+TK.per - 1) * 864e5).toISOString()); }
 function tkSave() { try { localStorage.setItem('bt-tk', JSON.stringify(TK)); } catch (e) {} }
 [['#tk-lg', 'lg'], ['#tk-per', 'per']].forEach(([id, k]) => $$(id + ' button').forEach(b => b.onclick = () => { TK[k] = b.dataset.v; LISTN = 25; tkSave(); renderTracker(); }));
-const CATS = [['su', 'Picking the winner', 'straight up / moneyline'], ['ats', 'Against the spread', ''], ['over', 'Overs', ''], ['under', 'Unders', ''], ['parlay', 'Parlays & teasers', '']];
-const CATNAME = {su: 'Picking the winner', ats: 'Against the spread', over: 'Overs', under: 'Unders', parlay: 'Parlays & teasers', all: 'Everything'};
+const CATS = [['su', 'Picking the winner', 'straight up / moneyline'], ['ats', 'ATS', ''], ['over', 'Overs', ''], ['under', 'Unders', ''], ['parlay', 'Parlays & teasers', '']];
+const CATNAME = {su: 'Picking the winner', ats: 'ATS', over: 'Overs', under: 'Unders', parlay: 'Parlays & teasers', all: 'Everything'};
 const WHO = {model: 'The model', bets: 'AI-LOX', mine: 'My bets'};
 function catOf(r) { return r.market === 'parlay' || r.market === 'teaser' ? 'parlay' : r.market === 'ml' ? 'su' : r.market === 'total' ? (r.side === 'over' ? 'over' : 'under') : 'ats'; }
 // every modeled game, graded three ways (winner, spread pick, total pick) against the pregame line
@@ -1170,7 +1170,7 @@ function wireMore() { const m = document.getElementById('listmore'); if (m) m.on
 function drawModelList(G) {
   $('#listtitle').textContent = 'Model picks, game by game';
   const pill = r => r ? `<span class="pill ${r}">${r}</span>` : '<span class="pill O">open</span>';
-  const ks = CAT === 'all' ? ['su', 'ats', 'over', 'under'] : [CAT], lab = {su: 'Winner', ats: 'Spread', over: 'Total', under: 'Total'};
+  const ks = CAT === 'all' ? ['su', 'ats', 'over', 'under'] : [CAT], lab = {su: 'Winner', ats: 'ATS', over: 'Total', under: 'Total'};
   const rows = G.filter(g => ks.some(k => g.pick[k])).sort((a, b) => b.date.localeCompare(a.date) || String(a.kick).localeCompare(String(b.kick)));
   $('#list').innerHTML = !rows.length ? '<div class="empty">No model games in this period yet.</div>' : '<div class="bl">' +
     rows.slice(0, LISTN).map(g => `<div class="bi"><div><div class="t">${esc(g.game)}</div><div class="d">${dayLbl(g.date)} · ${g.league} · model ${Math.round(g.pa)}-${Math.round(g.ph)}</div>
