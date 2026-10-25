@@ -1409,7 +1409,7 @@ async function refreshLive() {
 }
 function scoreLine(g) { if (!g || !(g.state === 'in' || g.state === 'post' || g.done)) return '';
   return `<div class="sline ${g.state === 'in' ? 'in' : ''}">${g.as} – ${g.hs} <span class="small">${esc(g.detail || 'Final')}</span></div>`; }
-const PAGE_VER = "20261025102938";   // stamped by tracker.py; a newer published page reloads itself
+const PAGE_VER = "20261025103311";   // stamped by tracker.py; a newer published page reloads itself
 // ---------------- AUTO REFRESH (while the page is open) ----------------
 const busy = () => { const a = document.activeElement; return a && ['INPUT', 'SELECT', 'TEXTAREA'].includes(a.tagName) || $('#m-form').classList.contains('open'); };
 let tickN = 0;
@@ -1439,10 +1439,10 @@ try { Object.assign(SB, JSON.parse(localStorage.getItem('bt-sb') || '{}')); } ca
 const sbSave = () => { try { localStorage.setItem('bt-sb', JSON.stringify(SB)); } catch (e) {} };
 function sbGames(lg) { const out = {}; Object.entries(ST.slate).forEach(([k, day]) => { if (!k.startsWith(lg + ':')) return; Object.values(day).forEach(g => out[g.id] = g); }); return Object.values(out); }
 function betsByGame() {   // every bet this week keyed by ESPN game id, with how it stands
-  const M = {}, add = (id, b, who, t) => (M[id] = M[id] || []).push({b, who, t});
+  const M = {}, add = (id, b, who, t, p) => (M[id] = M[id] || []).push({b, who, t, p});
   BETS.filter(b => !ST.struck[b.id] && b.market === 'teaser').forEach(b => (b.legs || []).forEach(l => add(l.espn || l.game_id, l, 'Teaser leg', legText(l))));
   BETS.filter(b => !ST.struck[b.id] && b.market !== 'teaser').forEach(b => { const id = b.league === 'NFL' ? (SNAP.nfl.games.find(x => x.id === b.game_id) || {}).espn || b.game_id : b.game_id; add(id, b, 'Model', b.bet || betText(b)); });
-  MINE.forEach(b => { if (b.market === 'parlay') (b.legs || []).forEach(l => add(l.game_id, l, 'Parlay leg', legText(l))); else add(b.game_id, b, 'Mine', b.bet || betText(b)); });
+  MINE.forEach(b => { if (b.market === 'parlay') (b.legs || []).forEach(l => add(l.game_id, l, 'Parlay leg', legText(l), b)); else add(b.game_id, b, 'Mine', b.bet || betText(b), b); });
   return M;
 }
 function renderScoreboard() {
@@ -1475,7 +1475,9 @@ function renderScoreboard() {
         (bx.F.length ? ` · ${bx.F.map(f => `<span class="chip">${esc(f.text)}</span>`).join('')}` : '') + '</div>'; }
     const chips = (BG[g.id] || []).map(x => { let c = '', w = '';
       if (!pre) { const st = standing(x.b, g); c = st.m > 0 ? 'pos' : st.m < 0 ? 'neg' : ''; w = fin ? (st.m > 0 ? ' · won' : st.m < 0 ? ' · lost' : ' · push') : st.m > 0 ? ' · winning' : st.m < 0 ? ' · losing' : ' · even'; }
-      return `<span class="chip ${c === 'neg' ? 'no' : ''}"><span class="${c}">${esc(x.who === 'Model' ? 'AI-LOX: ' : x.who === 'Parlay leg' ? 'Parlay: ' : x.who === 'Teaser leg' ? 'AI-LOX teaser: ' : 'Mine: ')}${esc(x.t)}${w}</span></span>`; }).join('');
+      const money = x.p ? (() => { const st = +x.p.stake || 0, pay = +x.p.to_pay || st * (1 + payout(+x.p.odds || -110)); return ` · $${st.toFixed(2)} to pay $${pay.toFixed(2)}`; })() : '';
+      const lbl = x.who === 'Model' ? 'AI-LOX: ' : x.who === 'Parlay leg' ? `Parlay (${(x.p.legs || []).length} legs): ` : x.who === 'Teaser leg' ? 'AI-LOX teaser: ' : 'Mine: ';
+      return `<span class="chip ${c === 'neg' ? 'no' : ''}"><span class="${c}">${esc(lbl)}${esc(x.t)}${w}${esc(money)}</span></span>`; }).join('');
     return `<div class="sbg ${live ? 'live' : ''}">
       ${bx ? '<div class="tm hd"><span></span><span><span class="mp">model</span><span class="sc">score</span></span></div>' : ''}
       <div class="tm ${aL ? 'lead' : ''}"><span class="nm">${live && g.poss === 'a' ? '<span class="ball" title="Has the ball">🏈</span> ' : ''}${g.ar ? `<span class="rk">${g.ar}</span>` : ''}${esc(g.away)}</span><span>${bx ? `<span class="mp">${LS[0]}</span>` : ''}<span class="sc">${pre ? '' : g.as}</span></span></div>
