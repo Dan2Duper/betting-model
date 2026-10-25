@@ -1,0 +1,27 @@
+{
+ "_note": "New rules to add to rules.json if missing (rules_learn.py merges these once; after that rules.json's learned numbers win).",
+ "cfb_total_3star_under": {
+  "p": 0.554,
+  "n": 370,
+  "lean_only": true,
+  "src": "previous model total 5-7 pts off the closing total, unders: 205-165 (55.4%) CFB 2016-25; added Oct 25 2026 from the star-tier backtest"
+ },
+ "cfb_total_3star_over": {
+  "p": 0.525,
+  "n": 649,
+  "lean_only": true,
+  "src": "previous model total 5-7 pts off the closing total, overs: 341-308 (52.5%) CFB 2016-25"
+ },
+ "cfb_spread_3star": {
+  "p": 0.512,
+  "n": 974,
+  "lean_only": true,
+  "src": "previous model 4-6 pts off the closing spread, side it likes: 499-475 (51.2%) CFB 2016-25; 130-98 (57.0%) in 2024-25"
+ },
+ "cfb_spread_4star_fade": {
+  "p": 0.516,
+  "n": 1266,
+  "lean_only": true,
+  "src": "fade the previous model when it is 6+ pts off the closing spread: 653-613 (51.6%) CFB 2016-25 (model side 48.4%)"
+ }
+}

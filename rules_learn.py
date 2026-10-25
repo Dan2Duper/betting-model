@@ -10,6 +10,10 @@ sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
 from paths import PKG
 RJ = f'{PKG}/rules.json'; PL = f'{PKG}/logs/picks_log.csv'
 R = json.load(open(RJ)); rules = R['betting']['rules']
+SEED = f'{PKG}/rules_seed.json'   # new rules shipped from the package branch: add any that rules.json doesn't have yet
+if os.path.exists(SEED):
+    for k, v in json.load(open(SEED)).items():
+        if not k.startswith('_') and k not in rules: rules[k] = dict(v)
 P = pd.read_csv(PL) if os.path.exists(PL) else pd.DataFrame(columns=['rule', 'result'])
 P = P[P.result.isin(['W', 'L'])]
 BE = {'nfl_teaser_leg': 0.739}
