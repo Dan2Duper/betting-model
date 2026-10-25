@@ -729,6 +729,12 @@ function flagsFor(lg, g, P, L) {
   if (lg === 'CFB') {
     if (L.total != null && Math.abs(P.total0 - L.total) >= RULES.cfb.total_gap_min)
       out.push({rule: 'cfb_total_gap7', market: 'total', side: P.total0 > L.total ? 'over' : 'under', line: L.total, text: `${P.total0 > L.total ? 'Over' : 'Under'} ${L.total}, totals model ${P.total0.toFixed(1)}`});
+    // star-tier leans (tracked, not bet, until the live record earns it): previous model vs the line, as backtested
+    if (L.total != null) { const gT = P.total0 - L.total, aT = Math.abs(gT);
+      if (aT >= 5 && aT < 7) out.push({rule: gT > 0 ? 'cfb_total_3star_over' : 'cfb_total_3star_under', market: 'total', side: gT > 0 ? 'over' : 'under', line: L.total, text: `${gT > 0 ? 'Over' : 'Under'} ${L.total}, totals model ${P.total0.toFixed(1)} (3 stars)`}); }
+    if (L.spread != null) { const hs0 = g.pa0 != null ? P.hs - (g.pa - g.ph) + (g.pa0 - g.ph0) : P.hs, gS = hs0 - L.spread, aS = Math.abs(gS), away = gS > 0;
+      if (aS >= 4 && aS < 6) out.push({rule: 'cfb_spread_3star', market: 'spread', side: away ? 'away' : 'home', line: L.spread, text: `${away ? g.away : g.home} ${lineTxt(away ? -L.spread : L.spread)}, model ${aS.toFixed(1)} pts off the line (3 stars)`});
+      if (aS >= 6) out.push({rule: 'cfb_spread_4star_fade', market: 'spread', side: away ? 'home' : 'away', line: L.spread, text: `${away ? g.home : g.away} ${lineTxt(away ? L.spread : -L.spread)}, fading a ${aS.toFixed(1)}-pt model disagreement (4 stars)`}); }
     if (!g.neutral && g.tz_home != null && g.tz_away != null && g.tz_home - g.tz_away <= -RULES.cfb.tz_spot.min_tz_west && L.spread != null) {
       const late = etHour(g.kick) >= 22, agree = (P.ph - P.pa) + L.spread > 0;
       out.push({rule: 'cfb_tz_home' + (late ? '_late' : '') + (agree ? '' : '_model_disagrees'), market: 'spread', side: 'home', line: L.spread, text: `${g.home} ${lineTxt(L.spread)}, east team flying west${agree ? '' : ' (model disagrees)'}`});
@@ -778,7 +784,8 @@ function betText(r) {
   if (r.market === 'total') return `${r.away}/${r.home} ${String(r.side).toUpperCase()} ${r.line}`;
   const ln = r.side === 'home' ? +r.line : -r.line; return `${r.side === 'home' ? r.home : r.away} ${ln > 0 ? '+' : ''}${ln}`;
 }
-function RNAME(r) { const base = String(r).replace('_model_disagrees', ''); return (DATA.names[base] || base) + (String(r).endsWith('_model_disagrees') ? ', model disagreed' : ''); }
+const NAMES2 = {cfb_total_3star_under: 'CFB 3-star total, under', cfb_total_3star_over: 'CFB 3-star total, over', cfb_spread_3star: 'CFB 3-star spread', cfb_spread_4star_fade: 'CFB fade a 4-star spread'};
+function RNAME(r) { const base = String(r).replace('_model_disagrees', ''); return (DATA.names[base] || NAMES2[base] || base) + (String(r).endsWith('_model_disagrees') ? ', model disagreed' : ''); }
 
 // ---------------- board -> bets & picks ----------------
 let BOARD = [], BETS = [], PICKS = [];
@@ -1561,7 +1568,7 @@ async function refreshLive() {
 }
 function scoreLine(g) { if (!g || !(g.state === 'in' || g.state === 'post' || g.done)) return '';
   return `<div class="sline ${g.state === 'in' ? 'in' : ''}">${g.as} – ${g.hs} <span class="small">${esc(g.detail || 'Final')}</span></div>`; }
-const PAGE_VER = "20261025160453";   // stamped by tracker.py; a newer published page reloads itself
+const PAGE_VER = "20261025162058";   // stamped by tracker.py; a newer published page reloads itself
 // ---------------- AUTO REFRESH (while the page is open) ----------------
 const busy = () => { const a = document.activeElement; return a && ['INPUT', 'SELECT', 'TEXTAREA'].includes(a.tagName) || $('#m-form').classList.contains('open'); };
 let tickN = 0;
