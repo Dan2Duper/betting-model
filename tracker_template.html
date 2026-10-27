@@ -794,7 +794,19 @@ function legText(l, r) {
   const ln = teamLine(l), o = r && r.market === 'teaser' ? teaseFrom(r, l) : null;
   return o != null ? `Take ${teamOf(l)} ${lineTxt(ln)} (${o > 0 ? 'underdog +' + o : o === 0 ? "pick'em" : 'favorite ' + -o}, teased to ${lineTxt(ln)})` : `Take ${teamOf(l)} ${lineTxt(ln)} (${dogFav(ln)})`;
 }
+function recoverLegs(r) {   // older logged teasers kept only the text ("Teaser: BAL +8.5 & TEN +8.5") and game ids ("T:2026_07_CIN_BAL+2026_07_CLE_TEN")
+  if (r.market !== 'teaser' || (r.legs && r.legs.length) || !/^Teaser:/.test(r.bet || '') || !/^T:/.test(r.game_id || '')) return;
+  const ids = String(r.game_id).slice(2).split('+'), parts = r.bet.replace(/^Teaser:\s*/, '').split('&').map(x => x.trim().match(/^([A-Z]{2,3})\s*([+-]?\d+(?:\.\d)?)/)).filter(Boolean);
+  const legs = parts.map(([, team, ln]) => { const gid = ids.find(i => i.split('_').slice(2).includes(team)); if (!gid) return null;
+    const [, , away, home] = gid.split('_'), side = team === home ? 'home' : 'away', x = parseFloat(ln);
+    return {league: 'NFL', game_id: gid, espn: '', away, home, market: 'spread', side, line: side === 'home' ? x : -x}; });
+  if (legs.length && legs.every(Boolean)) {
+    r.legs = legs;
+    if (!r.kick && typeof ST !== 'undefined') { const g = Object.values(ST.slate || {}).flatMap(d => Object.values(d)).find(g => g.aabbr === legs[0].away && g.habbr === legs[0].home && ctDate(g.kick) === r.date); if (g) r.kick = g.kick; }
+  }
+}
 function betText(r) {
+  recoverLegs(r);
   const legs = r.legs || [];
   if (r.market === 'parlay') return `${legs.length}-leg parlay: ` + legs.map(l => l.market === 'total' ? `${isOver(l) ? 'Over' : 'Under'} ${l.line} (${l.away}/${l.home})` : l.market === 'ml' ? `${teamOf(l)} to win` : `${teamOf(l)} ${lineTxt(teamLine(l))}`).join(' & ');
   if ((r.market === 'teaser' || r.market === 'parlay') && !legs.length) return r.market === 'teaser' ? 'Teaser (legs not recorded)' : 'Parlay (legs not recorded)';
