@@ -110,6 +110,9 @@ tr.struck td.keep{text-decoration:none;opacity:1}
 .pill{display:inline-block;min-width:26px;text-align:center;padding:2px 8px;border-radius:999px;font-weight:700;font-size:14px}
 .W{background:var(--good-bg);color:var(--good-ink)} .L{background:var(--bad-bg);color:var(--bad-ink)} .P{background:var(--push-bg);color:var(--ink-2)} .O{color:var(--ink-3);border:1px dashed var(--border)}
 .chip{display:inline-block;background:var(--chip);color:var(--chip-ink);border-radius:6px;padding:2px 8px;font-size:13px;font-weight:600;margin:1px 4px 1px 0}
+.lox{display:inline-flex;align-items:center;gap:4px;vertical-align:middle;background:linear-gradient(135deg,#17142b,#33206b);color:#ffd54a;border:1.5px solid #ffd54a;border-radius:7px;padding:1px 7px 1px 5px;font-weight:800;font-size:11px;line-height:1.5;letter-spacing:.07em;margin-right:6px;white-space:nowrap;box-shadow:0 1px 2px rgba(0,0,0,.25)}
+.lox svg{width:12px;height:12px;flex:none}
+.chip .lox{font-size:10px;padding:0 6px 0 4px;margin-right:5px}
 .chip.lean{background:var(--surface-2);color:var(--ink-2)}
 .chip.no{background:var(--warn-bg);color:var(--warn-ink)}
 .tablewrap{overflow-x:auto}
@@ -425,6 +428,7 @@ const KEY = 'bt-state-v2';
 let ST = {key: '', budget: BR.daily_budget, struck: {}, ov: {}, frozen: {}, frozenPicks: {}, mine: {}, mineDel: {}, slate: {}, finals: {}, odds: {}, wx: {}, inputs: {}, espnOdds: {}, qbnews: {}, nflInj: null};
 try { Object.assign(ST, JSON.parse(localStorage.getItem(KEY) || '{}')); } catch (e) {}
 const save = () => { try { localStorage.setItem(KEY, JSON.stringify(ST)); } catch (e) {} };
+const LOX = `<span class="lox" title="AI-LOX: one of the model's picks"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M7 10.5V7.5a5 5 0 0 1 10 0v3" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round"/><rect x="4" y="10" width="16" height="12" rx="3" fill="currentColor"/><circle cx="12" cy="15.5" r="1.8" fill="#17142b"/><rect x="11.2" y="16" width="1.6" height="3" rx=".8" fill="#17142b"/></svg>AI-LOX</span>`;
 ST.struck = {}; ST.ov = {};   // AI-LOX are recommendations: no strikes or overrides any more
 const usave = () => { ST.updated = Date.now(); save(); if (typeof syncMark === 'function') syncMark(); };   // a change you made: save and sync
 try { navigator.storage && navigator.storage.persist && navigator.storage.persist(); } catch (e) {}
@@ -916,7 +920,7 @@ function renderWeek() {
     return `<div class="dayhead"><span>${dayLbl(d)}</span><span class="small">${list.length} lock${list.length === 1 ? '' : 's'} · suggested $${tot.toFixed(0)}</span></div>
     <div class="tablewrap"><table class="cards"><thead><tr><th>Kick</th><th>Lock</th><th class="why">Why</th><th class="num">Backtest</th><th class="num">Odds</th><th class="num">Suggested $</th><th class="num">To win</th><th>Result</th><th></th></tr></thead><tbody>` +
     list.map(b => { const s = false, go = started(b.kick), bet = mineFor(b);
-      return `<tr class="${s ? 'struck' : ''}"><td data-label="Kick">${ctTime(b.kick)}</td><td class="full first" data-label=""><b>${esc(b.bet)}</b> ${starHtml(betStars(b), betGap(b))}${howWins(b) ? `<div class="small how">${esc(howWins(b))}</div>` : ''}<div class="small">${esc(b.game)}</div>${(() => { const qs = [b.away, b.home].map(t => QBX[b.league + ':' + t]).filter(q => q && ['quest', 'out', 'doubt', 'check'].includes(q.status)); return qs.map(q => `<span class="chip no" title="${esc(q.why)}">QB: ${esc(q.team)} ${q.status === 'quest' ? 'questionable' : q.status === 'check' ? 'check' : 'starter out'}</span>`).join(''); })()}</td><td class="why full" data-label="Why">${esc(RNAME(b.rule))}</td>
+      return `<tr class="${s ? 'struck' : ''}"><td data-label="Kick">${ctTime(b.kick)}</td><td class="full first" data-label="">${LOX}<b>${esc(b.bet)}</b> ${starHtml(betStars(b), betGap(b))}${howWins(b) ? `<div class="small how">${esc(howWins(b))}</div>` : ''}<div class="small">${esc(b.game)}</div>${(() => { const qs = [b.away, b.home].map(t => QBX[b.league + ':' + t]).filter(q => q && ['quest', 'out', 'doubt', 'check'].includes(q.status)); return qs.map(q => `<span class="chip no" title="${esc(q.why)}">QB: ${esc(q.team)} ${q.status === 'quest' ? 'questionable' : q.status === 'check' ? 'check' : 'starter out'}</span>`).join(''); })()}</td><td class="why full" data-label="Why">${esc(RNAME(b.rule))}</td>
       <td class="num" data-label="Backtest">${pct(+b.hit_rate)}${(() => { const c = sideProb(b.league, b); return c && c.push >= 0.02 ? `<div class="small">${pct(c.push)} push chance</div>` : ''; })()}</td>
       <td class="num" data-label="Odds">${(b.odds > 0 ? '+' : '') + b.odds}</td>
       <td class="num" data-label="Suggested $">$${(+b.stake || 0).toFixed(0)}</td>
@@ -1489,7 +1493,7 @@ function renderMine() {
   const cut = ctDate(new Date(Date.now() - 2 * 864e5).toISOString()), list = MINE.filter(b => b.date >= cut).sort((a, b) => a.kick < b.kick ? -1 : 1);
   $('#mineboard').innerHTML = !list.length ? '<div class="empty">None this week.</div>' :
     `<table class="cards"><thead><tr><th>Kick</th><th>Bet</th><th class="num">Odds</th><th class="num">Stake $</th><th class="num">To win</th><th>Result</th><th></th></tr></thead><tbody>` +
-    list.map(b => `<tr><td data-label="Kick">${ctTime(b.kick)}</td><td class="full first" data-label=""><b>${esc(b.bet)}</b><div class="small">${b.market === 'parlay' ? (b.legs || []).map(legText).map(esc).join(' · ') : esc(b.away) + ' @ ' + esc(b.home)}</div></td>
+    list.map(b => `<tr><td data-label="Kick">${ctTime(b.kick)}</td><td class="full first" data-label="">${loxFor(b) ? LOX : ''}<b>${esc(b.bet)}</b><div class="small">${b.market === 'parlay' ? (b.legs || []).map(legText).map(esc).join(' · ') : esc(b.away) + ' @ ' + esc(b.home)}</div></td>
       <td class="num" data-label="Odds">${b.odds > 0 ? '+' : ''}${b.odds}</td><td class="num" data-label="Stake $">${fmt$(b.stake)}</td><td class="num" data-label="To win">${fmt$(b.to_win)}</td>
       <td data-label="Result">${b.result ? `<span class="pill ${b.result}">${b.result}</span>` : started(b.kick) ? '<span class="pill O">live</span>' : ''}</td>
       <td class="keep" data-label=""><button class="btn small" data-delmine="${esc(b.id)}">Delete</button></td></tr>`).join('') + '</tbody></table>';
@@ -1570,12 +1574,12 @@ function renderLive() {
       const cls = lostLeg ? 'lose' : allWin ? 'win' : legs.some(x => x.s !== 'pre') ? (anyLose ? 'lose' : 'even') : 'pre';
       if (cls === 'pre') pre++; else if (cls === 'win') win++; else if (cls === 'lose') lose++;
       ifNow += cls === 'win' ? tw : cls === 'lose' ? -stake : 0;
-      return `<div class="lv ${cls}"><div class="top"><span class="bet">${esc(b.bet || betText(b))}</span><span class="tag">${b.who}</span></div>
+      return `<div class="lv ${cls}"><div class="top"><span class="bet">${esc(b.bet || betText(b))}</span><span class="tag">${b.who === 'Mine · AI-LOX' ? LOX + 'Mine' : b.who}</span></div>
         <div class="small">$${stake.toFixed(2)} to win ${fmt$(tw)}</div>` + legs.map(x => `<div class="score"><span>${x.s === 'win' ? '✓' : x.s === 'lose' ? '✗' : x.s === 'even' ? '=' : '·'} ${esc(legText(x.l))}</span><span class="small">${x.g ? esc(x.g.away + ' ' + x.g.as + ' · ' + x.g.home + ' ' + x.g.hs + ' · ' + (x.g.detail || '')) : ''}</span></div>`).join('') +
         `<div class="where ${cls === 'win' ? 'pos' : cls === 'lose' ? 'neg' : ''}">${lostLeg ? 'Lost (a leg missed)' : allWin && legs.every(x => x.fin) ? `Won ${fmt$(tw)}` : `${legs.filter(x => x.s === 'win').length} of ${legs.length} legs winning`}</div></div>`;
     }
     if (!g || g.state === 'pre' || (!g.state && !g.done)) { pre++;
-      return `<div class="lv pre"><div class="top"><span class="bet">${esc(b.bet || betText(b))}</span><span class="tag">${b.who}</span></div><div class="small">${esc(b.game || (b.away + ' @ ' + b.home))}</div><div class="where small">Kicks ${ctTime(b.kick || (g && g.kick))} · ${fmt$(stake)} to win ${fmt$(tw)}</div></div>`; }
+      return `<div class="lv pre"><div class="top"><span class="bet">${esc(b.bet || betText(b))}</span><span class="tag">${b.who === 'Mine · AI-LOX' ? LOX + 'Mine' : b.who}</span></div><div class="small">${esc(b.game || (b.away + ' @ ' + b.home))}</div><div class="where small">Kicks ${ctTime(b.kick || (g && g.kick))} · ${fmt$(stake)} to win ${fmt$(tw)}</div></div>`; }
     const st = standing(b, g), fin = g.done || g.state === 'post', cls = st.m > 0 ? 'win' : st.m < 0 ? 'lose' : 'even';
     const pl = st.m > 0 ? tw : st.m < 0 ? -stake : 0; ifNow += pl;
     if (fin) done++; else live++;
@@ -1583,7 +1587,7 @@ function renderLive() {
     const by = Math.abs(st.m), unit = b.market === 'ml' ? (by === 0 ? 'Tied' : '') : '';
     const where = fin ? (st.m > 0 ? `Won ${fmt$(tw)}` : st.m < 0 ? `Lost $${stake.toFixed(0)}` : 'Push, stake back')
       : st.m === 0 ? (b.market === 'ml' ? 'Tied right now' : 'Push right now') : `${st.m > 0 ? 'Winning' : 'Losing'} by ${by % 1 ? by.toFixed(1) : by}${b.market === 'ml' ? '' : ' vs the line'}`;
-    return `<div class="lv ${cls}"><div class="top"><span class="bet">${esc(b.bet || betText(b))}</span><span class="tag">${b.who}</span></div>
+    return `<div class="lv ${cls}"><div class="top"><span class="bet">${esc(b.bet || betText(b))}</span><span class="tag">${b.who === 'Mine · AI-LOX' ? LOX + 'Mine' : b.who}</span></div>
       <div class="score"><span>${esc(g.away)} <b>${g.as}</b> · ${esc(g.home)} <b>${g.hs}</b></span><span class="small">${esc(g.detail || (fin ? 'Final' : ''))}</span></div>
       <div class="where ${cls === 'win' ? 'pos' : cls === 'lose' ? 'neg' : ''}">${where}${st.txt ? ` <span class="small">(${esc(st.txt)})</span>` : ''}</div></div>`;
   }).join('');
@@ -1669,8 +1673,9 @@ function renderScoreboard() {
     const chips = (BG[g.id] || []).map(x => { let c = '', w = '';
       if (!pre) { const st = standing(x.b, g); c = st.m > 0 ? 'pos' : st.m < 0 ? 'neg' : ''; w = fin ? (st.m > 0 ? ' · won' : st.m < 0 ? ' · lost' : ' · push') : st.m > 0 ? ' · winning' : st.m < 0 ? ' · losing' : ' · even'; }
       const money = x.p ? (() => { const st = +x.p.stake || 0, pay = +x.p.to_pay || st * (1 + payout(+x.p.odds || -110)); return ` · $${st.toFixed(2)} to pay $${pay.toFixed(2)}`; })() : '';
-      const lbl = x.who === 'Model' ? 'AI-LOX: ' : x.who === 'Parlay leg' ? `Parlay (${(x.p.legs || []).length} legs): ` : x.who === 'Teaser leg' ? 'AI-LOX teaser: ' : 'Mine: ';
-      return `<span class="chip ${c === 'neg' ? 'no' : ''}"><span class="${c}">${esc(lbl)}${esc(x.t)}${w}${esc(money)}</span></span>`; }).join('');
+      const lbl = x.who === 'Model' ? '' : x.who === 'Parlay leg' ? `Parlay (${(x.p.legs || []).length} legs): ` : x.who === 'Teaser leg' ? 'teaser: ' : 'Mine: ';
+      const isLox = x.who === 'Model' || x.who === 'Teaser leg' || (x.who === 'Mine' && loxFor(x.b));
+      return `<span class="chip ${c === 'neg' ? 'no' : ''}"><span class="${c}">${isLox ? LOX : ''}${esc(lbl)}${esc(x.t)}${w}${esc(money)}</span></span>`; }).join('');
     return `<div class="sbg ${live ? 'live' : ''}">
       ${bx ? '<div class="tm hd"><span></span><span><span class="mp">model</span><span class="sc">score</span></span></div>' : ''}
       <div class="tm ${aL ? 'lead' : ''}"><span class="nm">${live && g.poss === 'a' ? '<span class="ball" title="Has the ball">🏈</span> ' : ''}${g.ar ? `<span class="rk">${g.ar}</span>` : ''}${esc(g.away)}</span><span>${bx ? `<span class="mp">${LS[0]}</span>` : ''}<span class="sc">${pre ? '' : g.as}</span></span></div>
