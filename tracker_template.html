@@ -114,6 +114,7 @@ tr.struck td.keep{text-decoration:none;opacity:1}
 .chip.no{background:var(--warn-bg);color:var(--warn-ink)}
 .tablewrap{overflow-x:auto}
 .small{font-size:14px;color:var(--ink-3)}
+.small.how{color:var(--ink-2);margin-top:2px}
 .empty{padding:24px 10px;text-align:center;color:var(--ink-3)}
 .status{font-size:14px;color:var(--ink-2);display:flex;flex-wrap:wrap;gap:6px 14px;margin-bottom:12px}
 .status span b{color:var(--ink)}
@@ -752,37 +753,69 @@ function flagsFor(lg, g, P, L) {
     if (L.total != null && etHour(g.kick) >= 22)
       out.push({rule: 'cfb_late_under', market: 'total', side: 'under', line: L.total, text: `Under ${L.total}, late kick`});
     if (P.wind != null && P.wind >= RULES.cfb.wind_under_mph && L.total != null)
-      out.push({rule: 'cfb_wind_under', market: 'total', side: 'under', line: L.total, text: `Under ${L.total}, wind ${P.wind} mph`});
+      out.push({rule: 'cfb_wind_under', market: 'total', side: 'under', line: L.total, text: `Take the UNDER ${L.total}, wind ${P.wind} mph`});
   } else {
     if (g.outdoor && P.wind != null && P.wind >= RULES.nfl.wind_under_mph && L.total != null)
-      out.push({rule: P.wind < 15 ? 'nfl_wind_under_10_14' : 'nfl_wind_under_15plus', market: 'total', side: 'under', line: L.total, text: `Under ${L.total}, wind ${P.wind} mph`});
+      out.push({rule: P.wind < 15 ? 'nfl_wind_under_10_14' : 'nfl_wind_under_15plus', market: 'total', side: 'under', line: L.total, text: `Take the UNDER ${L.total}, wind ${P.wind} mph`});
     if (L.spread != null && L.total != null && L.total <= 49 && Math.abs(L.spread) >= 1.5 && Math.abs(L.spread) <= 2.5) {   // underdog teaser leg (+1.5/+2.5 -> +7.5/+8.5)
       const home = L.spread > 0;
-      out.push({rule: 'nfl_teaser_leg', market: 'spread', side: home ? 'home' : 'away', line: home ? L.spread + 6 : L.spread - 6, text: `Teaser leg: ${home ? g.home : g.away} ${lineTxt(Math.abs(L.spread))} → +${Math.abs(L.spread) + 6}`});
+      out.push({rule: 'nfl_teaser_leg', market: 'spread', side: home ? 'home' : 'away', line: home ? L.spread + 6 : L.spread - 6, text: `Teaser leg: take ${home ? g.home : g.away} (underdog ${lineTxt(Math.abs(L.spread))}), teased to +${Math.abs(L.spread) + 6}`});
     }
     if (L.spread != null && L.spread !== 0 && SNAP.nfl.week <= 2)
-      out.push({rule: 'nfl_early_dog', market: 'spread', side: L.spread > 0 ? 'home' : 'away', line: L.spread, text: `${L.spread > 0 ? g.home : g.away} +${Math.abs(L.spread)}, early-season dog (lean)`});
+      out.push({rule: 'nfl_early_dog', market: 'spread', side: L.spread > 0 ? 'home' : 'away', line: L.spread, text: `Take ${L.spread > 0 ? g.home : g.away} +${Math.abs(L.spread)} (underdog), early-season dog (lean)`});
     if (L.total != null && new Date(g.kick).toLocaleDateString('en-US', {timeZone: 'America/New_York', weekday: 'long'}) === 'Monday')
-      out.push({rule: 'nfl_mnf_under', market: 'total', side: 'under', line: L.total, text: `Under ${L.total}, Monday night (lean)`});
+      out.push({rule: 'nfl_mnf_under', market: 'total', side: 'under', line: L.total, text: `Take the UNDER ${L.total}, Monday night (lean)`});
     if (L.spread != null && KEYS) {   // key-number side: the half-point that crosses 3 / 7 / 10 / 14
       const r = coverProb('NFL', 'm', P.ph - P.pa, -L.spread, 0), hp = r.win / (1 - r.push), ap = r.lose / (1 - r.push);
       if (Math.max(hp, ap) >= 0.534) { const home = hp >= ap;
-        out.push({rule: 'nfl_key_side', market: 'spread', side: home ? 'home' : 'away', line: L.spread, text: `${home ? g.home : g.away} ${lineTxt(home ? L.spread : -L.spread)}, key number (${pct(Math.max(hp, ap))} to cover)`}); }
+        out.push({rule: 'nfl_key_side', market: 'spread', side: home ? 'home' : 'away', line: L.spread, text: `Take ${home ? g.home : g.away} ${lineTxt(home ? L.spread : -L.spread)} (${dogFav(home ? L.spread : -L.spread)}), key number (${pct(Math.max(hp, ap))} to cover)`}); }
     }
     if (L.spread != null && Math.abs(P.hs - L.spread) >= RULES.nfl.side_gap_lean) {
       const away = P.hs - L.spread > 0;
-      out.push({rule: 'nfl_side_gap4', market: 'spread', side: away ? 'away' : 'home', line: L.spread, text: `${away ? g.away : g.home} ${lineTxt(away ? -L.spread : L.spread)}, lean only (gap ${Math.abs(P.hs - L.spread).toFixed(1)})`});
+      out.push({rule: 'nfl_side_gap4', market: 'spread', side: away ? 'away' : 'home', line: L.spread, text: `Take ${away ? g.away : g.home} ${lineTxt(away ? -L.spread : L.spread)} (${dogFav(away ? -L.spread : L.spread)}), lean only (gap ${Math.abs(P.hs - L.spread).toFixed(1)})`});
     }
   }
   return out;
 }
-function legText(l) { return l.market === 'total' ? `${String(l.side).toUpperCase() === 'OVER' ? 'Over' : 'Under'} ${l.line} (${l.away}/${l.home})` : betText(l); }
+// ---- plain-language bet text: who to take, at what number, and what has to happen ----
+function legKey(l) { return l.market === 'total' ? `${String(l.side).toUpperCase() === 'OVER' ? 'Over' : 'Under'} ${l.line} (${l.away}/${l.home})` : betText(l); }   // report.json format (report_stats.py reads it)
+const teamOf = r => r.side === 'home' ? r.home : r.away;
+const teamLine = r => r.side === 'home' ? +r.line : -r.line;   // the line from the picked team's point of view
+const dogFav = ln => ln > 0 ? 'underdog' : ln < 0 ? 'favorite' : "pick'em";
+const isOver = r => String(r.side).toUpperCase() === 'OVER';
+function teaseFrom(r, l) { const t = l.orig != null ? Math.abs(+l.orig) : r && r.rule === 'nfl_teaser_dog' ? Math.abs(+l.line) - 6 : null; return t != null && !isNaN(t) ? t : null; }
+function legText(l, r) {
+  if (l.market === 'total') return `Take the ${isOver(l) ? 'OVER' : 'UNDER'} ${l.line} (${l.away} + ${l.home} combined)`;
+  if (l.market === 'ml') return `Take ${teamOf(l)} to win (moneyline)`;
+  const ln = teamLine(l), o = r && r.market === 'teaser' ? teaseFrom(r, l) : null;
+  return o != null ? `Take ${teamOf(l)} ${lineTxt(ln)} (${o > 0 ? 'underdog +' + o : o === 0 ? "pick'em" : 'favorite ' + -o}, teased to ${lineTxt(ln)})` : `Take ${teamOf(l)} ${lineTxt(ln)} (${dogFav(ln)})`;
+}
 function betText(r) {
-  if (r.market === 'parlay') return `${(r.legs || []).length}-leg parlay`;
-  if (r.market === 'teaser') return 'Teaser: ' + (r.legs || []).map(l => `${l.side === 'home' ? l.home : l.away} +${Math.abs(l.line)}`).join(' & ');
-  if (r.market === 'ml') return `${r.side === 'home' ? r.home : r.away} moneyline`;
-  if (r.market === 'total') return `${r.away}/${r.home} ${String(r.side).toUpperCase()} ${r.line}`;
-  const ln = r.side === 'home' ? +r.line : -r.line; return `${r.side === 'home' ? r.home : r.away} ${ln > 0 ? '+' : ''}${ln}`;
+  const legs = r.legs || [];
+  if (r.market === 'parlay') return `${legs.length}-leg parlay: ` + legs.map(l => l.market === 'total' ? `${isOver(l) ? 'Over' : 'Under'} ${l.line} (${l.away}/${l.home})` : l.market === 'ml' ? `${teamOf(l)} to win` : `${teamOf(l)} ${lineTxt(teamLine(l))}`).join(' & ');
+  if ((r.market === 'teaser' || r.market === 'parlay') && !legs.length) return r.market === 'teaser' ? 'Teaser (legs not recorded)' : 'Parlay (legs not recorded)';
+  if (r.market === 'teaser') { const os = legs.map(l => teaseFrom(r, l)), dogs = os.length && os.every(o => o != null && o > 0);
+    return 'Teaser: take ' + legs.map(l => `${teamOf(l)} ${lineTxt(teamLine(l))}`).join(' & ') + (dogs ? ` (both underdogs: ${legs.map((l, i) => teamOf(l) + ' +' + os[i]).join(', ')} before the tease)` : ''); }
+  if (r.market === 'ml') return `Take ${teamOf(r)} to win (moneyline)`;
+  if (r.market === 'total') return `Take the ${isOver(r) ? 'OVER' : 'UNDER'} ${r.line} (${r.away} + ${r.home} combined)`;
+  const ln = teamLine(r); return `Take ${teamOf(r)} ${lineTxt(ln)} (${dogFav(ln)})`;
+}
+function coverTxt(team, ln) {   // what the picked team has to do to cover ln
+  const a = Math.abs(ln), half = a % 1 !== 0, f = Math.floor(a);
+  if (ln > 0) return half ? (f ? `${team} wins or loses by ${f} or less` : `${team} wins or ties`) : (a > 1 ? `${team} wins or loses by ${a - 1} or less (lose by exactly ${a} = push)` : `${team} wins (lose by 1 = push)`);
+  if (ln < 0) return half ? `${team} wins by ${f + 1} or more` : `${team} wins by ${a + 1} or more (win by exactly ${a} = push)`;
+  return `${team} wins (tie = push)`;
+}
+function totalTxt(over, L) { L = +L; const half = L % 1 !== 0;
+  return over ? (half ? `${Math.ceil(L)}+ total points` : `${L + 1}+ total points (exactly ${L} = push)`) : (half ? `${Math.floor(L)} or fewer total points` : `${L - 1} or fewer total points (exactly ${L} = push)`); }
+function legHow(l) { return l.market === 'total' ? `${l.away} + ${l.home}: ${totalTxt(isOver(l), l.line)}` : l.market === 'ml' ? `${teamOf(l)} wins` : coverTxt(teamOf(l), teamLine(l)); }
+function howWins(r) {
+  if (!r || r.line === '' && !(r.legs || []).length && r.market !== 'ml') return '';
+  if (r.market === 'parlay' || r.market === 'teaser') { const legs = r.legs || []; if (!legs.length) return '';
+    return `Cashes only if ${legs.length === 2 ? 'both' : 'all ' + legs.length} hit: ` + legs.map(legHow).join('; ') + (r.market === 'teaser' ? '. One miss loses the whole teaser.' : '.'); }
+  if (r.market === 'ml') return `Cashes if ${teamOf(r)} wins the game.`;
+  if (r.market === 'total') return `Cashes on ${totalTxt(isOver(r), r.line)}.`;
+  return `Cashes if ${coverTxt(teamOf(r), teamLine(r))}.`;
 }
 const NAMES2 = {cfb_total_3star_under: 'CFB 3-star total, under', cfb_total_3star_over: 'CFB 3-star total, over', cfb_spread_3star: 'CFB 3-star spread', cfb_spread_4star_fade: 'CFB fade a 4-star spread'};
 function RNAME(r) { const base = String(r).replace('_model_disagrees', ''); return (DATA.names[base] || NAMES2[base] || base) + (String(r).endsWith('_model_disagrees') ? ', model disagreed' : ''); }
@@ -883,7 +916,7 @@ function renderWeek() {
     return `<div class="dayhead"><span>${dayLbl(d)}</span><span class="small">${list.length} lock${list.length === 1 ? '' : 's'} · suggested $${tot.toFixed(0)}</span></div>
     <div class="tablewrap"><table class="cards"><thead><tr><th>Kick</th><th>Lock</th><th class="why">Why</th><th class="num">Backtest</th><th class="num">Odds</th><th class="num">Suggested $</th><th class="num">To win</th><th>Result</th><th></th></tr></thead><tbody>` +
     list.map(b => { const s = false, go = started(b.kick), bet = mineFor(b);
-      return `<tr class="${s ? 'struck' : ''}"><td data-label="Kick">${ctTime(b.kick)}</td><td class="full first" data-label=""><b>${esc(b.bet)}</b> ${starHtml(betStars(b), betGap(b))}<div class="small">${esc(b.game)}</div>${(() => { const qs = [b.away, b.home].map(t => QBX[b.league + ':' + t]).filter(q => q && ['quest', 'out', 'doubt', 'check'].includes(q.status)); return qs.map(q => `<span class="chip no" title="${esc(q.why)}">QB: ${esc(q.team)} ${q.status === 'quest' ? 'questionable' : q.status === 'check' ? 'check' : 'starter out'}</span>`).join(''); })()}</td><td class="why full" data-label="Why">${esc(RNAME(b.rule))}</td>
+      return `<tr class="${s ? 'struck' : ''}"><td data-label="Kick">${ctTime(b.kick)}</td><td class="full first" data-label=""><b>${esc(b.bet)}</b> ${starHtml(betStars(b), betGap(b))}${howWins(b) ? `<div class="small how">${esc(howWins(b))}</div>` : ''}<div class="small">${esc(b.game)}</div>${(() => { const qs = [b.away, b.home].map(t => QBX[b.league + ':' + t]).filter(q => q && ['quest', 'out', 'doubt', 'check'].includes(q.status)); return qs.map(q => `<span class="chip no" title="${esc(q.why)}">QB: ${esc(q.team)} ${q.status === 'quest' ? 'questionable' : q.status === 'check' ? 'check' : 'starter out'}</span>`).join(''); })()}</td><td class="why full" data-label="Why">${esc(RNAME(b.rule))}</td>
       <td class="num" data-label="Backtest">${pct(+b.hit_rate)}${(() => { const c = sideProb(b.league, b); return c && c.push >= 0.02 ? `<div class="small">${pct(c.push)} push chance</div>` : ''; })()}</td>
       <td class="num" data-label="Odds">${(b.odds > 0 ? '+' : '') + b.odds}</td>
       <td class="num" data-label="Suggested $">$${(+b.stake || 0).toFixed(0)}</td>
@@ -1079,10 +1112,10 @@ function modelGames() {
     if (Math.sign(ph - pa)) { o.pick.su = (ph > pa ? p.home : p.away) + ' to win'; if (f && f.hs !== f.as) o.res.su = Math.sign(ph - pa) === Math.sign(f.hs - f.as) ? 'W' : 'L'; }
     if (ln && ln.spread != null) { const side = Math.sign((ph - pa) + ln.spread);
       o.gap.ats = Math.abs((ph - pa) + ln.spread); o.star.ats = starsOf(p.league, 'spread', o.gap.ats);
-      if (side) { o.pick.ats = side > 0 ? `${p.home} ${lineTxt(ln.spread)}` : `${p.away} ${lineTxt(-ln.spread)}`; if (f) { const r = (f.hs - f.as) + ln.spread; o.res.ats = r === 0 ? 'P' : Math.sign(r) === side ? 'W' : 'L'; } } }
+      if (side) { o.pick.ats = side > 0 ? `Take ${p.home} ${lineTxt(ln.spread)} (${dogFav(ln.spread)})` : `Take ${p.away} ${lineTxt(-ln.spread)} (${dogFav(-ln.spread)})`; if (f) { const r = (f.hs - f.as) + ln.spread; o.res.ats = r === 0 ? 'P' : Math.sign(r) === side ? 'W' : 'L'; } } }
     if (ln && ln.total != null) { const side = Math.sign(ph + pa - ln.total), k = side > 0 ? 'over' : 'under';
       o.gap[k] = Math.abs(ph + pa - ln.total); o.star[k] = starsOf(p.league, 'total', o.gap[k]);
-      if (side) { o.pick[k] = (side > 0 ? 'Over ' : 'Under ') + ln.total; if (f) { const r = f.hs + f.as - ln.total; o.res[k] = r === 0 ? 'P' : Math.sign(r) === side ? 'W' : 'L'; } } }
+      if (side) { o.pick[k] = (side > 0 ? 'Take the OVER ' : 'Take the UNDER ') + ln.total; if (f) { const r = f.hs + f.as - ln.total; o.res[k] = r === 0 ? 'P' : Math.sign(r) === side ? 'W' : 'L'; } } }
     out.push(o);
   });
   const F = tkFrom();
@@ -1227,7 +1260,7 @@ function drawList(list) {
   const od = o => (o > 0 ? '+' : '') + Math.round(o);
   $('#list').innerHTML = !rows.length ? '<div class="empty">Nothing here for this period.</div>' : '<div class="bl">' +
     rows.slice(0, LISTN).map(r => {
-      const sub = r.market === 'parlay' || r.market === 'teaser' ? (r.legs || []).map(l => typeof legText === 'function' ? legText(l) : '').filter(Boolean).join(' · ') : (r.game || `${r.away} @ ${r.home}`);
+      const sub = r.market === 'parlay' || r.market === 'teaser' ? (r.legs || []).map(l => typeof legText === 'function' ? legText(l, r) : '').filter(Boolean).join(' · ') : (r.game || `${r.away} @ ${r.home}`);
       const res = r.result ? `<span class="pill ${r.result}">${r.result}</span>` : started(r.kick) ? '<span class="pill O">live</span>' : '<span class="pill O">open</span>';
       const amt = r.result ? `<div class="amt ${r.profit > 0 ? 'pos' : r.profit < 0 ? 'neg' : ''}">${r.profit > 0 ? '+' : ''}${fmt$(r.profit)}</div>` : `<div class="amt" style="color:var(--ink-3)">to win ${fmt$(r.stake * payout(r.odds))}</div>`;
       return `<div class="bi"><div><div class="t">${esc(r.bettext)} ${!isM ? starHtml(betStars(r), betGap(r)) : ''}</div><div class="d">${dayLbl(r.date)} · ${r.league} · ${esc(sub || '')}</div>
@@ -1401,7 +1434,7 @@ function reportBuild() {
   const one = (b, who) => {
     const o = {who, id: b.id, league: b.league, date: b.date, kick: b.kick, bet: b.bet || betText(b), game: b.game || `${b.away} @ ${b.home}`, market: b.market, side: b.side, line: b.line,
       odds: +b.odds || -110, stake: +(+b.stake || 0).toFixed(2), to_win: +((+b.stake || 0) * payout(+b.odds || -110)).toFixed(2), result: b.result || '', rule: b.rule || ''};
-    if (b.legs) o.legs = b.legs.map(l => { const g = I[l.espn || l.game_id]; return {bet: legText(l), score: gv(g), margin_vs_line: live(g) ? standing(l, g).m : null}; });
+    if (b.legs) o.legs = b.legs.map(l => { const g = I[l.espn || l.game_id]; return {bet: legKey(l), score: gv(g), margin_vs_line: live(g) ? standing(l, g).m : null}; });
     else { const g = b.src === 'mine' ? liveGameFor(b, I) : I[espnOf(b.league, b.game_id)]; o.score = gv(g); o.margin_vs_line = live(g) ? standing(b, g).m : null; }
     return o; };
   const mine = MINE.filter(b => b.date >= cut).map(b => Object.assign(one(b, 'mine'), {ai_lox: !!loxFor(b)}));
@@ -1442,6 +1475,7 @@ document.addEventListener('visibilitychange', () => { if (document.visibilitySta
 let MINE = [];
 function buildMine() {
   (DATA.mine || []).forEach(b => { if (!ST.mine[b.id] && !ST.mineDel[b.id]) ST.mine[b.id] = b; });
+  Object.values(ST.mine).forEach(b => { if (typeof b.legs === 'string') { try { b.legs = b.legs ? JSON.parse(b.legs) : []; } catch (e) { b.legs = []; } } });   // the log stores legs as JSON text
   MINE = Object.values(ST.mine).filter(b => !ST.mineDel[b.id]).map(b => {
     if (!b.result && b.market === 'parlay') { const R = (b.legs || []).map(l => { const f = finalFor(l.league, l.game_id, b.date, l.away, l.home); return f ? grade(l, f) : ''; });
       if (R.includes('L')) b.result = 'L'; else if (R.length && R.every(Boolean)) b.result = R.every(r => r === 'P') ? 'P' : 'W'; if (b.result) ST.mine[b.id].result = b.result; }
