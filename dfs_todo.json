@@ -1,0 +1,103 @@
+{
+ "built": "2026-11-19T23:22:20.614173+00:00",
+ "slates": [
+  {
+   "sport": "NFL",
+   "kind": "classic",
+   "dg": 155989,
+   "label": "Main slate Sun 12:00PM",
+   "url": "https://api.draftkings.com/draftgroups/v1/draftgroups/155989/draftables"
+  },
+  {
+   "sport": "NFL",
+   "kind": "showdown",
+   "dg": 156781,
+   "label": "Thu 8:15PM",
+   "url": "https://api.draftkings.com/draftgroups/v1/draftgroups/156781/draftables"
+  },
+  {
+   "sport": "NFL",
+   "kind": "showdown",
+   "dg": 156793,
+   "label": "Mon 8:15PM",
+   "url": "https://api.draftkings.com/draftgroups/v1/draftgroups/156793/draftables"
+  },
+  {
+   "sport": "NFL",
+   "kind": "showdown",
+   "dg": 156792,
+   "label": "Sun 8:20PM",
+   "url": "https://api.draftkings.com/draftgroups/v1/draftgroups/156792/draftables"
+  },
+  {
+   "sport": "NFL",
+   "kind": "showdown",
+   "dg": 156791,
+   "label": "Sun 4:25PM",
+   "url": "https://api.draftkings.com/draftgroups/v1/draftgroups/156791/draftables"
+  },
+  {
+   "sport": "NFL",
+   "kind": "showdown",
+   "dg": 156786,
+   "label": "Sun 1:00PM",
+   "url": "https://api.draftkings.com/draftgroups/v1/draftgroups/156786/draftables"
+  },
+  {
+   "sport": "NFL",
+   "kind": "showdown",
+   "dg": 156784,
+   "label": "Sun 1:00PM",
+   "url": "https://api.draftkings.com/draftgroups/v1/draftgroups/156784/draftables"
+  },
+  {
+   "sport": "NFL",
+   "kind": "showdown",
+   "dg": 156787,
+   "label": "Sun 1:00PM",
+   "url": "https://api.draftkings.com/draftgroups/v1/draftgroups/156787/draftables"
+  },
+  {
+   "sport": "NFL",
+   "kind": "showdown",
+   "dg": 156783,
+   "label": "Sun 1:00PM",
+   "url": "https://api.draftkings.com/draftgroups/v1/draftgroups/156783/draftables"
+  },
+  {
+   "sport": "NFL",
+   "kind": "showdown",
+   "dg": 156790,
+   "label": "Sun 4:25PM",
+   "url": "https://api.draftkings.com/draftgroups/v1/draftgroups/156790/draftables"
+  },
+  {
+   "sport": "NFL",
+   "kind": "showdown",
+   "dg": 156789,
+   "label": "Sun 4:05PM",
+   "url": "https://api.draftkings.com/draftgroups/v1/draftgroups/156789/draftables"
+  },
+  {
+   "sport": "NFL",
+   "kind": "showdown",
+   "dg": 156785,
+   "label": "Sun 1:00PM",
+   "url": "https://api.draftkings.com/draftgroups/v1/draftgroups/156785/draftables"
+  },
+  {
+   "sport": "NFL",
+   "kind": "showdown",
+   "dg": 156782,
+   "label": "Sun 1:00PM",
+   "url": "https://api.draftkings.com/draftgroups/v1/draftgroups/156782/draftables"
+  },
+  {
+   "sport": "NFL",
+   "kind": "showdown",
+   "dg": 156788,
+   "label": "Sun 1:00PM",
+   "url": "https://api.draftkings.com/draftgroups/v1/draftgroups/156788/draftables"
+  }
+ ]
+}
