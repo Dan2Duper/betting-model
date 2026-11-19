@@ -1797,7 +1797,7 @@ document.addEventListener('visibilitychange', () => { if (document.visibilitySta
 
 // ---------------- DFS (DraftKings lineups) ----------------
 const DFS_URL = 'https://raw.githubusercontent.com/Dan2Duper/betting-model/data/dfs_nfl.json';
-const DFS_AI_URL = '';   // the AI relay (Cloudflare Worker) once it is deployed
+const DFS_AI_URL = 'https://bet-tracker-relay.simplewindowscreens.workers.dev';   // the AI relay (Cloudflare Worker)
 let DFS = null, dfsSlate = 0, dfsMode = 'cash', dfsIdx = 0, dfsAdj = null, dfsAiPick = null;
 async function dfsLoad(force) {
   if (DFS && !force) return dfsRender();
