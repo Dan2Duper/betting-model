@@ -205,6 +205,10 @@ a{color:var(--series)}
   .ftoggle{display:block;width:100%}
   .filters.shut{display:none}
 }
+.dfs-lu{width:100%;border-collapse:collapse}.dfs-lu td{padding:7px 6px;border-bottom:1px solid var(--border);font-variant-numeric:tabular-nums}
+.dfs-lu td.pos{font-weight:700;color:var(--ink-2);width:52px}.dfs-lu td.num{text-align:right}.dfs-lu tr.cpt td{background:var(--chip)}
+.dfs-tot{display:flex;gap:16px;flex-wrap:wrap;margin:10px 0 6px;font-weight:700}.dfs-tot span{font-weight:400;color:var(--ink-3)}
+.dfs-note{margin-top:8px;line-height:1.45}#dfs-slate{max-width:100%}#dfs-thoughts{width:100%;min-height:84px;font:inherit;font-size:16px;padding:10px;border-radius:8px;border:1px solid var(--border);background:var(--surface);color:var(--ink);box-sizing:border-box}
 </style>
 </head>
 <body>
@@ -219,6 +223,7 @@ a{color:var(--series)}
   <div class="tabs" id="tabs">
     <button data-t="week" class="on">Week</button>
     <button data-t="live">Scores</button>
+    <button data-t="dfs">DFS</button>
     <button data-t="reports">Reports</button>
     <button data-t="track">Tracker</button>
     <button data-t="stats">Stats</button>
@@ -285,6 +290,27 @@ a{color:var(--series)}
     </div>
   </section>
 
+  <section id="t-dfs" class="hide">
+    <div class="card">
+      <div class="cardhead">
+        <div><h2>DraftKings lineups</h2><div class="small" id="dfs-built">loading…</div></div>
+        <div style="display:flex;gap:8px;flex-wrap:wrap">
+          <select id="dfs-slate"></select>
+          <div class="seg" id="dfs-mode"><button data-m="cash" class="on">Cash</button><button data-m="gpp">Tournament</button></div>
+        </div>
+      </div>
+      <div id="dfs-lineup"></div>
+      <div style="display:flex;gap:8px;margin-top:10px;flex-wrap:wrap"><button class="btn" id="dfs-prev">◀ Back</button><button class="btn primary" id="dfs-shuffle">Shuffle ▶</button><span class="small" id="dfs-count" style="align-self:center"></span></div>
+    </div>
+    <div class="card">
+      <h2>My read on the game</h2>
+      <div class="small">Say how you think it plays out ("Bills run it all day, Miami can't keep up, fade Waddle"). The AI turns it into adjustments and the lineup is rebuilt from the same pool, so it always fits the cap and the rules.</div>
+      <textarea id="dfs-thoughts" placeholder="How do you see this game going?"></textarea>
+      <div style="display:flex;gap:8px;margin-top:8px;align-items:center;flex-wrap:wrap"><button class="btn primary" id="dfs-ai">Build my lineup</button><button class="btn" id="dfs-clear">Clear my read</button><span class="small" id="dfs-aimsg"></span></div>
+      <div id="dfs-aiout" class="dfs-note"></div>
+    </div>
+    <div class="card"><div class="small">Projections come from this site's own model (nflverse stats + Vegas lines). Ownership is an estimate. Cash lineups chase the safest high score; tournament lineups stack a QB with two pass catchers and a bring-back, lean toward upside and away from the most popular players, and differ from each other by at least three players.</div></div>
+  </section>
   <section id="t-reports" class="hide">
     <div class="card">
       <div class="cardhead"><div><h2>Game reports</h2><div class="small" id="rep-when"></div></div>
@@ -382,6 +408,11 @@ a{color:var(--series)}
       <div class="hint">Free key from <a href="https://the-odds-api.com" target="_blank" rel="noopener">the-odds-api.com</a> (500 requests a month free; each refresh uses about 4). Without a key the page uses the lines ESPN lists, then the nflverse consensus for NFL.</div>
       <div class="editgrid"><label class="f">API key<input id="s-key" style="width:320px" placeholder="paste key"></label>
         <button class="btn primary" id="s-savekey">Save key</button><button class="btn" id="s-testkey">Test</button><span class="small" id="s-keymsg"></span></div>
+    </div>
+    <div class="card">
+      <h2>DFS AI code</h2>
+      <div class="small">The code that lets this device use the AI on the DFS tab. It stays on this device.</div>
+      <div class="editgrid"><label class="f">Code<input id="s-dfscode" type="password" style="width:220px" autocomplete="off"></label><button class="btn" id="s-savedfs">Save</button><span class="small" id="s-dfsmsg"></span></div>
     </div>
     <div class="card">
       <h2>Budget</h2>
@@ -1618,7 +1649,7 @@ async function refreshLive() {
 }
 function scoreLine(g) { if (!g || !(g.state === 'in' || g.state === 'post' || g.done)) return '';
   return `<div class="sline ${g.state === 'in' ? 'in' : ''}">${g.as} – ${g.hs} <span class="small">${esc(g.detail || 'Final')}</span></div>`; }
-const PAGE_VER = "20261117113334";   // stamped by tracker.py; a newer published page reloads itself
+const PAGE_VER = "20261119174519";   // stamped by tracker.py; a newer published page reloads itself
 // ---------------- AUTO REFRESH (while the page is open) ----------------
 const busy = () => { const a = document.activeElement; return a && ['INPUT', 'SELECT', 'TEXTAREA'].includes(a.tagName) || $('#m-form').classList.contains('open'); };
 let tickN = 0;
@@ -1763,13 +1794,93 @@ $('#rep-pick').onchange = e => { repSel = e.target.value; renderReports(); };
 $('#rep-refresh').onclick = () => { $('#rep-refresh').textContent = 'Refreshing…'; repLoad().finally(() => { $('#rep-refresh').textContent = 'Refresh'; }); };
 document.addEventListener('visibilitychange', () => { if (document.visibilityState === 'visible') repLoad(); });
 
+
+// ---------------- DFS (DraftKings lineups) ----------------
+const DFS_URL = 'https://raw.githubusercontent.com/Dan2Duper/betting-model/data/dfs_nfl.json';
+const DFS_AI_URL = 'https://bet-tracker-relay.simplewindowscreens.workers.dev';   // the AI relay (Cloudflare Worker)
+let DFS = null, dfsSlate = 0, dfsMode = 'cash', dfsIdx = 0, dfsAdj = null, dfsAiPick = null;
+async function dfsLoad(force) {
+  if (DFS && !force) return dfsRender();
+  try { const r = await fetch(DFS_URL + '?t=' + Date.now()); if (!r.ok) throw new Error(r.status); DFS = await r.json(); }
+  catch (e) { $('#dfs-built').textContent = 'No DFS file yet. It appears after the next automatic refresh.'; return; }
+  $('#dfs-slate').innerHTML = DFS.slates.map((s, i) => `<option value="${i}">${esc(s.kind === 'classic' ? 'Classic · ' : 'Showdown · ')}${esc(s.label)}</option>`).join('');
+  $('#dfs-built').textContent = `NFL week ${DFS.week} · built ${new Date(DFS.built).toLocaleString([], {weekday: 'short', hour: 'numeric', minute: '2-digit'})}`;
+  dfsRender();
+}
+function dfsCur() { return DFS && DFS.slates[dfsSlate]; }
+function dfsPool() { const s = dfsCur(); return s ? s[dfsMode] || [] : []; }
+function dfsIds(L) { return L.players || [L.cpt, ...L.flex]; }
+function dfsAdjProj(p, i) {   // apply the AI's read: boosts/fades in percent
+  if (!dfsAdj) return p.proj;
+  const b = (dfsAdj.boost || {})[p.name] ?? (dfsAdj.team_boost || {})[p.team] ?? 0;
+  return p.proj * (1 + b / 100);
+}
+function dfsScore(L, s) {
+  const P = s.players, w = dfsMode === 'cash' ? 0.25 : 0.5;
+  const val = (i, m) => { const p = P[i], pr = dfsAdjProj(p, i), base = dfsMode === 'cash' ? (1 - w) * pr + w * p.floor * pr / (p.proj || 1) : pr + w * (p.ceil - p.proj) * pr / (p.proj || 1); return m * base; };
+  if (L.players) return L.players.reduce((a, i) => a + val(i, 1), 0);
+  return val(L.cpt, 1.5) + L.flex.reduce((a, i) => a + val(i, 1), 0);
+}
+function dfsPickAi() {
+  const s = dfsCur(); if (!s || !dfsAdj) return null;
+  const P = s.players, lock = new Set(dfsAdj.lock || []), ban = new Set(dfsAdj.ban || []);
+  const pools = [...(s.gpp || []), ...(s.cash || [])];
+  let best = null, bs = -1e9;
+  for (const L of pools) {
+    const names = dfsIds(L).map(i => P[i].name);
+    if ([...lock].some(n => !names.includes(n)) || names.some(n => ban.has(n))) continue;
+    if (dfsAdj.captain && L.cpt != null && P[L.cpt].name !== dfsAdj.captain) continue;
+    const sc = dfsScore(L, s); if (sc > bs) { bs = sc; best = L; }
+  }
+  return best;
+}
+function dfsRender() {
+  const s = dfsCur(); if (!s) return;
+  const pool = dfsPool(); const L = dfsAiPick || pool[dfsIdx % Math.max(pool.length, 1)];
+  if (!L) { $('#dfs-lineup').innerHTML = '<div class="small">No lineups for this slate.</div>'; return; }
+  const P = s.players; const rows = [];
+  if (L.players) {
+    const slots = ['QB', 'RB', 'RB', 'WR', 'WR', 'WR', 'TE', 'FLEX', 'DST']; const left = [...L.players]; const take = pos => { const k = left.findIndex(i => P[i].pos === pos); return k < 0 ? null : left.splice(k, 1)[0]; };
+    const filled = slots.map(sl => sl === 'FLEX' ? null : take(sl)); filled[7] = left[0];
+    slots.forEach((sl, k) => rows.push([sl, P[filled[k]], 1]));
+  } else { rows.push(['CPT', P[L.cpt], 1.5]); L.flex.forEach(i => rows.push(['FLEX', P[i], 1])); }
+  const own = r => r[0] === 'CPT' ? r[1].cpt_own : r[1].own;
+  $('#dfs-lineup').innerHTML = `<table class="dfs-lu">${rows.map(r => `<tr class="${r[0] === 'CPT' ? 'cpt' : ''}"><td class="pos">${r[0]}</td><td><b>${esc(r[1].name)}</b> <span class="small">${esc(r[1].pos)} · ${esc(r[1].team)} vs ${esc(r[1].opp)}${r[1].status && r[1].status !== 'None' ? ' · ' + esc(r[1].status) : ''}</span></td><td class="num">$${((r[0] === 'CPT' ? r[1].cpt_salary : r[1].salary) || 0).toLocaleString()}</td><td class="num">${(r[2] * r[1].proj).toFixed(1)}</td><td class="num small">${own(r) != null ? '~' + own(r).toFixed(0) + '%' : ''}</td></tr>`).join('')}</table>
+    <div class="dfs-tot">Salary $${L.salary.toLocaleString()} <span>of $50,000</span> · Projected ${L.proj} <span>floor ${L.floor} · ceiling ${L.ceil}</span></div>
+    <div class="dfs-note">${esc(L.note)}</div>`;
+  $('#dfs-count').textContent = dfsAiPick ? 'Built from your read' : `Lineup ${(dfsIdx % pool.length) + 1} of ${pool.length}`;
+}
+$('#dfs-slate').onchange = e => { dfsSlate = +e.target.value; dfsIdx = 0; dfsAiPick = dfsAdj ? dfsPickAi() : null; dfsRender(); };
+$$('#dfs-mode button').forEach(b => b.onclick = () => { dfsMode = b.dataset.m; dfsIdx = 0; dfsAiPick = null; $$('#dfs-mode button').forEach(x => x.classList.toggle('on', x === b)); dfsRender(); });
+$('#dfs-shuffle').onclick = () => { dfsAiPick = null; dfsIdx++; dfsRender(); };
+$('#dfs-prev').onclick = () => { dfsAiPick = null; dfsIdx = Math.max(0, dfsIdx - 1); dfsRender(); };
+$('#dfs-clear').onclick = () => { dfsAdj = null; dfsAiPick = null; $('#dfs-aiout').innerHTML = ''; $('#dfs-thoughts').value = ''; dfsRender(); };
+$('#dfs-ai').onclick = async () => {
+  const s = dfsCur(), txt = $('#dfs-thoughts').value.trim(); if (!s || !txt) return;
+  let code = ''; try { code = localStorage.getItem('dfsAiCode') || ''; } catch (e) {}
+  if (!DFS_AI_URL) { $('#dfs-aimsg').textContent = 'The AI relay is not set up yet.'; return; }
+  $('#dfs-aimsg').textContent = 'Thinking…'; $('#dfs-ai').disabled = true;
+  try {
+    const players = s.players.map(p => ({n: p.name, pos: p.pos, t: p.team, o: p.opp, sal: p.salary, proj: p.proj, ceil: p.ceil, own: p.own, imp: p.implied, st: p.status}));
+    const r = await fetch(DFS_AI_URL, {method: 'POST', headers: {'Content-Type': 'application/json', 'X-Code': code}, body: JSON.stringify({kind: s.kind, mode: dfsMode, label: s.label, thoughts: txt, players})});
+    const j = await r.json(); if (!r.ok) throw new Error(j.error || r.status);
+    dfsAdj = j; dfsAiPick = dfsPickAi();
+    $('#dfs-aiout').innerHTML = '<b>How the AI read it:</b> ' + esc(j.summary || '') + (dfsAiPick ? '' : '<div class="small">No lineup in the pool fits every must-have; showing the closest.</div>');
+    if (!dfsAiPick) { dfsAdj = {...j, lock: [], ban: j.ban || []}; dfsAiPick = dfsPickAi(); dfsAdj = j; }
+    $('#dfs-aimsg').textContent = '';
+  } catch (e) { $('#dfs-aimsg').textContent = 'Could not reach the AI: ' + e.message; }
+  $('#dfs-ai').disabled = false; dfsRender();
+};
+
+try { $('#s-dfscode').value = localStorage.getItem('dfsAiCode') || ''; } catch (e) {}
+$('#s-savedfs').onclick = () => { try { localStorage.setItem('dfsAiCode', $('#s-dfscode').value.trim()); $('#s-dfsmsg').textContent = 'Saved'; } catch (e) { $('#s-dfsmsg').textContent = 'Could not save on this device'; } };
 // ---------------- boot ----------------
 let TAB = 'week';
-$$('#tabs button').forEach(b => b.onclick = () => { TAB = b.dataset.t; if (TAB === 'live') setTimeout(refreshLive, 0); if (TAB === 'reports') setTimeout(repLoad, 0); $$('#tabs button').forEach(x => x.classList.toggle('on', x === b)); ['week', 'live', 'reports', 'track', 'stats', 'rules', 'settings'].forEach(t => $('#t-' + t).classList.toggle('hide', t !== TAB)); renderAll(); });
+$$('#tabs button').forEach(b => b.onclick = () => { TAB = b.dataset.t; if (TAB === 'live') setTimeout(refreshLive, 0); if (TAB === 'reports') setTimeout(repLoad, 0); if (TAB === 'dfs') setTimeout(dfsLoad, 0); $$('#tabs button').forEach(x => x.classList.toggle('on', x === b)); ['week', 'live', 'dfs', 'reports', 'track', 'stats', 'rules', 'settings'].forEach(t => $('#t-' + t).classList.toggle('hide', t !== TAB)); renderAll(); });
 function recompute(keepOpen) { const open = keepOpen ? $$('#games tr.edit.open').map(t => t.dataset.edit) : []; buildBoard(); buildBets(); buildMine(); renderAll(); open.forEach(i => $(`#games tr[data-edit="${i}"]`)?.classList.add('open')); }
 function renderAll() {
   $('#sub').textContent = `Ratings through CFB week ${SNAP.cfb.week - 1} and NFL week ${SNAP.nfl.week - 1} · $${(+ST.budget).toFixed(0)} a day`;
-  if (TAB === 'week') renderWeek(); else if (TAB === 'live') renderLive(); else if (TAB === 'track') renderTracker(); else if (TAB === 'stats') renderStats(); else if (TAB === 'reports') renderReports();
+  if (TAB === 'week') renderWeek(); else if (TAB === 'live') renderLive(); else if (TAB === 'track') renderTracker(); else if (TAB === 'stats') renderStats(); else if (TAB === 'reports') renderReports(); else if (TAB === 'dfs') dfsRender();
 }
 async function refreshAll(force) {
   $('#refresh').disabled = true; $('#refresh').textContent = 'Refreshing…';
