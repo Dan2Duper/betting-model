@@ -13,9 +13,12 @@ def upcoming_week(G, season):
     g = G[(G.season == season) & G.pts.isna()]
     return int(g.week.min()) if len(g) else None
 
+_MODEL = {}
+
 def project(pool, season, week):
     """pool: DK players (name, pos, team, opp, salary...). Returns pool with proj/floor/ceil."""
-    S = list(range(2019, season + 1)); d.fetch(S, force_current=season)
+    S = list(range(2019, season + 1))
+    if not _MODEL: d.fetch(S, force_current=season)
     hist, _ = d.load(S)
     ids = hist[hist.position.isin(d.POS)].sort_values(['season', 'week']).groupby(['player_id']).tail(1)
     ids['key'] = ids.player_display_name.map(norm)
@@ -32,7 +35,8 @@ def project(pool, season, week):
     P = d.features(S, extra=ex)
     teams = pool[pool.pos.isin(['DST', 'K'])].drop_duplicates('team')[['team', 'opp']].rename(columns={'opp': 'opponent_team'}).assign(season=season, week=week, season_type='REG')
     T = d.team_rows(S, extra=teams)
-    M = m.train(P[~P.upcoming], T[~T.upcoming], S)
+    if 'M' not in _MODEL: _MODEL['M'] = m.train(P[~P.upcoming], T[~T.upcoming], S)   # train once, reuse for every slate
+    M = _MODEL['M']
     TU = T[T.upcoming & T.ew_dst.notna()]
     R, TT = m.predict(M, P[P.upcoming], TU) if len(TU) else (m.predict(M, P[P.upcoming]), TU)
     R = R.drop_duplicates('player_id')
@@ -131,6 +135,7 @@ def main():
         for g in sds: slates.append(dict(kind='showdown', dg=g['dg'], label=g.get('label', ''), players=dk_slate.players(g['dg'])))
     out = dict(built=dt.datetime.now(dt.timezone.utc).isoformat(), season=season, week=week, weights=opt.W, slates=[])
     for s in slates:
+      try:
         pool = pd.DataFrame(s['players'])
         df = project(pool, season, week)
         df = df[df.proj > 0].reset_index(drop=True)
@@ -143,11 +148,14 @@ def main():
             df = ownership.showdown(df)
             if 'K' not in set(df.pos): pass
             df_c, cash = opt.showdown(df, 'cash', n=A.cash, min_diff=1)
-            df_g, gpp = opt.showdown(df, 'gpp', n=A.gpp, min_diff=2, seed=7)
+            df_g, gpp = opt.showdown(df, 'gpp', n=min(A.gpp, 80), min_diff=2, seed=7)
             pc, pg = pack_showdown(df, cash, 'cash'), pack_showdown(df, gpp, 'gpp')
         game = sorted(set(df.team))
         out['slates'].append(dict(kind=s['kind'], dg=s.get('dg'), label=s.get('label') or ' vs '.join(game), players=players_json(df), cash=pc, gpp=pg))
         print(f"{s['kind']} {s.get('label','')}: {len(df)} players, {len(pc)} cash + {len(pg)} tournament lineups")
+      except Exception:
+        import traceback; traceback.print_exc(); print('skipped', s.get('label'))
+    if not out['slates']: sys.exit('no slates built')
     json.dump(out, open(A.out, 'w'), separators=(',', ':'))
     print('wrote', A.out)
 
