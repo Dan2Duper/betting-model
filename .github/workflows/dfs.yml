@@ -1,0 +1,35 @@
+# Builds the DFS lineups file for the Bet Tracker and saves it to the "data" branch (the page reads it from there).
+# Runs every morning, again Sunday before the early games, and on demand (Actions tab > DFS lineups > Run workflow).
+name: DFS lineups
+on:
+  schedule:
+    - cron: '17 14 * * *'     # 8:17 / 9:17 am Central every day (salaries, injuries, showdowns)
+    - cron: '43 15 * * 0'     # Sunday ~10:43 am Central, after inactives news firms up
+  workflow_dispatch:
+permissions:
+  contents: write
+concurrency: dfs
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    steps:
+      - uses: actions/checkout@v4
+        with: {ref: package}
+      - uses: actions/setup-python@v5
+        with: {python-version: '3.12'}
+      - run: pip install -q -r dfs/requirements.txt
+      - uses: actions/cache@v4
+        with: {path: bm_data, key: "nflverse-${{ github.run_id }}", restore-keys: nflverse-}
+      - name: Build lineups
+        env: {BM_DATA: '${{ github.workspace }}/bm_data'}
+        run: python3 dfs/build_nfl.py --out /tmp/dfs_nfl.json
+      - name: Save to the data branch
+        run: |
+          git config user.name "dfs-bot"; git config user.email "dfs-bot@users.noreply.github.com"
+          git fetch origin data || true
+          if git rev-parse --verify origin/data >/dev/null 2>&1; then git checkout -B data origin/data; else git checkout --orphan data; git rm -rf --quiet . || true; fi
+          cp /tmp/dfs_nfl.json dfs_nfl.json
+          git add dfs_nfl.json
+          git commit -m "DFS lineups $(date -u +%F' '%H:%M)" || echo "no change"
+          git push origin data
