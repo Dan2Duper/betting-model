@@ -109,13 +109,21 @@ def players_json(df):
 
 def main():
     ap = argparse.ArgumentParser(); ap.add_argument('--season', type=int); ap.add_argument('--week', type=int)
-    ap.add_argument('--out', default='dfs_nfl.json'); ap.add_argument('--pool'); ap.add_argument('--gpp', type=int, default=150); ap.add_argument('--cash', type=int, default=20)
+    ap.add_argument('--out', default='dfs_nfl.json'); ap.add_argument('--pool'); ap.add_argument('--salaries', help='folder of DraftKings draftables JSON saved by the phone'); ap.add_argument('--todo', help='dfs_todo.json'); ap.add_argument('--gpp', type=int, default=150); ap.add_argument('--cash', type=int, default=20)
     A = ap.parse_args()
     today = dt.date.today(); season = A.season or (today.year if today.month >= 8 else today.year - 1)
     d.fetch([season], force_current=season); G = d.games(); week = A.week or upcoming_week(G, season)
     slates = []
     if A.pool:      # offline test
         for s in json.load(open(A.pool)): slates.append(s)
+    elif A.salaries:   # salaries the phone fetched from DraftKings and the relay saved to the data branch
+        import dk_slate
+        todo = json.load(open(A.todo)) if A.todo and os.path.exists(A.todo) else dict(slates=[])
+        for s in todo['slates']:
+            f = os.path.join(A.salaries, f"{s['sport']}_{s['dg']}.json")
+            if s['sport'] != 'NFL' or not os.path.exists(f): continue
+            try: slates.append(dict(s, players=dk_slate.parse(json.load(open(f)))))
+            except Exception as e: print('could not read', f, e)
     else:
         import dk_slate
         main_g, sds = dk_slate.pick_slates(dk_slate.draft_groups('NFL'))

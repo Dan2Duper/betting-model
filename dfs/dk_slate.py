@@ -25,9 +25,15 @@ def pick_slates(groups):
     sd = [g for g in groups if g['game_type'] == 'Showdown Captain Mode' and (g.get('games') in (None, 1))]
     return main, sd
 
+def draftables_url(dg):
+    return f'https://api.draftkings.com/draftgroups/v1/draftgroups/{dg}/draftables'
+
 def players(dg):
-    """Player pool for a draft group. Showdown returns one row per player with flex and captain salaries."""
-    J = _get(f'https://api.draftkings.com/draftgroups/v1/draftgroups/{dg}/draftables')
+    """Player pool for a draft group, fetched directly (works from a home connection, not from cloud servers)."""
+    return parse(_get(draftables_url(dg)))
+
+def parse(J):
+    """DraftKings draftables JSON -> one row per player (showdown rows carry flex and captain salaries)."""
     rows = {}
     for p in J.get('draftables', []):
         if p.get('isDisabled'): continue
