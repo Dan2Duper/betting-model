@@ -1,0 +1,35 @@
+# Builds the Bet Tracker's DFS lineups whenever the relay saves new DraftKings salaries here (or on demand).
+name: DFS lineups
+on:
+  push:
+    branches: [data]
+    paths: ['salaries/**']
+  workflow_dispatch:
+permissions:
+  contents: write
+concurrency: {group: dfs-build, cancel-in-progress: true}
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    steps:
+      - uses: actions/checkout@v4
+        with: {ref: data, path: databr}
+      - uses: actions/checkout@v4
+        with: {ref: package, path: code}
+      - uses: actions/setup-python@v5
+        with: {python-version: '3.12'}
+      - run: pip install -q -r code/dfs/requirements.txt
+      - uses: actions/cache@v4
+        with: {path: bm_data, key: "nflverse-${{ github.run_id }}", restore-keys: nflverse-}
+      - name: Build lineups
+        env: {BM_DATA: '${{ github.workspace }}/bm_data'}
+        run: python3 code/dfs/build_nfl.py --salaries databr/salaries --todo databr/dfs_todo.json --out /tmp/dfs_nfl.json
+      - name: Save to the data branch
+        run: |
+          cd databr
+          git config user.name "dfs-bot"; git config user.email "dfs-bot@users.noreply.github.com"
+          git pull -q origin data
+          cp /tmp/dfs_nfl.json dfs_nfl.json && git add dfs_nfl.json
+          git commit -m "DFS lineups $(date -u +%F' '%H:%M)" || echo "no change"
+          git push origin data
