@@ -13,6 +13,7 @@ def draft_groups(sport='NFL'):
     for c in L.get('Contests', []):
         g = types.setdefault(c['dg'], dict(dg=c['dg'], game_type=c.get('gameType', ''), start=c.get('sd', ''), label=c.get('sdstring', ''), entries=0, prize=0, contests=0))
         g['entries'] += c.get('m', 0) or 0; g['prize'] += c.get('po', 0) or 0; g['contests'] += 1
+    print('lobby keys', list(L.keys()))
     for x in L.get('DraftGroups', []):
         g = types.get(x.get('DraftGroupId'))
         if g: g.update(games=x.get('GameCount'), tag=x.get('DraftGroupTag', ''), suffix=x.get('ContestStartTimeSuffix') or '', start_est=x.get('StartDateEst', ''))
