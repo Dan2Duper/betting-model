@@ -2,6 +2,15 @@
  "_note": "Written automatically by the relay (and by Claude); newest first; the Bet Tracker Reports tab reads this.",
  "reports": [
   {
+   "id": "2026-11-20T15:00:47Z-CFB",
+   "time": "2026-11-20T15:00:47Z",
+   "league": "CFB",
+   "kind": "preview",
+   "title": "Good Evening, Rich: Two Unders, No Wickets, and a Bloody Great Stake on Wyoming",
+   "text": "**MY BETS:**\n- Nothing today, old boy. Your own money sits in the pavilion with its feet up. For once the only fool at the crease is a computer.\n\n**AI-LOX:**\n- **Iowa State @ UCF, UNDER 48.5** ($22.00 to win $19.13, 6:00 PM EST). Two sides will hurl a leather-ish oblong about for an hour while I wonder why nobody has bowled. It needs the pair of them to combine for 48 or fewer. A modest stake, which is the most sensible thing in this entire report.\n- **New Mexico @ Wyoming, UNDER 37.5** ($108.00 to win $98.18, 9:00 PM EST). Bloody hell. $108.00 on a total of 37.5, in a place I assume is mostly wind. It needs a dreary, constipated slog of 37 points or fewer. If either side scores like it's a T20 slog-fest, this is a golden duck and the model gets sacked.\n\nThat's $130.00 staked across both, none of it settled, and a net of +$0.00. Everyone is currently undefeated, which is the last time that will be true.\n\n**THE MODEL:**\n- 0 of 6 modeled games are final. It has picked 0 winners, 0-0 against the spread, 0-0 on totals. The average miss is 0.0 points, a perfect record held by a machine that hasn't done a damn thing yet.\n\n**STILL TO COME:**\n- **Northwestern -2.5** at Minnesota, $23.00 to win $20.54, Saturday 12:00 PM EST.\n- **Rutgers +26.5** at Penn State, $23.00 to win $20.54, Saturday 3:30 PM EST. Twenty-six and a half! That's a declaration, not a spread.\n- **Texas A&M +7.5** at Oklahoma, $11.00 to win $9.02, Saturday 3:45 PM EST.\n- **Arizona State +2.5** vs Oklahoma State, $35.00 to win $32.41, Saturday 10:15 PM EST.\n- **MIA @ BUF UNDER 44.5**, $60.00 to win $57.14, Sunday 1:00 PM EST.\n- **BAL @ CAR UNDER 43.5**, $50.00 to win $45.45, Sunday 1:00 PM EST.\n- **ARI @ KC UNDER 40.5**, $20.00 to win $19.05, Sunday 1:00 PM EST.\n\nPlay is about to begin. Do try to look dignified when it goes wrong.",
+   "style": "a stuffy British cricket commentator who does not understand American football"
+  },
+  {
    "id": "2026-11-20T02:12:27Z-CFB+NFL",
    "time": "2026-11-20T02:12:27Z",
    "league": "CFB+NFL",
@@ -180,6 +189,15 @@
    "fpBets": "",
    "kinds": [
     "update"
+   ]
+  },
+  "2026-11-20": {
+   "n": 1,
+   "last": "2026-11-20T15:00:47Z",
+   "fp": "|0",
+   "fpBets": "",
+   "kinds": [
+    "preview"
    ]
   }
  }
