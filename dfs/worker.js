@@ -14,7 +14,7 @@ Translate that read into adjustments to the player projections you are given. Th
 - Correlation: a QB's big game comes with his pass catchers'. In showdown, the captain should match the script.
 - Cash games want safe, high-floor players; tournaments want upside and lower-owned players.
 Only adjust what the read supports. Keep boosts between -60 and +60 percent. Use exact player names and team abbreviations from the list.
-Reply with JSON only, no other text:
+Answer only by calling the lineup_adjustments tool, in this shape:
 {"summary": "<two plain sentences on how you applied the read>", "boost": {"<player name>": <percent>}, "team_boost": {"<TEAM>": <percent>}, "lock": ["<player who must be in>"], "ban": ["<player to leave out>"], "captain": "<showdown captain name or null>"}`;
 
 function cors(origin) {
@@ -59,15 +59,25 @@ export default {
     const players = (body.players || []).slice().sort((a, b) => (b.proj || 0) - (a.proj || 0)).slice(0, 90);
     const table = players.map(p => `${p.n} | ${p.pos} | ${p.t} vs ${p.o} | $${p.sal} | proj ${p.proj} | ceil ${p.ceil} | own ~${Math.round(p.own || 0)}% | team total ${p.imp ?? ''}${p.st && p.st !== 'None' ? ' | ' + p.st : ''}`).join('\n');
     const user = `Contest: ${body.kind === 'showdown' ? 'Showdown (single game, captain 1.5x)' : 'Classic main slate'}, ${body.mode === 'cash' ? 'cash game' : 'tournament'}.\nSlate: ${body.label}\n\nPlayers (name | pos | game | salary | projection | ceiling | est. ownership | Vegas team total):\n${table}\n\nMy read: ${thoughts}`;
+    const TOOL = {name: 'lineup_adjustments', description: 'Projection adjustments that apply the user\'s read on the game.',
+      input_schema: {type: 'object', required: ['summary'], properties: {
+        summary: {type: 'string', description: 'Two plain sentences on how the read was applied.'},
+        boost: {type: 'object', description: 'Player name -> percent change to projection (-60..60).', additionalProperties: {type: 'number'}},
+        team_boost: {type: 'object', description: 'Team abbreviation -> percent change for all its players (-60..60).', additionalProperties: {type: 'number'}},
+        lock: {type: 'array', items: {type: 'string'}, description: 'Players who must be in the lineup.'},
+        ban: {type: 'array', items: {type: 'string'}, description: 'Players to leave out.'},
+        captain: {type: ['string', 'null'], description: 'Showdown captain, or null.'}}}};
     const r = await fetch('https://api.anthropic.com/v1/messages', {
       method: 'POST',
       headers: {'x-api-key': env.ANTHROPIC_API_KEY, 'anthropic-version': '2023-06-01', 'content-type': 'application/json'},
-      body: JSON.stringify({model: env.MODEL || 'claude-sonnet-5-5', max_tokens: 900, system: SYSTEM, messages: [{role: 'user', content: user}]})
+      body: JSON.stringify({model: env.MODEL || 'claude-sonnet-5-5', max_tokens: 2000, system: SYSTEM, tools: [TOOL], tool_choice: {type: 'tool', name: 'lineup_adjustments'},
+                            messages: [{role: 'user', content: user}]})
     });
     const j = await r.json();
     if (!r.ok) return reply({error: (j.error && j.error.message) || 'AI error'}, 502, origin);
-    const text = (j.content || []).map(c => c.text || '').join('');
-    let out; try { out = JSON.parse(text.slice(text.indexOf('{'), text.lastIndexOf('}') + 1)); } catch (e) { return reply({error: 'AI reply was not readable'}, 502, origin); }
+    const use = (j.content || []).find(c => c.type === 'tool_use');
+    if (!use) return reply({error: 'AI reply was not readable (' + (j.stop_reason || '?') + ')'}, 502, origin);
+    const out = use.input || {};
     const clamp = o => Object.fromEntries(Object.entries(o || {}).map(([k, v]) => [k, Math.max(-60, Math.min(60, +v || 0))]));
     return reply({summary: out.summary || '', boost: clamp(out.boost), team_boost: clamp(out.team_boost), lock: out.lock || [], ban: out.ban || [], captain: out.captain || null}, 200, origin);
   }
