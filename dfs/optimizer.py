@@ -73,8 +73,10 @@ def showdown(df, mode='gpp', n=1, seed=0, lock=(), ban=(), min_diff=None):
         for i in I: p += c[i] + f[i] <= 1
         p += pulp.lpSum(df.cpt_salary[i] * c[i] + df.salary[i] * f[i] for i in I) <= 50000
         for t in set(df.team): p += pulp.lpSum(c[i] + f[i] for i in I if df.team[i] == t) >= 1
+        top = df.proj.max()
         for i in I:
             if df.pos[i] in ('K', 'DST'): p += c[i] == 0               # kicker/defense captains almost never win
+            if df.proj[i] < 0.45 * top: p += c[i] == 0                 # captains come from the real contributors
         if mode == 'gpp':
             for i in I:
                 if df.pos[i] == 'QB':                                  # QB captain needs one of his pass catchers
