@@ -315,7 +315,7 @@ a{color:var(--series)}
   <section id="t-reports" class="hide">
     <div class="card">
       <div class="cardhead"><div><h2>Game reports</h2><div class="small" id="rep-when"></div></div>
-        <div style="display:flex;gap:8px;flex-wrap:wrap;align-items:center"><select id="rep-pick" aria-label="Pick a report"></select><button class="btn small" id="rep-refresh">Refresh</button></div></div>
+        <div style="display:flex;gap:8px;flex-wrap:wrap;align-items:center"><select id="rep-pick" aria-label="Pick a report"></select><button class="btn small" id="rep-refresh">Refresh</button><button class="btn small" id="rep-now" title="Have the AI write a report right now">🔥 Roast me now</button></div></div>
       <div class="rep" id="rep-body"><div class="hint">Loading reports…</div></div>
     </div>
   </section>
@@ -1734,7 +1734,7 @@ async function refreshLive() {
 }
 function scoreLine(g) { if (!g || !(g.state === 'in' || g.state === 'post' || g.done)) return '';
   return `<div class="sline ${g.state === 'in' ? 'in' : ''}">${g.as} – ${g.hs} <span class="small">${esc(g.detail || 'Final')}</span></div>`; }
-const PAGE_VER = "20261119194421";   // stamped by tracker.py; a newer published page reloads itself
+const PAGE_VER = "20261119194718";   // stamped by tracker.py; a newer published page reloads itself
 // ---------------- AUTO REFRESH (while the page is open) ----------------
 const busy = () => { const a = document.activeElement; return a && ['INPUT', 'SELECT', 'TEXTAREA'].includes(a.tagName) || $('#m-form').classList.contains('open'); };
 let tickN = 0;
@@ -1877,6 +1877,15 @@ function renderReports() {
 }
 $('#rep-pick').onchange = e => { repSel = e.target.value; renderReports(); };
 $('#rep-refresh').onclick = () => { $('#rep-refresh').textContent = 'Refreshing…'; repLoad().finally(() => { $('#rep-refresh').textContent = 'Refresh'; }); };
+$('#rep-now').onclick = async () => { const btn = $('#rep-now');
+  let code = ''; try { code = localStorage.getItem('dfsAiCode') || ''; } catch (e) {}
+  if (!code) { btn.textContent = 'Add your DFS AI code in Settings first'; setTimeout(() => { btn.textContent = '🔥 Roast me now'; }, 6000); return; }
+  btn.disabled = true; btn.textContent = 'Writing…';
+  try { const r = await fetch(DFS_AI_URL + '/report?force=now', {method: 'POST', headers: {'X-Code': code, 'Content-Type': 'application/json'}, body: '{}'});
+    const j = await r.json(); if (!r.ok || j.error) throw new Error(j.error || r.status);
+    if (j.skip) btn.textContent = 'Nothing to report'; else { await repLoad(); repSel = REPS && REPS.length ? REPS[0].id : null; renderReports(); btn.textContent = '🔥 Roast me now'; } }
+  catch (e) { btn.textContent = 'Failed: ' + String(e.message || e).slice(0, 60); }
+  btn.disabled = false; setTimeout(() => { btn.textContent = '🔥 Roast me now'; }, 6000); };
 document.addEventListener('visibilitychange', () => { if (document.visibilityState === 'visible') repLoad(); });
 
 
