@@ -1,6 +1,7 @@
 // Cloudflare Worker: the AI relay for the Bet Tracker's DFS tab.
 // The page sends the slate and Rich's read on the game; Claude turns the read into projection adjustments
 // (boosts, fades, must-haves, a captain); the page then rebuilds the lineup from its pool so it always stays legal.
+// It reads bet-slip screenshots for "My bets" (/betslip).
 // It also receives the DraftKings salaries Rich's phone (Tasker) fetches each morning and saves them to the repo's
 // "data" branch, which starts the lineup build on GitHub.
 // Secrets (Cloudflare dashboard > Worker > Settings > Variables and Secrets): ANTHROPIC_API_KEY, ACCESS_CODE, GH_TOKEN
@@ -45,6 +46,35 @@ async function saveSalaries(req, env, url, origin) {
   return reply({saved: path, players: J.draftables.length}, 200, origin);
 }
 
+const SLIP = `You read sportsbook bet slips (mostly DraftKings) from phone screenshots. List every bet you can see.
+For each bet give: league (NFL, College Football, MLB, NBA ...), type (Single, Parlay, Teaser, Same Game Parlay),
+odds (American, e.g. -110 or +450, for the whole bet), stake (dollars wagered), placed_date (YYYY-MM-DD if shown, else blank),
+and legs. Each leg: team (the team the bet is on, as written; for a total, either team in the game), opponent (the other team if shown),
+market: spread | total | moneyline | prop, pick (for a total: Over or Under; otherwise the team), line (the number for that leg as shown:
+spread from the picked team's side like -3.5 or +7; total like 47.5; blank for moneyline), game_date (YYYY-MM-DD if the slip shows the game day),
+description (the leg as written). Use "prop" for player props and anything else that isn't a spread, total or moneyline.
+Never guess a number you can't read. Answer only by calling the bet_slip tool.`;
+const SLIP_TOOL = {name: 'bet_slip', description: 'The bets read from the screenshot.', input_schema: {type: 'object', required: ['bets'], properties: {bets: {type: 'array', items: {type: 'object', properties: {
+  league: {type: 'string'}, type: {type: 'string'}, odds: {type: 'number'}, stake: {type: 'number'}, placed_date: {type: 'string'},
+  legs: {type: 'array', items: {type: 'object', properties: {team: {type: 'string'}, opponent: {type: 'string'}, market: {type: 'string', enum: ['spread', 'total', 'moneyline', 'prop']},
+    pick: {type: 'string'}, line: {type: ['number', 'string']}, game_date: {type: 'string'}, description: {type: 'string'}}}}}}}}}};
+async function readSlip(req, env, origin) {
+  let body; try { body = await req.json(); } catch (e) { return reply({error: 'bad request'}, 400, origin); }
+  if (!body.image || body.image.length > 4e6) return reply({error: 'no image, or it is too large'}, 400, origin);
+  const r = await fetch('https://api.anthropic.com/v1/messages', {method: 'POST',
+    headers: {'x-api-key': env.ANTHROPIC_API_KEY, 'anthropic-version': '2023-06-01', 'content-type': 'application/json'},
+    body: JSON.stringify({model: env.MODEL || 'claude-sonnet-5-5', max_tokens: 2000, system: SLIP, tools: [SLIP_TOOL], tool_choice: {type: 'auto'},
+      messages: [{role: 'user', content: [{type: 'image', source: {type: 'base64', media_type: 'image/jpeg', data: body.image}},
+                                           {type: 'text', text: `Today is ${body.today || ''}. Read every bet on this slip.`}]}]})});
+  const j = await r.json();
+  if (!r.ok) return reply({error: (j.error && j.error.message) || 'AI error'}, 502, origin);
+  const use = (j.content || []).find(c => c.type === 'tool_use');
+  let out = use && use.input;
+  if (!out) { const text = (j.content || []).filter(c => c.type === 'text').map(c => c.text).join('\n');
+    try { out = JSON.parse(text.slice(text.indexOf('{'), text.lastIndexOf('}') + 1)); } catch (e) { return reply({error: 'could not read the slip: ' + text.slice(0, 160)}, 502, origin); } }
+  return reply({bets: out.bets || []}, 200, origin);
+}
+
 export default {
   async fetch(req, env) {
     const origin = req.headers.get('Origin') || '';
@@ -54,6 +84,7 @@ export default {
     if (!env.ACCESS_CODE || req.headers.get('X-Code') !== env.ACCESS_CODE) return reply({error: 'wrong or missing DFS AI code (Settings tab)'}, 401, origin);
     const url = new URL(req.url);
     if (url.pathname === '/salaries') return saveSalaries(req, env, url, origin);
+    if (url.pathname === '/betslip') return readSlip(req, env, origin);
     let body; try { body = await req.json(); } catch (e) { return reply({error: 'bad request'}, 400, origin); }
     const thoughts = String(body.thoughts || '').slice(0, 1500);
     const players = (body.players || []).slice().sort((a, b) => (b.proj || 0) - (a.proj || 0)).slice(0, 90);
