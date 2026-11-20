@@ -240,7 +240,8 @@ a{color:var(--series)}
       <div id="betboard"></div>
     </div>
     <div class="card">
-      <div class="cardhead"><div><h2>My bets</h2></div><button class="btn primary" id="m-open">+ Add a bet</button></div>
+      <div class="cardhead"><div><h2>My bets</h2></div><div style="display:flex;gap:8px;flex-wrap:wrap"><label class="btn primary" id="s-shot-btn">📷 Add from screenshot<input type="file" id="s-shot" accept="image/*" class="hide"></label><button class="btn" id="m-open">+ Add a bet</button></div></div>
+      <div id="shot-box" class="hide" style="margin:8px 0 12px"></div>
       <div class="addform" id="m-form">
         <div class="editgrid">
           <label class="f">League<select id="m-lg"><option value="CFB">College</option><option value="NFL">NFL</option></select></label>
@@ -1476,12 +1477,12 @@ function syncNeedsPush() { return (ST.updated || 0) > syncRemoteUpdated; }
 let repSha = null, repLast = '', repBusy = false;
 function reportBuild() {
   const I = liveIndex(), cut = ctDate(new Date(Date.now() - 3 * 864e5).toISOString());
-  const gv = g => g ? {state: g.state || (g.done ? 'post' : 'pre'), away: g.away, home: g.home, as: g.as, hs: g.hs, detail: g.detail || '', date: ctDate(g.kick)} : null;
+  const gv = g => g ? {id: g.id, state: g.state || (g.done ? 'post' : 'pre'), away: g.away, home: g.home, as: g.as, hs: g.hs, detail: g.detail || '', date: ctDate(g.kick)} : null;
   const live = g => g && !(g.state === 'pre' || (!g.state && !g.done));
   const one = (b, who) => {
     const o = {who, id: b.id, league: b.league, date: b.date, kick: b.kick, bet: b.bet || betText(b), game: b.game || `${b.away} @ ${b.home}`, market: b.market, side: b.side, line: b.line,
       odds: +b.odds || -110, stake: +(+b.stake || 0).toFixed(2), to_win: +((+b.stake || 0) * payout(+b.odds || -110)).toFixed(2), result: b.result || '', rule: b.rule || ''};
-    if (b.legs) o.legs = b.legs.map(l => { const g = I[l.espn || l.game_id]; return {bet: legKey(l), score: gv(g), margin_vs_line: live(g) ? standing(l, g).m : null}; });
+    if (b.legs) o.legs = b.legs.map(l => { const g = I[l.espn || l.game_id]; return {bet: legKey(l), market: l.market, side: l.side, line: l.line, away: l.away, home: l.home, score: gv(g), margin_vs_line: live(g) ? standing(l, g).m : null}; });
     else { const g = b.src === 'mine' ? liveGameFor(b, I) : I[espnOf(b.league, b.game_id)]; o.score = gv(g); o.margin_vs_line = live(g) ? standing(b, g).m : null; }
     return o; };
   const mine = MINE.filter(b => b.date >= cut).map(b => Object.assign(one(b, 'mine'), {ai_lox: !!loxFor(b)}));
@@ -1524,7 +1525,7 @@ function buildMine() {
   (DATA.mine || []).forEach(b => { if (!ST.mine[b.id] && !ST.mineDel[b.id]) ST.mine[b.id] = b; });
   Object.values(ST.mine).forEach(b => { if (typeof b.legs === 'string') { try { b.legs = b.legs ? JSON.parse(b.legs) : []; } catch (e) { b.legs = []; } } });   // the log stores legs as JSON text
   MINE = Object.values(ST.mine).filter(b => !ST.mineDel[b.id]).map(b => {
-    if (!b.result && b.market === 'parlay') { const R = (b.legs || []).map(l => { const f = finalFor(l.league, l.game_id, b.date, l.away, l.home); return f ? grade(l, f) : ''; });
+    if (!b.result && (b.market === 'parlay' || (b.market === 'teaser' && b.src === 'mine'))) { const R = (b.legs || []).map(l => { const f = finalFor(l.league || b.league, l.game_id, b.date, l.away, l.home); return f ? grade(l, f) : ''; });
       if (R.includes('L')) b.result = 'L'; else if (R.length && R.every(Boolean)) b.result = R.every(r => r === 'P') ? 'P' : 'W'; if (b.result) ST.mine[b.id].result = b.result; }
     else if (!b.result) { const f = finalFor(b.league, b.game_id, b.date, b.away, b.home); if (f) { b.result = grade(b, f); ST.mine[b.id].result = b.result; } }
     const o = Object.assign({}, b); o.odds = +o.odds || -110; o.stake = +o.stake || 0; o.to_win = o.stake * payout(o.odds); o.bet = betText(o); return o; });
@@ -1536,7 +1537,7 @@ function renderMine() {
   const cut = ctDate(new Date(Date.now() - 2 * 864e5).toISOString()), list = MINE.filter(b => b.date >= cut).sort((a, b) => a.kick < b.kick ? -1 : 1);
   $('#mineboard').innerHTML = !list.length ? '<div class="empty">None this week.</div>' :
     `<table class="cards"><thead><tr><th>Kick</th><th>Bet</th><th class="num">Odds</th><th class="num">Stake $</th><th class="num">To win</th><th>Result</th><th></th></tr></thead><tbody>` +
-    list.map(b => `<tr><td data-label="Kick">${ctTime(b.kick)}</td><td class="full first" data-label="">${loxFor(b) ? LOX : ''}<b>${esc(b.bet)}</b><div class="small">${b.market === 'parlay' ? (b.legs || []).map(legText).map(esc).join(' · ') : esc(b.away) + ' @ ' + esc(b.home)}</div></td>
+    list.map(b => `<tr><td data-label="Kick">${ctTime(b.kick)}</td><td class="full first" data-label="">${loxFor(b) ? LOX : ''}<b>${esc(b.bet)}</b><div class="small">${b.market === 'parlay' || b.market === 'teaser' ? (b.legs || []).map(legText).map(esc).join(' · ') : esc(b.away) + ' @ ' + esc(b.home)}</div></td>
       <td class="num" data-label="Odds">${b.odds > 0 ? '+' : ''}${b.odds}</td><td class="num" data-label="Stake $">${fmt$(b.stake)}</td><td class="num" data-label="To win">${fmt$(b.to_win)}</td>
       <td data-label="Result">${b.result ? `<span class="pill ${b.result}">${b.result}</span>` : started(b.kick) ? '<span class="pill O">live</span>' : ''}</td>
       <td class="keep" data-label=""><button class="btn small" data-delmine="${esc(b.id)}">Delete</button></td></tr>`).join('') + '</tbody></table>';
@@ -1585,6 +1586,90 @@ $('#m-save').onclick = () => {
   if (g.done) b.result = grade(b, {hs: g.hs, as: g.as});
   ST.mine[b.id] = b; usave(); recompute(); $('#m-form').classList.remove('open'); $('#m-stake').value = '';
 };
+
+
+// ---------------- MY BETS FROM A SCREENSHOT ----------------
+// The phone screenshot goes to the relay; Claude reads the bet slip; this page matches each leg to ESPN's game list,
+// shows what it read, and saves it as one of "My bets" after you confirm.
+function shotImage(file) { return new Promise((res, rej) => { const img = new Image(), url = URL.createObjectURL(file);
+  img.onload = () => { const k = Math.min(1, 1100 / Math.max(img.width, img.height)), c = document.createElement('canvas'); c.width = Math.round(img.width * k); c.height = Math.round(img.height * k);
+    c.getContext('2d').drawImage(img, 0, 0, c.width, c.height); URL.revokeObjectURL(url); res(c.toDataURL('image/jpeg', 0.85).split(',')[1]); };
+  img.onerror = rej; img.src = url; }); }
+const shotNorm = s => String(s || '').toLowerCase().replace(/[^a-z0-9 ]/g, ' ').replace(/\s+/g, ' ').trim();
+function shotTeamSide(g, team) {   // which side of ESPN game g is this slip team on?
+  const t = shotNorm(team); if (!t) return null;
+  const hit = (loc, ab) => { const L = shotNorm(loc), A = shotNorm(ab); return (L && (t.includes(L) || L.includes(t))) || (A && (t.split(' ').includes(A))); };
+  if (hit(g.home, g.habbr)) return 'home'; if (hit(g.away, g.aabbr)) return 'away'; return null;
+}
+async function shotFindGame(lg, leg, around) {
+  const days = []; const base = new Date((leg.game_date || around) + 'T12:00:00');
+  for (const k of (leg.game_date ? [0, -1, 1] : [0, 1, 2, 3, 4, 5, 6, -1])) { const d = new Date(base); d.setDate(d.getDate() + k); days.push(d.toISOString().slice(0, 10)); }
+  for (const d of days) {
+    if (!ST.slate[lg + ':' + d]) { try { await espnDay(lg, d); } catch (e) { continue; } }
+    for (const g of Object.values(ST.slate[lg + ':' + d] || {})) {
+      const side = shotTeamSide(g, leg.team) || (leg.opponent && ({home: 'away', away: 'home'})[shotTeamSide(g, leg.opponent)]);
+      if (side || (leg.market === 'total' && (shotTeamSide(g, leg.team) || shotTeamSide(g, leg.opponent)))) return {g, side};
+    }
+  }
+  return null;
+}
+function shotLeg(lg, leg, g, side) {   // one leg in this page's format (spread lines stored from the home team's side)
+  const m = leg.market === 'moneyline' ? 'ml' : leg.market;
+  if (m === 'total') return {league: lg, game_id: g.id, espn: g.id, kick: g.kick, away: lg === 'NFL' ? g.aabbr : g.away, home: lg === 'NFL' ? g.habbr : g.home, market: 'total', side: String(leg.pick || '').toLowerCase().startsWith('u') ? 'under' : 'over', line: +leg.line};
+  return {league: lg, game_id: g.id, espn: g.id, kick: g.kick, away: lg === 'NFL' ? g.aabbr : g.away, home: lg === 'NFL' ? g.habbr : g.home, market: m, side,
+          line: m === 'ml' ? '' : (side === 'away' ? -(+leg.line) : +leg.line)};
+}
+let SHOT = null;
+async function shotRead(file) {
+  const box = $('#shot-box'); box.classList.remove('hide'); box.innerHTML = '<div class="note">Reading your bet slip…</div>';
+  let code = ''; try { code = localStorage.getItem('dfsAiCode') || ''; } catch (e) {}
+  if (!code) { box.innerHTML = '<div class="note">Save your relay password first: Settings tab, "DFS AI code".</div>'; return; }
+  try {
+    const image = await shotImage(file);
+    const r = await fetch(DFS_AI_URL + '/betslip', {method: 'POST', headers: {'Content-Type': 'application/json', 'X-Code': code}, body: JSON.stringify({image, today: today()})});
+    const j = await r.json(); if (!r.ok) throw new Error(j.error || r.status);
+    const out = [];
+    for (const b of j.bets || []) {
+      const lg = /college|ncaa|cfb/i.test(b.league || '') ? 'CFB' : /nfl/i.test(b.league || '') ? 'NFL' : (b.league || '').toUpperCase();
+      const legs = [], miss = [];
+      if (lg !== 'NFL' && lg !== 'CFB') { out.push({b, err: `${b.league || 'This sport'} isn't tracked yet (NFL and college football only for now).`}); continue; }
+      for (const leg of b.legs || []) {
+        if (!/^(spread|total|moneyline|ml)$/.test(leg.market)) { miss.push(`${leg.description || leg.team} (player props can't be graded yet)`); continue; }
+        const f = await shotFindGame(lg, leg, b.placed_date || today());
+        if (!f || (!f.side && leg.market !== 'total')) { miss.push(`${leg.team} — couldn't find the game`); continue; }
+        legs.push(shotLeg(lg, leg, f.g, f.side));
+      }
+      out.push({b, lg, legs, miss});
+    }
+    SHOT = out; shotShow();
+  } catch (e) { box.innerHTML = `<div class="note">Couldn't read that screenshot: ${esc(e.message)}. You can still use + Add a bet.</div>`; }
+}
+function shotBet(x) {   // build a "My bets" entry from a read slip
+  const {b, lg, legs} = x, first = legs[0], kick = legs.map(l => l.kick).sort()[0];
+  const type = legs.length > 1 ? (/teaser/i.test(b.type || '') ? 'teaser' : 'parlay') : first.market;
+  const base = {id: `mine|${lg}|${legs.map(l => l.game_id).join('+')}|${type}|${Date.now()}`, src: 'mine', rule: 'mine', date: ctDate(kick), kick, league: lg, week: '',
+    odds: +b.odds, stake: +b.stake, result: '', kick_hour: ctHour(kick), from: 'screenshot'};
+  if (legs.length > 1) return Object.assign(base, {game_id: legs.map(l => l.game_id).join('+'), game: `${legs.length}-leg ${type}`, away: '', home: '', market: type, side: '', line: '', legs});
+  return Object.assign(base, {game_id: first.game_id, game: `${first.away} @ ${first.home}`, away: first.away, home: first.home, market: first.market, side: first.side, line: first.line});
+}
+function shotShow() {
+  const box = $('#shot-box');
+  box.innerHTML = SHOT.map((x, i) => {
+    if (x.err) return `<div class="note">${esc(x.err)}</div>`;
+    const ok = x.legs.length && !x.miss.length && x.b.stake > 0 && Math.abs(+x.b.odds) >= 100;
+    const bt = ok ? shotBet(x) : null; if (bt) bt.bet = '';
+    const desc = x.legs.map(l => legText(l, {})).join(' · ');
+    return `<div class="card" style="margin:6px 0;padding:10px"><b>${esc(x.b.type || 'Bet')}</b> · ${esc(x.lg)} · odds ${+x.b.odds > 0 ? '+' : ''}${esc(x.b.odds)} · stake ${fmt$(+x.b.stake || 0)}
+      <div class="small" style="margin:4px 0">${esc(desc) || 'No gradeable legs found.'}</div>
+      ${x.miss.length ? `<div class="small" style="color:#c0392b">${x.miss.map(esc).join('<br>')}</div>` : ''}
+      ${ok ? `<button class="btn primary small" data-shotsave="${i}">Save this bet</button>` : '<div class="small">Can\'t save this one automatically — use + Add a bet.</div>'}</div>`;
+  }).join('') + '<button class="btn small" id="shot-close">Close</button>';
+  $$('[data-shotsave]').forEach(el => el.onclick = () => { const x = SHOT[+el.dataset.shotsave], b = shotBet(x);
+    if (b.legs) b.legs.forEach(l => { if (!l.kick) delete l.kick; });
+    ST.mine[b.id] = b; usave(); recompute(); el.outerHTML = '<span class="small"><b>Saved.</b></span>'; });
+  $('#shot-close').onclick = () => { box.classList.add('hide'); box.innerHTML = ''; SHOT = null; };
+}
+$('#s-shot').onchange = e => { const f = e.target.files[0]; e.target.value = ''; if (f) shotRead(f); };
 
 // ---------------- LIVE BETS ----------------
 function liveIndex() { const I = {}; Object.values(ST.slate).forEach(day => Object.values(day).forEach(g => { const lg = g.aabbr && g.aabbr.length <= 3 && SNAP.nfl.games.some(x => x.espn === g.id) ? 'NFL' : null; I[g.id] = g; })); return I; }
@@ -1649,7 +1734,7 @@ async function refreshLive() {
 }
 function scoreLine(g) { if (!g || !(g.state === 'in' || g.state === 'post' || g.done)) return '';
   return `<div class="sline ${g.state === 'in' ? 'in' : ''}">${g.as} – ${g.hs} <span class="small">${esc(g.detail || 'Final')}</span></div>`; }
-const PAGE_VER = "20261119174519";   // stamped by tracker.py; a newer published page reloads itself
+const PAGE_VER = "20261119194421";   // stamped by tracker.py; a newer published page reloads itself
 // ---------------- AUTO REFRESH (while the page is open) ----------------
 const busy = () => { const a = document.activeElement; return a && ['INPUT', 'SELECT', 'TEXTAREA'].includes(a.tagName) || $('#m-form').classList.contains('open'); };
 let tickN = 0;
