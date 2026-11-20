@@ -62,6 +62,14 @@ def project(pool, season, week):
         g = g[~g.out].sort_values(['recent_att', 'salary'], ascending=False)
         for i in g.index[1:]:
             out.loc[i, ['proj', 'floor', 'ceil']] = [0.1 * out.proj[i], 0, 0.6 * out.proj[i]]; out.loc[i, 'backup'] = True
+    # lean on DraftKings' prices a little: salary carries news the stats don't (role changes, injuries, demotions).
+    # 75% model + 25% the salary's going rate; a near-minimum-priced player can't project above 2x his price's rate.
+    rate = (out.proj / out.salary).groupby(out.pos).transform('median')
+    implied = out.salary * rate
+    hist = ~out.no_history
+    out.loc[hist, 'proj'] = 0.75 * out.proj[hist] + 0.25 * implied[hist]
+    near_min = out.salary <= out.groupby('pos').salary.transform('min') * 1.25
+    out['proj'] = out.proj.where(~near_min, out.proj.clip(upper=2 * implied))
     # injury status from DraftKings
     out.loc[out.status.isin(['O', 'OUT', 'IR', 'D']), ['proj', 'floor', 'ceil']] = 0
     q = out.status.isin(['Q'])
