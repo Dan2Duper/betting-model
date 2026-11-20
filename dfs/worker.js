@@ -265,17 +265,17 @@ async function writeReport(env, F, kind, recent) {
 async function runReports(env, now, opts = {}) {
   const F = await buildFacts(env, now);
   const day = F.day, mineDay = F.items.filter(b => b.date === day);
-  if (!mineDay.length && F.games.length < 4) return {skip: 'nothing worth a report today'};
+  if (!mineDay.length && F.games.length < (opts.force ? 1 : 4)) return {skip: 'nothing worth a report today'};
   const settled = mineDay.filter(b => ['W', 'L', 'P'].includes(b.status)), live = mineDay.filter(b => ['winning', 'losing', 'even', 'live'].includes(b.status) || (b.score && b.score.state === 'in'));
   const allBetsDone = mineDay.every(b => ['W', 'L', 'P'].includes(b.status)), allGamesDone = F.games.every(g => g.state === 'post');
   const fp = settled.map(b => b.id + b.status).sort().join(',') + '|' + F.games.filter(g => g.state === 'post').length;
   const {json: RJ, sha} = await ghGet(env, 'reports.json');
   const RP = RJ || {}; RP.auto = RP.auto || {}; const A = RP.auto[day] || {n: 0};
   const lastT = A.last ? Date.parse(A.last) : 0, hrs = (now - lastT) / 36e5;
-  let kind = opts.force || null;
+  const anyStarted = mineDay.some(b => b.score && b.score.state !== 'pre') || F.games.some(g => g.state !== 'pre');
+  let kind = opts.force === 'now' ? (!anyStarted ? 'preview' : allGamesDone && allBetsDone ? 'final' : 'update') : (opts.force || null);
   if (!kind) {
     if (A.n >= 7) return {skip: 'daily cap'};
-    const anyStarted = mineDay.some(b => b.score && b.score.state !== 'pre') || F.games.some(g => g.state !== 'pre');
     if (!A.n && !anyStarted && mineDay.length && ctHour(now) >= 9) kind = 'preview';
     else if (fp !== A.fp && allGamesDone && allBetsDone && anyStarted) kind = 'final';
     else if (fp !== A.fp && settled.length && !live.length && A.fpBets !== settled.map(b => b.id + b.status).sort().join(',')) kind = 'update';
