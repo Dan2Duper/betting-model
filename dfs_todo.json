@@ -1,5 +1,5 @@
 {
- "built": "2026-11-19T23:25:30.716007+00:00",
+ "built": "2026-11-20T21:32:40.907135+00:00",
  "slates": [
   {
    "sport": "NFL",
@@ -7,13 +7,6 @@
    "dg": 156561,
    "label": "Main slate Sun 1:00PM",
    "url": "https://api.draftkings.com/draftgroups/v1/draftgroups/156561/draftables"
-  },
-  {
-   "sport": "NFL",
-   "kind": "showdown",
-   "dg": 156781,
-   "label": "IND @ HOU Thu 8:15PM",
-   "url": "https://api.draftkings.com/draftgroups/v1/draftgroups/156781/draftables"
   },
   {
    "sport": "NFL",
@@ -53,16 +46,16 @@
   {
    "sport": "NFL",
    "kind": "showdown",
-   "dg": 156782,
-   "label": "ARI @ KC Sun 1:00PM",
-   "url": "https://api.draftkings.com/draftgroups/v1/draftgroups/156782/draftables"
+   "dg": 156788,
+   "label": "PIT @ PHI Sun 1:00PM",
+   "url": "https://api.draftkings.com/draftgroups/v1/draftgroups/156788/draftables"
   },
   {
    "sport": "NFL",
    "kind": "showdown",
-   "dg": 156788,
-   "label": "PIT @ PHI Sun 1:00PM",
-   "url": "https://api.draftkings.com/draftgroups/v1/draftgroups/156788/draftables"
+   "dg": 156782,
+   "label": "ARI @ KC Sun 1:00PM",
+   "url": "https://api.draftkings.com/draftgroups/v1/draftgroups/156782/draftables"
   },
   {
    "sport": "NFL",
