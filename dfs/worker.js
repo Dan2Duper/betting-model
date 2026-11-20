@@ -70,14 +70,22 @@ export default {
     const r = await fetch('https://api.anthropic.com/v1/messages', {
       method: 'POST',
       headers: {'x-api-key': env.ANTHROPIC_API_KEY, 'anthropic-version': '2023-06-01', 'content-type': 'application/json'},
-      body: JSON.stringify({model: env.MODEL || 'claude-sonnet-5-5', max_tokens: 2000, system: SYSTEM, tools: [TOOL], tool_choice: {type: 'tool', name: 'lineup_adjustments'},
+      body: JSON.stringify({model: env.MODEL || 'claude-sonnet-5-5', max_tokens: 2000, system: SYSTEM, tools: [TOOL], tool_choice: {type: 'auto'},
                             messages: [{role: 'user', content: user}]})
     });
     const j = await r.json();
     if (!r.ok) return reply({error: (j.error && j.error.message) || 'AI error'}, 502, origin);
     const use = (j.content || []).find(c => c.type === 'tool_use');
-    if (!use) return reply({error: 'AI reply was not readable (' + (j.stop_reason || '?') + ')'}, 502, origin);
-    const out = use.input || {};
+    let out = use && use.input;
+    if (!out) {   // fallback: the first JSON object in the text that parses
+      const text = (j.content || []).filter(c => c.type === 'text').map(c => c.text).join('\n');
+      for (let i = text.indexOf('{'); i >= 0 && !out; i = text.indexOf('{', i + 1)) {
+        for (let k = text.lastIndexOf('}'); k > i && !out; k = text.lastIndexOf('}', k - 1)) {
+          try { const o = JSON.parse(text.slice(i, k + 1)); if (o && o.summary !== undefined) out = o; } catch (e) {}
+        }
+      }
+      if (!out) return reply({error: 'AI reply was not readable: ' + text.slice(0, 160)}, 502, origin);
+    }
     const clamp = o => Object.fromEntries(Object.entries(o || {}).map(([k, v]) => [k, Math.max(-60, Math.min(60, +v || 0))]));
     return reply({summary: out.summary || '', boost: clamp(out.boost), team_boost: clamp(out.team_boost), lock: out.lock || [], ban: out.ban || [], captain: out.captain || null}, 200, origin);
   }
