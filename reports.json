@@ -1,6 +1,15 @@
 {
- "_note": "Written by Claude's scheduled game reports; newest first; the Bet Tracker Reports tab reads this.",
+ "_note": "Written automatically by the relay (and by Claude); newest first; the Bet Tracker Reports tab reads this.",
  "reports": [
+  {
+   "id": "2026-11-20T02:12:27Z-CFB+NFL",
+   "time": "2026-11-20T02:12:27Z",
+   "league": "CFB+NFL",
+   "kind": "update",
+   "title": "Here Lies Rich's Bankroll: Gone Soon, Not Yet, Probably by Saturday",
+   "text": "**THE MODEL:**\n\nDearly beloved, we gather tonight, 8:12 PM Central, to mourn money that is technically still alive. Rich has no bets today. The money lies in state, breathing, unaware of the shit coming this weekend.\n\nThe model is 0 of 2 on final games. It has picked 0 winners out of 0, gone 0-0 against the spread and 0-0 on totals, with an average miss of 0.0 points. A perfect record. Remember it fondly, because it's the last clean thing in this family.\n\n- Rice 7, Temple 10 at halftime. The model says Temple 29, Rice 22. Two offenses that look like they've never met are being asked to combine for 51 points.\n- Indianapolis 3, Houston 14 with 7:38 left in the 2nd. The model says Houston 27, Indianapolis 20. Indianapolis is bringing a eulogy of its own.\n\n**STILL TO COME:**\n\nThe pallbearers are lined up. Each carries a little piece of the casket, and each is AI-LOX's idea of a good time.\n\n- Iowa State @ UCF, Fri 6:00 PM EST: UNDER 48.5. $22.00 to win $19.13. A small flower on the grave.\n- New Mexico @ Wyoming, Fri 9:00 PM EST: UNDER 37.5. $108.00 to win $98.18. The big wreath. If this goes 24-21, we bury the whole fucking cemetery.\n- Northwestern @ Minnesota, Sat 12:00 PM EST: Northwestern -2.5. $23.00 to win $20.54. Laying points with Northwestern is a hell of a way to say goodbye.\n- Houston @ West Virginia, Sat 1:00 PM EST: UNDER 70.5. $38.00 to win $33.93. Pray for a defense.\n- Rutgers @ Penn State, Sat 3:30 PM EST: Rutgers +26.5. $23.00 to win $20.54. Asking Rutgers to lose by less than a lot. Sacred stuff.\n- Texas A&M @ Oklahoma, Sat 3:45 PM EST: Texas A&M +7.5. $11.00 to win $9.02. The tiniest stake, a lone daisy.\n- Oklahoma State @ Arizona State, Sat 10:15 PM EST: Arizona State +2.5. $35.00 to win $32.41. A late-night wake, because nothing good happens at 10:15 PM EST.\n\nRich, rest easy tonight. Tomorrow the money rides out. Gone, but not forgotten, mostly because you'll be asking where it went.",
+   "style": "a funeral eulogy for the money"
+  },
   {
    "id": "2026-11-02T04:46:41Z-NFL",
    "time": "2026-11-02T04:46:41Z",
@@ -162,5 +171,16 @@
    "title": "Rich is +$0.23 on the NFL early games, a 4-leg overs parlay is still breathing, and the scoreboard froze at 2:55 CT.",
    "text": "The scoreboard's been frozen since 2:55 CT. Open the Bet Tracker app to thaw it out.\n\n**MY BETS:** 1-2, net +$0.23 on $124.74. Twenty-three cents! Put it on the mantel. PIT/NO Under 42.5 cashed easy (16-10, +$40). TB/CAR Under 45.5 got rumblin', bumblin', stumblin' into a 43-13 bonfire (-$19.80). The 3-leg parlay is dead too: CAR -2.5 lost by 32.5 (-$19.97). Live: NYG +10.5 is winning outright, 21-14 with 5:06 left. Big Blue Wrecking Crew! The 4-leg overs ($24.99 to win $347.11) is alive but on a ventilator: CLE/TEN is over (+4.5), SF/ATL needs 3 more in 2:42, NYG/HOU needs 8 more in 5:06 (on pace for 38 vs 42.5), and then KC/SEA still has to go over 42.5.\n\n**AI-LOX:** 1-1, -$5.91 at suggested stakes. Rich rode both and is +$20.20 on them. The computer's own Under 44.5 in Tampa got torched for 56 points. Whoop!\n\n**THE MODEL:** 3 of 12 final. Winners 2/3, vs spread 1-2, totals 2-1, average miss 12.6 points. Closest call: MIN 16-10 over IND (model 24-20). Worst miss: TB 43-13 (the model had it 21-19 Carolina, so pull the plug). Live: the model had HOU 27-20 and it's 21-14 Giants. SF and the Jets are losing too, while CIN and CLE are winning.\n\nRunning total: +$0.23, with KC@SEA, the late games and SNF still to come. That's why they play the games."
   }
- ]
+ ],
+ "auto": {
+  "2026-11-19": {
+   "n": 1,
+   "last": "2026-11-20T02:12:27Z",
+   "fp": "|0",
+   "fpBets": "",
+   "kinds": [
+    "update"
+   ]
+  }
+ }
 }
