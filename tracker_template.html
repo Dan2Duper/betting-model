@@ -1477,12 +1477,12 @@ function syncNeedsPush() { return (ST.updated || 0) > syncRemoteUpdated; }
 let repSha = null, repLast = '', repBusy = false;
 function reportBuild() {
   const I = liveIndex(), cut = ctDate(new Date(Date.now() - 3 * 864e5).toISOString());
-  const gv = g => g ? {state: g.state || (g.done ? 'post' : 'pre'), away: g.away, home: g.home, as: g.as, hs: g.hs, detail: g.detail || '', date: ctDate(g.kick)} : null;
+  const gv = g => g ? {id: g.id, state: g.state || (g.done ? 'post' : 'pre'), away: g.away, home: g.home, as: g.as, hs: g.hs, detail: g.detail || '', date: ctDate(g.kick)} : null;
   const live = g => g && !(g.state === 'pre' || (!g.state && !g.done));
   const one = (b, who) => {
     const o = {who, id: b.id, league: b.league, date: b.date, kick: b.kick, bet: b.bet || betText(b), game: b.game || `${b.away} @ ${b.home}`, market: b.market, side: b.side, line: b.line,
       odds: +b.odds || -110, stake: +(+b.stake || 0).toFixed(2), to_win: +((+b.stake || 0) * payout(+b.odds || -110)).toFixed(2), result: b.result || '', rule: b.rule || ''};
-    if (b.legs) o.legs = b.legs.map(l => { const g = I[l.espn || l.game_id]; return {bet: legKey(l), score: gv(g), margin_vs_line: live(g) ? standing(l, g).m : null}; });
+    if (b.legs) o.legs = b.legs.map(l => { const g = I[l.espn || l.game_id]; return {bet: legKey(l), market: l.market, side: l.side, line: l.line, away: l.away, home: l.home, score: gv(g), margin_vs_line: live(g) ? standing(l, g).m : null}; });
     else { const g = b.src === 'mine' ? liveGameFor(b, I) : I[espnOf(b.league, b.game_id)]; o.score = gv(g); o.margin_vs_line = live(g) ? standing(b, g).m : null; }
     return o; };
   const mine = MINE.filter(b => b.date >= cut).map(b => Object.assign(one(b, 'mine'), {ai_lox: !!loxFor(b)}));
