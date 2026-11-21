@@ -1,0 +1,39 @@
+# MLB model for the Bet Tracker: pulls finished games from the MLB Stats API, rebuilds the features and writes mlb.json
+# to the "data" branch (the page reads it from there). Runs twice a day in season and on demand
+# (Actions tab > MLB model > Run workflow; "date" replays a past day without using its results).
+name: MLB model
+on:
+  schedule:
+    - cron: '23 14 * 3-11 *'    # ~8:23 / 9:23 am Central: probable pitchers
+    - cron: '41 21 * 3-11 *'    # ~3:41 / 4:41 pm Central: evening lineups are posted
+  workflow_dispatch:
+    inputs:
+      date: {description: 'First day to predict (YYYY-MM-DD). Blank = today', required: false, default: ''}
+      days: {description: 'How many days', required: false, default: '2'}
+      check: {description: 'Grade the season so far (walk-forward)', type: boolean, default: false}
+permissions:
+  contents: write
+concurrency: mlb
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    timeout-minutes: 40
+    steps:
+      - uses: actions/checkout@v4
+        with: {ref: package, path: pkg}
+      - uses: actions/checkout@v4
+        with: {ref: data, path: data}
+      - uses: actions/setup-python@v5
+        with: {python-version: '3.12'}
+      - run: pip install -q pandas pyarrow numpy requests
+      - name: Build mlb.json
+        run: |
+          mkdir -p data/mlb
+          python3 pkg/mlb/live.py --cache data/mlb --out data/mlb.json --days "${{ inputs.days || '2' }}" ${{ inputs.date && format('--date {0}', inputs.date) || '' }} ${{ inputs.check && '--check' || '' }}
+      - name: Save to the data branch
+        run: |
+          cd data
+          git config user.name "mlb-bot"; git config user.email "mlb-bot@users.noreply.github.com"
+          git add mlb.json mlb
+          git commit -q -m "MLB model $(date -u +%F' '%H:%M)" || echo "no change"
+          git push origin HEAD:data
