@@ -42,12 +42,13 @@ def build(G, pit, bat, hands):
     # bullpen workload: reliever outs by team-day (plain sums over the previous 1-3 days)
     ro = rel.groupby(['team', 'day']).P_OUT.sum()
     # team runs for / against, park and road run totals
-    tg = pd.concat([pd.DataFrame(dict(team=G.home, day=G.day, rs=G.hruns, ra=G.aruns, g=1.0)), pd.DataFrame(dict(team=G.away, day=G.day, rs=G.aruns, ra=G.hruns, g=1.0))])
+    Gd = G[G.hruns.notna()]   # games already played; rows without a score (today's slate) only receive features
+    tg = pd.concat([pd.DataFrame(dict(team=Gd.home, day=Gd.day, rs=Gd.hruns, ra=Gd.aruns, g=1.0)), pd.DataFrame(dict(team=Gd.away, day=Gd.day, rs=Gd.aruns, ra=Gd.hruns, g=1.0))])
     TM = dec_table(tg, 'team', ['rs', 'ra', 'g'], HT); TS = dec_table(tg, 'team', ['rs', 'ra', 'g'], 25.0)
     tg['lg'] = 'MLB'; LG_S = dec_table(tg, 'lg', ['rs', 'g'], 45.0); LG_L = dec_table(tg, 'lg', ['rs', 'g'], 400.0)
     G['tot'] = G.hruns + G.aruns
-    pk = pd.DataFrame(dict(park=G.park, day=G.day, pr=G.tot.astype(float), pg=1.0)); PK = dec_table(pk, 'park', ['pr', 'pg'], HPK)
-    rd = pd.DataFrame(dict(team=G.away, day=G.day, rr=G.tot.astype(float), rg=1.0)); RD = dec_table(rd, 'team', ['rr', 'rg'], HPK)
+    pk = pd.DataFrame(dict(park=Gd.park, day=Gd.day, pr=(Gd.hruns + Gd.aruns).astype(float), pg=1.0)); PK = dec_table(pk, 'park', ['pr', 'pg'], HPK)
+    rd = pd.DataFrame(dict(team=Gd.away, day=Gd.day, rr=(Gd.hruns + Gd.aruns).astype(float), rg=1.0)); RD = dec_table(rd, 'team', ['rr', 'rg'], HPK)
     # ---------- league baselines at each game day ----------
     q = pd.DataFrame(dict(lg='MLB', day=G.day)); lp = asof(q, LP, 'lg', PCOL, 365.0); lb = asof(q, LB, 'lg', BCOL, 365.0)
     lgs = asof(q, LG_S, 'lg', ['rs', 'g'], 45.0); lgl = asof(q, LG_L, 'lg', ['rs', 'g'], 400.0)
@@ -114,7 +115,7 @@ def build(G, pit, bat, hands):
         out.append(F)
     F = pd.concat(out, ignore_index=True)
     # umpire: total runs vs the league in his earlier plate games
-    ug = pd.DataFrame(dict(ump=G.ump, day=G.day, ur=G.tot / (2 * L.rpg) / 1.0, ug=1.0)); ug = ug[ug.ump != '']
+    ug = pd.DataFrame(dict(ump=G.ump, day=G.day, ur=G.tot / (2 * L.rpg) / 1.0, ug=1.0)); ug = ug[(ug.ump != '') & ug.ur.notna()]
     UT = dec_table(ug, 'ump', ['ur', 'ug'], HU)
     a = asof(pd.DataFrame(dict(ump=F.ump, day=day(F.date))), UT, 'ump', ['ur', 'ug'], HU); F['ump_idx'] = (a.ur + 150) / (a.ug + 150)
     return F
