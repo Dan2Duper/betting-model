@@ -8,9 +8,12 @@ Pushing to main/package/sync/data from a Claude session with git works.
 ## Working now
 - NFL DFS: Rich's Android phone (Tasker, every morning) pulls DK draftables -> relay /salaries -> data branch -> GitHub Action builds dfs_nfl.json -> DFS tab (cash/GPP, classic + showdown, write-ups, shuffle, "my read" AI box).
 - Relay = Cloudflare Worker "bet-tracker-relay" (code: dfs/worker.js; deploy by pasting into the dashboard editor in Rich's Chrome).
-  Routes: / (DFS AI read), /salaries, /betslip (screenshot bet import: up to 8 screenshots in one read; a parlay split across
-  screenshots is merged into one bet; page has Save all + an already-in-My-bets check; odds worked out from stake + payout / to-win / leg odds when not read; odds box on the card as a last resort; the page sends this week's ESPN games and the reader (claude-opus-5-5, env SLIP_MODEL) picks each leg's game_id on both teams + date; page checks team/opponent and odds vs payout, flags mismatches and keeps them out of Save all; reader reports legs_expected + cut_off and the page refuses to save a slip cut short; reads DraftKings Predictions trades (Rich trades there: Bought = stake, To Pay = payout, % = price_pct, "N Pick Combo" = parlay); deployed Nov 21 2026 as 80666631)
-  Not handled yet: a trade SOLD early (Sell button) - the Tracker grades it on the game, not the sale price., /report (?force=now|preview|update|final, ?dry=1).
+  Routes: / (DFS AI read), /salaries, /betslip (screenshot dump, any book or prediction market: reader returns book, kind bet|trade, bet_ref,
+  status open|live|won|lost|push|void|sold|partially_sold, stake, payout, sold_for, sell_offer, legs + game_id picked from the page's ESPN
+  list, legs_expected/cut_off, ignore for non-bet screens; page shotPlan() reconciles each read vs saved bets by leg signature + bet_ref:
+  new / dup (incl. mid-game) / up (trade position upped: stake+odds updated, ups[] history) / down / partial (sold piece split off) / sell;
+  a sold bet carries `sold` = proceeds and profit = sold - stake in the Tracker, report.json (pl), relay money() and grade.py;
+  reader model claude-opus-5-5 (env SLIP_MODEL); deployed Nov 21 2026 as ca1f840d), /report (?force=now|preview|update|final, ?dry=1).
   Cron every 15 min -> runReports(): reads report.json, refreshes scores from ESPN, computes records/$ in code, Claude writes the
   report in a random comic style (mean/vulgar allowed, numbers exact) -> reports.json. "🔥 Roast me now" button on the Reports tab.
   Secrets: ANTHROPIC_API_KEY, ACCESS_CODE (also saved in the phone app as "DFS AI code"), GH_TOKEN. Model claude-sonnet-5-5.
