@@ -1,7 +1,7 @@
 // Cloudflare Worker: the AI relay for the Bet Tracker's DFS tab.
 // The page sends the slate and Rich's read on the game; Claude turns the read into projection adjustments
 // (boosts, fades, must-haves, a captain); the page then rebuilds the lineup from its pool so it always stays legal.
-// It reads bet-slip screenshots for "My bets" (/betslip), and on a cron trigger writes the game reports (/report runs it by hand).
+// It reads bet-slip screenshots for "My bets" (/betslip, several at once; a slip split across screenshots is merged), and on a cron trigger writes the game reports (/report runs it by hand).
 // It also receives the DraftKings salaries Rich's phone (Tasker) fetches each morning and saves them to the repo's
 // "data" branch, which starts the lineup build on GitHub.
 // Secrets (Cloudflare dashboard > Worker > Settings > Variables and Secrets): ANTHROPIC_API_KEY, ACCESS_CODE, GH_TOKEN
@@ -53,6 +53,11 @@ and legs. Each leg: team (the team the bet is on, as written; for a total, eithe
 market: spread | total | moneyline | prop, pick (for a total: Over or Under; otherwise the team), line (the number for that leg as shown:
 spread from the picked team's side like -3.5 or +7; total like 47.5; blank for moneyline), game_date (YYYY-MM-DD if the slip shows the game day),
 description (the leg as written). Use "prop" for player props and anything else that isn't a spread, total or moneyline.
+You may get several screenshots at once. A long parlay often does not fit on one screen, so one slip can be split across two or
+more screenshots that overlap: the top part shows some legs, the next screenshot repeats a leg or two and shows the rest, and the
+odds / stake / to-win line may appear on only one of them. Treat those parts as ONE bet: list each leg once (an overlapping leg seen
+twice is one leg) and take odds and stake from whichever part shows them. Separate slips (different bet IDs, different stakes, or
+clearly different bets) stay separate bets. If the very same slip appears twice, list it once.
 Never guess a number you can't read. Answer only by calling the bet_slip tool.`;
 const SLIP_TOOL = {name: 'bet_slip', description: 'The bets read from the screenshot.', input_schema: {type: 'object', required: ['bets'], properties: {bets: {type: 'array', items: {type: 'object', properties: {
   league: {type: 'string'}, type: {type: 'string'}, odds: {type: 'number'}, stake: {type: 'number'}, placed_date: {type: 'string'},
@@ -60,12 +65,18 @@ const SLIP_TOOL = {name: 'bet_slip', description: 'The bets read from the screen
     pick: {type: 'string'}, line: {type: ['number', 'string']}, game_date: {type: 'string'}, description: {type: 'string'}}}}}}}}}};
 async function readSlip(req, env, origin) {
   let body; try { body = await req.json(); } catch (e) { return reply({error: 'bad request'}, 400, origin); }
-  if (!body.image || body.image.length > 4e6) return reply({error: 'no image, or it is too large'}, 400, origin);
+  const imgs = (Array.isArray(body.images) && body.images.length ? body.images : [body.image]).filter(Boolean).slice(0, 8);
+  if (!imgs.length || imgs.some(x => x.length > 4e6)) return reply({error: 'no image, or one is too large'}, 400, origin);
+  const content = [];
+  imgs.forEach((data, i) => { if (imgs.length > 1) content.push({type: 'text', text: `Screenshot ${i + 1} of ${imgs.length}:`});
+    content.push({type: 'image', source: {type: 'base64', media_type: 'image/jpeg', data}}); });
+  content.push({type: 'text', text: `Today is ${body.today || ''}. ` + (imgs.length > 1
+    ? 'Read every bet across these screenshots. Merge the parts of any slip that is split across screenshots into one bet.'
+    : 'Read every bet on this slip.')});
   const r = await fetch('https://api.anthropic.com/v1/messages', {method: 'POST',
     headers: {'x-api-key': env.ANTHROPIC_API_KEY, 'anthropic-version': '2023-06-01', 'content-type': 'application/json'},
-    body: JSON.stringify({model: env.MODEL || 'claude-sonnet-5-5', max_tokens: 2000, system: SLIP, tools: [SLIP_TOOL], tool_choice: {type: 'auto'},
-      messages: [{role: 'user', content: [{type: 'image', source: {type: 'base64', media_type: 'image/jpeg', data: body.image}},
-                                           {type: 'text', text: `Today is ${body.today || ''}. Read every bet on this slip.`}]}]})});
+    body: JSON.stringify({model: env.MODEL || 'claude-sonnet-5-5', max_tokens: 4000, system: SLIP, tools: [SLIP_TOOL], tool_choice: {type: 'auto'},
+      messages: [{role: 'user', content}]})});
   const j = await r.json();
   if (!r.ok) return reply({error: (j.error && j.error.message) || 'AI error'}, 502, origin);
   const use = (j.content || []).find(c => c.type === 'tool_use');

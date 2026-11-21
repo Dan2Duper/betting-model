@@ -243,7 +243,7 @@ a{color:var(--series)}
       <div id="betboard"></div>
     </div>
     <div class="card">
-      <div class="cardhead"><div><h2>My bets</h2></div><div style="display:flex;gap:8px;flex-wrap:wrap"><label class="btn primary" id="s-shot-btn">📷 Add from screenshot<input type="file" id="s-shot" accept="image/*" class="hide"></label><button class="btn" id="m-open">+ Add a bet</button></div></div>
+      <div class="cardhead"><div><h2>My bets</h2></div><div style="display:flex;gap:8px;flex-wrap:wrap"><label class="btn primary" id="s-shot-btn">📷 Add from screenshot<input type="file" id="s-shot" accept="image/*" multiple class="hide"></label><button class="btn" id="m-open">+ Add a bet</button></div></div>
       <div id="shot-box" class="hide" style="margin:8px 0 12px"></div>
       <div class="addform" id="m-form">
         <div class="editgrid">
@@ -1603,11 +1603,12 @@ $('#m-save').onclick = () => {
 
 
 // ---------------- MY BETS FROM A SCREENSHOT ----------------
-// The phone screenshot goes to the relay; Claude reads the bet slip; this page matches each leg to ESPN's game list,
-// shows what it read, and saves it as one of "My bets" after you confirm.
+// The phone screenshots (one or several at once) go to the relay together; Claude reads them as one set, so a long parlay split
+// across two screenshots comes back as ONE bet. This page matches each leg to ESPN's game list, shows what it read, flags bets
+// already in "My bets", and saves them after you confirm (one at a time or Save all).
 function shotImage(file) { return new Promise((res, rej) => { const img = new Image(), url = URL.createObjectURL(file);
-  img.onload = () => { const k = Math.min(1, 1100 / Math.max(img.width, img.height)), c = document.createElement('canvas'); c.width = Math.round(img.width * k); c.height = Math.round(img.height * k);
-    c.getContext('2d').drawImage(img, 0, 0, c.width, c.height); URL.revokeObjectURL(url); res(c.toDataURL('image/jpeg', 0.85).split(',')[1]); };
+  img.onload = () => { const k = Math.min(1, 1568 / Math.max(img.width, img.height)), c = document.createElement('canvas'); c.width = Math.round(img.width * k); c.height = Math.round(img.height * k);
+    c.getContext('2d').drawImage(img, 0, 0, c.width, c.height); URL.revokeObjectURL(url); res(c.toDataURL('image/jpeg', 0.82).split(',')[1]); };
   img.onerror = rej; img.src = url; }); }
 const shotNorm = s => String(s || '').toLowerCase().replace(/[^a-z0-9 ]/g, ' ').replace(/\s+/g, ' ').trim();
 function shotTeamSide(g, team) {   // which side of ESPN game g is this slip team on?
@@ -1634,13 +1635,15 @@ function shotLeg(lg, leg, g, side) {   // one leg in this page's format (spread 
           line: m === 'ml' ? '' : (side === 'away' ? -(+leg.line) : +leg.line)};
 }
 let SHOT = null;
-async function shotRead(file) {
-  const box = $('#shot-box'); box.classList.remove('hide'); box.innerHTML = '<div class="note">Reading your bet slip…</div>';
+async function shotRead(files) {
+  files = [...files].slice(0, 8);
+  const box = $('#shot-box'); box.classList.remove('hide');
+  box.innerHTML = `<div class="note">Reading ${files.length > 1 ? files.length + ' screenshots' : 'your bet slip'}…</div>`;
   let code = ''; try { code = localStorage.getItem('dfsAiCode') || ''; } catch (e) {}
   if (!code) { box.innerHTML = '<div class="note">Save your relay password first: Settings tab, "DFS AI code".</div>'; return; }
   try {
-    const image = await shotImage(file);
-    const r = await fetch(DFS_AI_URL + '/betslip', {method: 'POST', headers: {'Content-Type': 'application/json', 'X-Code': code}, body: JSON.stringify({image, today: today()})});
+    const images = await Promise.all(files.map(shotImage));
+    const r = await fetch(DFS_AI_URL + '/betslip', {method: 'POST', headers: {'Content-Type': 'application/json', 'X-Code': code}, body: JSON.stringify({images, image: images[0], today: today()})});
     const j = await r.json(); if (!r.ok) throw new Error(j.error || r.status);
     const out = [];
     for (const b of j.bets || []) {
@@ -1655,8 +1658,8 @@ async function shotRead(file) {
       }
       out.push({b, lg, legs, miss});
     }
-    SHOT = out; shotShow();
-  } catch (e) { box.innerHTML = `<div class="note">Couldn't read that screenshot: ${esc(e.message)}. You can still use + Add a bet.</div>`; }
+    SHOT = out; SHOT.n = files.length; shotShow();
+  } catch (e) { box.innerHTML = `<div class="note">Couldn't read ${files.length > 1 ? 'those screenshots' : 'that screenshot'}: ${esc(e.message)}. You can still use + Add a bet.</div>`; }
 }
 function shotBet(x) {   // build a "My bets" entry from a read slip
   const {b, lg, legs} = x, first = legs[0], kick = legs.map(l => l.kick).sort()[0];
@@ -1666,24 +1669,34 @@ function shotBet(x) {   // build a "My bets" entry from a read slip
   if (legs.length > 1) return Object.assign(base, {game_id: legs.map(l => l.game_id).join('+'), game: `${legs.length}-leg ${type}`, away: '', home: '', market: type, side: '', line: '', legs});
   return Object.assign(base, {game_id: first.game_id, game: `${first.away} @ ${first.home}`, away: first.away, home: first.home, market: first.market, side: first.side, line: first.line});
 }
+function shotDup(x) {   // already in My bets? same games, market, odds and stake
+  const b = shotBet(x), key = v => [v.game_id, v.market, +v.odds, +v.stake].join('|');
+  return Object.values(ST.mine || {}).some(m => key(m) === key(b));
+}
 function shotShow() {
   const box = $('#shot-box');
-  box.innerHTML = SHOT.map((x, i) => {
+  SHOT.forEach(x => { x.ok = !x.err && x.legs.length && !x.miss.length && x.b.stake > 0 && Math.abs(+x.b.odds) >= 100; x.dup = x.ok && shotDup(x); });
+  const ready = SHOT.filter(x => x.ok && !x.dup).length;
+  const head = `<div class="small" style="margin:2px 0 6px">${SHOT.n > 1 ? `Read ${SHOT.n} screenshots together (a slip split across screenshots counts once): ` : ''}${SHOT.length} bet${SHOT.length === 1 ? '' : 's'} found.</div>`;
+  box.innerHTML = head + SHOT.map((x, i) => {
     if (x.err) return `<div class="note">${esc(x.err)}</div>`;
-    const ok = x.legs.length && !x.miss.length && x.b.stake > 0 && Math.abs(+x.b.odds) >= 100;
+    const ok = x.ok;
     const bt = ok ? shotBet(x) : null; if (bt) bt.bet = '';
     const desc = x.legs.map(l => legText(l, {})).join(' · ');
     return `<div class="card" style="margin:6px 0;padding:10px"><b>${esc(x.b.type || 'Bet')}</b> · ${esc(x.lg)} · odds ${+x.b.odds > 0 ? '+' : ''}${esc(x.b.odds)} · stake ${fmt$(+x.b.stake || 0)}
       <div class="small" style="margin:4px 0">${esc(desc) || 'No gradeable legs found.'}</div>
       ${x.miss.length ? `<div class="small" style="color:#c0392b">${x.miss.map(esc).join('<br>')}</div>` : ''}
-      ${ok ? `<button class="btn primary small" data-shotsave="${i}">Save this bet</button>` : '<div class="small">Can\'t save this one automatically — use + Add a bet.</div>'}</div>`;
-  }).join('') + '<button class="btn small" id="shot-close">Close</button>';
-  $$('[data-shotsave]').forEach(el => el.onclick = () => { const x = SHOT[+el.dataset.shotsave], b = shotBet(x);
+      ${x.dup ? `<div class="small" style="margin:4px 0"><b>Already in My bets.</b></div><button class="btn small" data-shotsave="${i}">Save it again anyway</button>`
+        : ok ? `<button class="btn primary small" data-shotsave="${i}">Save this bet</button>` : '<div class="small">Can\'t save this one automatically — use + Add a bet.</div>'}</div>`;
+  }).join('') + `<div style="display:flex;gap:8px;margin-top:6px">${ready > 1 ? `<button class="btn primary small" id="shot-all">Save all ${ready}</button>` : ''}<button class="btn small" id="shot-close">Close</button></div>`;
+  const save = (i, el) => { const x = SHOT[i]; if (x.saved) return; const b = shotBet(x); b.id += '|' + i;
     if (b.legs) b.legs.forEach(l => { if (!l.kick) delete l.kick; });
-    ST.mine[b.id] = b; usave(); recompute(); el.outerHTML = '<span class="small"><b>Saved.</b></span>'; });
+    ST.mine[b.id] = b; x.saved = true; if (el) el.outerHTML = '<span class="small"><b>Saved.</b></span>'; };
+  $$('[data-shotsave]').forEach(el => el.onclick = () => { save(+el.dataset.shotsave, el); usave(); recompute(); });
+  if ($('#shot-all')) $('#shot-all').onclick = e => { SHOT.forEach((x, i) => { if (x.ok && !x.dup) save(i, $(`[data-shotsave="${i}"]`)); }); usave(); recompute(); e.target.outerHTML = '<span class="small"><b>All saved.</b></span>'; };
   $('#shot-close').onclick = () => { box.classList.add('hide'); box.innerHTML = ''; SHOT = null; };
 }
-$('#s-shot').onchange = e => { const f = e.target.files[0]; e.target.value = ''; if (f) shotRead(f); };
+$('#s-shot').onchange = e => { const f = [...e.target.files]; e.target.value = ''; if (f.length) shotRead(f); };
 
 // ---------------- LIVE BETS ----------------
 function liveIndex() { const I = {}; Object.values(ST.slate).forEach(day => Object.values(day).forEach(g => { const lg = g.aabbr && g.aabbr.length <= 3 && SNAP.nfl.games.some(x => x.espn === g.id) ? 'NFL' : null; I[g.id] = g; })); return I; }
