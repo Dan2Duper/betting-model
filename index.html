@@ -1676,15 +1676,15 @@ async function shotRead(files) {
     for (const b of j.bets || []) {
       const od = shotOdds(b); b.odds = od.odds; b.odds_how = od.how; b.stake = shotNum(b.stake);
       const lg = /college|ncaa|cfb/i.test(b.league || '') ? 'CFB' : /nfl/i.test(b.league || '') ? 'NFL' : (b.league || '').toUpperCase();
-      const legs = [], miss = [];
+      const legs = [], miss = [], slip = [];
       if (lg !== 'NFL' && lg !== 'CFB') { out.push({b, err: `${b.league || 'This sport'} isn't tracked yet (NFL and college football only for now).`}); continue; }
       for (const leg of b.legs || []) {
         if (!/^(spread|total|moneyline|ml)$/.test(leg.market)) { miss.push(`${leg.description || leg.team} (player props can't be graded yet)`); continue; }
         const f = await shotFindGame(lg, leg, b.placed_date || today());
         if (!f || (!f.side && leg.market !== 'total')) { miss.push(`${leg.team} — couldn't find the game`); continue; }
-        legs.push(shotLeg(lg, leg, f.g, f.side));
+        legs.push(shotLeg(lg, leg, f.g, f.side)); slip.push(leg.description || [leg.team, leg.line].filter(v => v !== '' && v != null).join(' '));
       }
-      out.push({b, lg, legs, miss});
+      out.push({b, lg, legs, miss, slip});
     }
     SHOT = out; SHOT.n = files.length; shotShow();
   } catch (e) { box.innerHTML = `<div class="note">Couldn't read ${files.length > 1 ? 'those screenshots' : 'that screenshot'}: ${esc(e.message)}. You can still use + Add a bet.</div>`; }
@@ -1710,10 +1710,10 @@ function shotShow() {
     if (x.err) return `<div class="note">${esc(x.err)}</div>`;
     const ok = x.ok;
     const bt = ok ? shotBet(x) : null; if (bt) bt.bet = '';
-    const desc = x.legs.map(l => legText(l, {})).join(' · ');
+    const desc = x.legs.map((l, k) => `${esc(legText(l, {}))} <span style="opacity:.75">— ${esc(l.away)} @ ${esc(l.home)}</span>${x.slip && x.slip[k] ? ` <span style="opacity:.6">(slip: “${esc(x.slip[k])}”)</span>` : ''}`).join('<br>');
     const oTxt = Math.abs(+x.b.odds) >= 100 ? `${+x.b.odds > 0 ? '+' : ''}${+x.b.odds}` : '?';
     return `<div class="card" style="margin:6px 0;padding:10px"><b>${esc(x.b.type || 'Bet')}</b> · ${esc(x.lg)} · odds ${oTxt}${x.b.odds_how ? ` <span class="small">(${esc(x.b.odds_how)})</span>` : ''} · stake ${x.b.stake > 0 ? fmt$(+x.b.stake) : '?'}
-      <div class="small" style="margin:4px 0">${esc(desc) || 'No gradeable legs found.'}</div>
+      <div class="small" style="margin:4px 0">${desc || 'No gradeable legs found.'}</div>
       ${x.miss.length ? `<div class="small" style="color:#c0392b">${x.miss.map(esc).join('<br>')}</div>` : ''}
       ${x.dup ? `<div class="small" style="margin:4px 0"><b>Already in My bets.</b></div><button class="btn small" data-shotsave="${i}">Save it again anyway</button>`
         : ok ? `<button class="btn primary small" data-shotsave="${i}">Save this bet</button>`
@@ -1799,7 +1799,7 @@ async function refreshLive() {
 }
 function scoreLine(g) { if (!g || !(g.state === 'in' || g.state === 'post' || g.done)) return '';
   return `<div class="sline ${g.state === 'in' ? 'in' : ''}">${g.as} – ${g.hs} <span class="small">${esc(g.detail || 'Final')}</span></div>`; }
-const PAGE_VER = "20261121152838";   // stamped by tracker.py; a newer published page reloads itself
+const PAGE_VER = "20261121153419";   // stamped by tracker.py; a newer published page reloads itself
 // ---------------- AUTO REFRESH (while the page is open) ----------------
 const busy = () => { const a = document.activeElement; return a && ['INPUT', 'SELECT', 'TEXTAREA'].includes(a.tagName) || $('#m-form').classList.contains('open'); };
 let tickN = 0;
