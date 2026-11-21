@@ -1075,7 +1075,7 @@ let MODE = 'mine', SORT = {k: 'date', dir: -1};
 function enrich(r, isBet) {
   const o = Object.assign({}, r);
   o.odds = +r.odds || -110; o.stake = isBet ? (+r.stake || 0) : 1; o.result = r.result || '';
-  o.profit = o.result === 'W' ? o.stake * payout(o.odds) : o.result === 'L' ? -o.stake : 0;
+  o.profit = hasSold(r) ? +r.sold - o.stake : o.result === 'W' ? o.stake * payout(o.odds) : o.result === 'L' ? -o.stake : 0;
   const h = +r.kick_hour || 0;
   o.kickw = h < 13 ? 'Early (before 1 pm CT)' : h < 17 ? 'Afternoon (1-5 pm CT)' : 'Night (5 pm CT or later)';
   const d = new Date(r.date + 'T12:00:00'); o.dow = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'][d.getDay()]; o.month = d.toLocaleString('en-US', {month: 'long'});
@@ -1496,6 +1496,7 @@ function reportBuild() {
   const one = (b, who) => {
     const o = {who, id: b.id, league: b.league, date: b.date, kick: b.kick, bet: b.bet || betText(b), game: b.game || `${b.away} @ ${b.home}`, market: b.market, side: b.side, line: b.line,
       odds: +b.odds || -110, stake: +(+b.stake || 0).toFixed(2), to_win: +((+b.stake || 0) * payout(+b.odds || -110)).toFixed(2), result: b.result || '', rule: b.rule || ''};
+    if (hasSold(b)) { o.pl = +(+b.sold - (+b.stake || 0)).toFixed(2); o.sold = +b.sold; o.bet += ` (sold for $${(+b.sold).toFixed(2)})`; }
     if (b.legs) o.legs = b.legs.map(l => { const g = I[l.espn || l.game_id]; return {bet: legKey(l), market: l.market, side: l.side, line: l.line, away: l.away, home: l.home, score: gv(g), margin_vs_line: live(g) ? standing(l, g).m : null}; });
     else { const g = b.src === 'mine' ? liveGameFor(b, I) : I[espnOf(b.league, b.game_id)]; o.score = gv(g); o.margin_vs_line = live(g) ? standing(b, g).m : null; }
     return o; };
@@ -1542,7 +1543,7 @@ function buildMine() {
     if (!b.result && (b.market === 'parlay' || (b.market === 'teaser' && b.src === 'mine'))) { const R = (b.legs || []).map(l => { const f = finalFor(l.league || b.league, l.game_id, b.date, l.away, l.home); return f ? grade(l, f) : ''; });
       if (R.includes('L')) b.result = 'L'; else if (R.length && R.every(Boolean)) b.result = R.every(r => r === 'P') ? 'P' : 'W'; if (b.result) ST.mine[b.id].result = b.result; }
     else if (!b.result) { const f = finalFor(b.league, b.game_id, b.date, b.away, b.home); if (f) { b.result = grade(b, f); ST.mine[b.id].result = b.result; } }
-    const o = Object.assign({}, b); o.odds = +o.odds || -110; o.stake = +o.stake || 0; o.to_win = o.stake * payout(o.odds); o.bet = betText(o); return o; });
+    const o = Object.assign({}, b); o.odds = +o.odds || -110; o.stake = +o.stake || 0; o.to_win = o.stake * payout(o.odds); o.bet = betText(o); return o; });   // a sold bet keeps its result; hasSold() sets its profit
 }
 function delMine(id) { const b = ST.mine[id]; if (!b) return;
   if (!window.confirm(`Delete ${betText(b)}?${b.result ? ' It already has a result, so this takes it off your record.' : ''}`)) return;
@@ -1552,7 +1553,7 @@ function renderMine() {
   $('#mineboard').innerHTML = !list.length ? '<div class="empty">None this week.</div>' :
     `<table class="cards"><thead><tr><th>Kick</th><th>Bet</th><th class="num">Odds</th><th class="num">Stake $</th><th class="num">To win</th><th>Result</th><th></th></tr></thead><tbody>` +
     list.map(b => `<tr><td data-label="Kick">${ctTime(b.kick)}</td><td class="full first" data-label="">${loxFor(b) ? LOX : ''}<b>${esc(b.bet)}</b><div class="small">${b.market === 'parlay' || b.market === 'teaser' ? (b.legs || []).map(legText).map(esc).join(' · ') : esc(b.away) + ' @ ' + esc(b.home)}</div></td>
-      <td class="num" data-label="Odds">${b.odds > 0 ? '+' : ''}${b.odds}</td><td class="num" data-label="Stake $">${fmt$(b.stake)}</td><td class="num" data-label="To win">${fmt$(b.to_win)}</td>
+      <td class="num" data-label="Odds">${b.odds > 0 ? '+' : ''}${b.odds}</td><td class="num" data-label="Stake $">${fmt$(b.stake)}</td><td class="num" data-label="${hasSold(b) ? 'Sold for' : 'To win'}">${hasSold(b) ? fmt$(+b.sold) : fmt$(b.to_win)}${(b.ups || []).length ? `<div class="small">upped ${b.ups.length}×</div>` : ''}</td>
       <td data-label="Result">${b.result ? `<span class="pill ${b.result}">${b.result}</span>` : started(b.kick) ? '<span class="pill O">live</span>' : ''}</td>
       <td class="keep" data-label=""><button class="btn small" data-delmine="${esc(b.id)}">Delete</button></td></tr>`).join('') + '</tbody></table>';
   $$('#mineboard [data-delmine]').forEach(el => el.onclick = () => delMine(el.dataset.delmine));
@@ -1686,6 +1687,9 @@ async function shotRead(files) {
     const j = await r.json(); if (!r.ok) throw new Error(j.error || r.status);
     const out = [];
     for (const b of j.bets || []) {
+      if (b.ignore || b.placed === false) { out.push({b, skip: b.ignore_reason || (b.placed === false ? 'a slip not placed yet' : 'not a bet')}); continue; }
+      const kind = b.kind === 'trade' || /trade|combo|predict|kalshi|polymarket|novig|robinhood/i.test(`${b.type || ''} ${b.book || ''}`) ? 'trade' : 'bet';
+      const status = String(b.status || 'open').toLowerCase().replace(/[\s-]+/g, '_');
       const od = shotOdds(b); b.odds = od.odds; b.odds_how = od.how; b.stake = shotNum(b.stake);
       const warn = [];
       {   // 2) odds and payout must agree; the payout is what DraftKings actually pays, so it wins
@@ -1716,56 +1720,96 @@ async function shotRead(files) {
       }
       const exp = shotNum(b.legs_expected), seen = (b.legs || []).length;   // 3) a slip cut off without its other half is never saved short
       const cut = b.cut_off || (exp > 1 && seen < exp);
-      out.push({b, lg, legs, miss, slip, warn, cut: cut ? `Looks cut off${exp > seen ? `: ${seen} of ${exp} legs showing` : ''}${b.cut_note ? ` (${b.cut_note})` : ''} — add the screenshot with the rest and read them together.` : ''});
+      out.push({b, lg, legs, miss, slip, warn, kind, status, cut: cut ? `Looks cut off${exp > seen ? `: ${seen} of ${exp} legs showing` : ''}${b.cut_note ? ` (${b.cut_note})` : ''} — add the screenshot with the rest and read them together.` : ''});
     }
     SHOT = out; SHOT.n = files.length; shotShow();
   } catch (e) { box.innerHTML = `<div class="note">Couldn't read ${files.length > 1 ? 'those screenshots' : 'that screenshot'}: ${esc(e.message)}. You can still use + Add a bet.</div>`; }
 }
+const SOLD = s => /sold|cash/.test(s || '');
 function shotBet(x) {   // build a "My bets" entry from a read slip
   const {b, lg, legs} = x, first = legs[0], kick = legs.map(l => l.kick).sort()[0];
   const type = legs.length > 1 ? (/teaser/i.test(b.type || '') ? 'teaser' : 'parlay') : first.market;
+  const pay = shotNum(b.payout) > 0 ? shotNum(b.payout) : (b.stake > 0 && Math.abs(b.odds) >= 100 ? b.stake * (1 + payout(b.odds)) : '');
   const base = {id: `mine|${lg}|${legs.map(l => l.game_id).join('+')}|${type}|${Date.now()}`, src: 'mine', rule: 'mine', date: ctDate(kick), kick, league: lg, week: '',
-    odds: +b.odds, stake: +b.stake, result: '', kick_hour: ctHour(kick), from: 'screenshot'};
+    odds: +b.odds, stake: +b.stake, result: '', kick_hour: ctHour(kick), from: 'screenshot', kind: x.kind, book: b.book || '', ref: String(b.bet_ref || '').trim(),
+    payout: pay === '' ? '' : +(+pay).toFixed(2), saved: Date.now()};
   if (legs.length > 1) return Object.assign(base, {game_id: legs.map(l => l.game_id).join('+'), game: `${legs.length}-leg ${type}`, away: '', home: '', market: type, side: '', line: '', legs});
   return Object.assign(base, {game_id: first.game_id, game: `${first.away} @ ${first.home}`, away: first.away, home: first.home, market: first.market, side: first.side, line: first.line});
 }
-function shotDup(x) {   // already in My bets? same games, market, odds and stake
-  const b = shotBet(x), key = v => [v.game_id, v.market, +v.odds, +v.stake].join('|');
-  return Object.values(ST.mine || {}).some(m => key(m) === key(b));
+// ---- what a read bet IS against what's already saved: new, duplicate, upped, reduced, sold, partly sold ----
+const legSig = l => [l.game_id, l.market, l.side, l.market === 'ml' ? '' : (+l.line || 0)].join(':');
+const betSig = b => ((b.legs && b.legs.length) ? b.legs : [b]).map(legSig).sort().join('+');
+const nearAmt = (a, b) => Math.abs((+a || 0) - (+b || 0)) <= Math.max(0.02, 0.005 * Math.max(+a || 0, +b || 0));
+const hasSold = m => m.sold !== undefined && m.sold !== null && m.sold !== '';
+function shotPlan(x) {
+  const nb = shotBet(x), sig = betSig(nb), st = x.status, sold = shotNum(x.b.sold_for), ref = nb.ref;
+  const cands = Object.values(ST.mine || {}).filter(m => !(ST.mineDel || {})[m.id] && betSig(m) === sig);
+  let m = (ref && cands.find(c => c.ref && c.ref === ref)) || null;
+  if (!m && x.kind === 'trade') m = cands.filter(c => !hasSold(c)).sort((a, b) => (b.saved || 0) - (a.saved || 0))[0] || null;   // one open position per contract
+  if (!m) m = cands.find(c => nearAmt(c.stake, x.b.stake) && (!c.ref || !ref || c.ref === ref)) || null;
+  if (!m) return SOLD(st) && sold >= 0 ? {act: 'new_sold', note: `Sold for ${fmt$(sold)}.`} : {act: 'new'};
+  if (hasSold(m) && (SOLD(st) || nearAmt(m.stake, x.b.stake))) return {act: 'dup', m, note: `Already in My bets (sold for ${fmt$(+m.sold)}).`};
+  if (SOLD(st) && st !== 'partially_sold' && sold >= 0) { const pl = sold - +m.stake; return {act: 'sell', m, note: `Sold for ${fmt$(sold)} on ${fmt$(+m.stake)}: ${pl >= 0 ? '+' : '-'}${fmt$(Math.abs(pl))}.`}; }
+  if (nearAmt(m.stake, x.b.stake)) return {act: 'dup', m, note: x.status === 'live' || x.b.sell_offer ? 'Already in My bets (mid-game screenshot).' : 'Already in My bets.'};
+  if (x.b.stake < +m.stake && sold > 0) return {act: 'partial', m, note: `Sold part for ${fmt$(sold)}; ${fmt$(+x.b.stake)} still riding (was ${fmt$(+m.stake)}).`};
+  if (x.kind === 'trade' || (ref && m.ref === ref)) return x.b.stake > +m.stake
+    ? {act: 'up', m, note: `Upped: ${fmt$(+m.stake)} → ${fmt$(+x.b.stake)} (${fmt$(x.b.stake - m.stake)} added).`}
+    : {act: 'down', m, note: `Position now ${fmt$(+x.b.stake)} (was ${fmt$(+m.stake)}).`};
+  return {act: 'new'};
+}
+const ACT_BTN = {new: 'Save this bet', new_sold: 'Save as sold', sell: 'Mark it sold', up: 'Update (upped)', down: 'Update position', partial: 'Record the sale'};
+function shotApply(i) {
+  const x = SHOT[i]; if (x.done) return; const p = x.plan, nb = shotBet(x), now = Date.now(), sold = shotNum(x.b.sold_for);
+  nb.id += '|' + i; if (nb.legs) nb.legs.forEach(l => { if (!l.kick) delete l.kick; });
+  const res = (s, c) => s > c + 0.005 ? 'W' : s < c - 0.005 ? 'L' : 'P';
+  if (p.act === 'new') ST.mine[nb.id] = nb;
+  else if (p.act === 'new_sold') ST.mine[nb.id] = Object.assign(nb, {sold, result: res(sold, nb.stake), sold_at: now});
+  else if (p.act === 'sell') Object.assign(ST.mine[p.m.id], {sold, result: res(sold, +p.m.stake), sold_at: now});
+  else if (p.act === 'up' || p.act === 'down') { const m = ST.mine[p.m.id];
+    Object.assign(m, {stake: nb.stake, odds: nb.odds, payout: nb.payout, ups: [...(m.ups || []), {at: now, from: +m.stake, to: nb.stake}]}); }
+  else if (p.act === 'partial') { const m = ST.mine[p.m.id], cost = +(+m.stake - nb.stake).toFixed(2);
+    const piece = Object.assign({}, m, {id: m.id + '|sold' + now, stake: cost, sold, result: res(sold, cost), sold_at: now}); delete piece.ups;
+    ST.mine[piece.id] = piece; Object.assign(m, {stake: nb.stake, odds: nb.odds, payout: nb.payout}); }
+  x.done = true;
 }
 function shotShow() {
   const box = $('#shot-box');
-  SHOT.forEach(x => { x.legsOk = !x.err && !x.cut && x.legs.length && !x.miss.length; x.ok = x.legsOk && x.b.stake > 0 && Math.abs(+x.b.odds) >= 100; x.dup = x.ok && shotDup(x); });
-  const ready = SHOT.filter(x => x.ok && !x.dup && !(x.warn || []).length).length;
-  const head = `<div class="small" style="margin:2px 0 6px">${SHOT.n > 1 ? `Read ${SHOT.n} screenshots together (a slip split across screenshots counts once): ` : ''}${SHOT.length} bet${SHOT.length === 1 ? '' : 's'} found.</div>`;
+  SHOT.forEach(x => { if (x.err || x.skip) return; x.legsOk = !x.cut && x.legs.length && !x.miss.length;
+    x.plan = x.legsOk ? shotPlan(x) : {act: 'none'}; const a = x.plan.act, oddsOk = Math.abs(+x.b.odds) >= 100;
+    x.ok = x.legsOk && (a === 'sell' || (a === 'new_sold' ? x.b.stake > 0 : a !== 'dup' && x.b.stake > 0 && oddsOk)); });
+  const ready = SHOT.filter(x => x.ok && !x.done && !(x.warn || []).length).length;
+  const real = SHOT.filter(x => !x.skip), skipped = SHOT.filter(x => x.skip);
+  const head = `<div class="small" style="margin:2px 0 6px">${SHOT.n > 1 ? `Read ${SHOT.n} screenshots together: ` : ''}${real.length} bet${real.length === 1 ? '' : 's'} found${skipped.length ? `; skipped ${skipped.length} (${skipped.map(x => esc(x.skip)).join('; ')})` : ''}.</div>`;
   box.innerHTML = head + SHOT.map((x, i) => {
+    if (x.skip) return '';
     if (x.err) return `<div class="note">${esc(x.err)}</div>`;
-    const ok = x.ok;
-    const bt = ok ? shotBet(x) : null; if (bt) bt.bet = '';
+    const a = x.plan.act;
     const desc = x.legs.map((l, k) => `${esc(legText(l, {}))} <span style="opacity:.75">— ${esc(l.away)} @ ${esc(l.home)}</span>${x.slip && x.slip[k] ? ` <span style="opacity:.6">(slip: “${esc(x.slip[k])}”)</span>` : ''}`).join('<br>');
     const oTxt = Math.abs(+x.b.odds) >= 100 ? `${+x.b.odds > 0 ? '+' : ''}${+x.b.odds}` : '?';
-    return `<div class="card" style="margin:6px 0;padding:10px"><b>${esc(x.b.type || 'Bet')}</b> · ${esc(x.lg)} · odds ${oTxt}${x.b.odds_how ? ` <span class="small">(${esc(x.b.odds_how)})</span>` : ''} · stake ${x.b.stake > 0 ? fmt$(+x.b.stake) : '?'}
+    const tag = {new_sold: 'SOLD', sell: 'SOLD', up: 'UPPED', down: 'CHANGED', partial: 'PART SOLD', dup: 'ALREADY SAVED'}[a];
+    return `<div class="card" style="margin:6px 0;padding:10px">${tag ? `<span class="pill ${a === 'dup' ? 'P' : 'O'}" style="margin-right:6px">${tag}</span>` : ''}<b>${esc(x.b.type || 'Bet')}</b> · ${esc(x.lg)}${x.b.book ? ' · ' + esc(x.b.book) : ''} · odds ${oTxt}${x.b.odds_how ? ` <span class="small">(${esc(x.b.odds_how)})</span>` : ''} · stake ${x.b.stake > 0 ? fmt$(+x.b.stake) : '?'}${x.status && !/open|live/.test(x.status) ? ' · ' + esc(x.status.replace('_', ' ')) : ''}
       <div class="small" style="margin:4px 0">${desc || 'No gradeable legs found.'}</div>
       ${x.miss.length ? `<div class="small" style="color:#c0392b">${x.miss.map(esc).join('<br>')}</div>` : ''}
       ${x.cut ? `<div class="small" style="color:#c0392b;margin:4px 0"><b>✂ ${esc(x.cut)}</b></div>` : ''}
-      ${(x.warn || []).length ? `<div class="small" style="color:#c0392b;margin:4px 0">⚠ ${x.warn.map(esc).join('<br>⚠ ')}<br>Not in Save all — save it yourself once it looks right.</div>` : ''}
-      ${x.dup ? `<div class="small" style="margin:4px 0"><b>Already in My bets.</b></div><button class="btn small" data-shotsave="${i}">Save it again anyway</button>`
-        : ok ? `<button class="btn primary small" data-shotsave="${i}">Save this bet</button>`
-        : x.legsOk ? `<div class="small" style="margin:4px 0">The ${[!(Math.abs(+x.b.odds) >= 100) && 'odds', !(x.b.stake > 0) && 'stake'].filter(Boolean).join(' and ')} didn't read — type ${!(Math.abs(+x.b.odds) >= 100) && !(x.b.stake > 0) ? 'them' : 'it'} in:</div>
+      ${(x.warn || []).length ? `<div class="small" style="color:#c0392b;margin:4px 0">⚠ ${x.warn.map(esc).join('<br>⚠ ')}<br>Not in Save all — tap it yourself once it looks right.</div>` : ''}
+      ${x.plan.note ? `<div class="small" style="margin:4px 0"><b>${esc(x.plan.note)}</b></div>` : ''}
+      ${x.done ? '<span class="small"><b>Done.</b></span>'
+        : a === 'dup' ? (x.plan.m && !hasSold(x.plan.m) ? '' : '') + `<button class="btn small" data-shotnew="${i}">It's a separate bet — save it too</button>`
+        : x.ok ? `<button class="btn primary small" data-shotgo="${i}">${ACT_BTN[a]}</button>`
+        : x.legsOk && a === 'new' ? `<div class="small" style="margin:4px 0">The ${[!(Math.abs(+x.b.odds) >= 100) && 'odds', !(x.b.stake > 0) && 'stake'].filter(Boolean).join(' and ')} didn't read — type ${!(Math.abs(+x.b.odds) >= 100) && !(x.b.stake > 0) ? 'them' : 'it'} in:</div>
             <div style="display:flex;gap:6px;align-items:center;flex-wrap:wrap"><label class="small">Odds <input id="shot-o-${i}" inputmode="text" placeholder="-110 or +450" value="${Math.abs(+x.b.odds) >= 100 ? +x.b.odds : ''}" style="width:96px"></label>
             <label class="small">Stake $ <input id="shot-s-${i}" inputmode="decimal" value="${x.b.stake > 0 ? x.b.stake : ''}" style="width:72px"></label>
             <button class="btn primary small" data-shotfix="${i}">Save this bet</button></div>`
         : x.cut ? '' : '<div class="small">Can\'t save this one automatically — use + Add a bet.</div>'}</div>`;
-  }).join('') + `<div style="display:flex;gap:8px;margin-top:6px">${ready > 1 ? `<button class="btn primary small" id="shot-all">Save all ${ready}</button>` : ''}<button class="btn small" id="shot-close">Close</button></div>`;
-  const save = (i, el) => { const x = SHOT[i]; if (x.saved) return; const b = shotBet(x); b.id += '|' + i;
-    if (b.legs) b.legs.forEach(l => { if (!l.kick) delete l.kick; });
-    ST.mine[b.id] = b; x.saved = true; if (el) el.outerHTML = '<span class="small"><b>Saved.</b></span>'; };
-  $$('[data-shotsave]').forEach(el => el.onclick = () => { save(+el.dataset.shotsave, el); usave(); recompute(); });
+  }).join('') + `<div style="display:flex;gap:8px;margin-top:6px">${ready > 1 ? `<button class="btn primary small" id="shot-all">Do all ${ready}</button>` : ''}<button class="btn small" id="shot-close">Close</button></div>`;
+  const done = () => { usave(); recompute(); shotShow(); };
+  $$('[data-shotgo]').forEach(el => el.onclick = () => { shotApply(+el.dataset.shotgo); done(); });
+  $$('[data-shotnew]').forEach(el => el.onclick = () => { const x = SHOT[+el.dataset.shotnew]; x.plan = {act: SOLD(x.status) ? 'new_sold' : 'new'}; shotApply(+el.dataset.shotnew); done(); });
   $$('[data-shotfix]').forEach(el => el.onclick = () => { const i = +el.dataset.shotfix, x = SHOT[i];
     const o = shotNum($(`#shot-o-${i}`).value), st = shotNum($(`#shot-s-${i}`).value);
     if (!(Math.abs(o) >= 100) || !(st > 0)) { el.insertAdjacentHTML('afterend', '<span class="small" style="color:#c0392b"> Odds like -110 or +450, and a stake.</span>'); return; }
-    x.b.odds = o; x.b.stake = st; x.b.odds_how = ''; x.ok = true; save(i, el.parentElement); usave(); recompute(); });
-  if ($('#shot-all')) $('#shot-all').onclick = e => { SHOT.forEach((x, i) => { if (x.ok && !x.dup && !(x.warn || []).length) save(i, $(`[data-shotsave="${i}"]`)); }); usave(); recompute(); e.target.outerHTML = '<span class="small"><b>All saved.</b></span>'; };
+    x.b.odds = o; x.b.stake = st; x.b.odds_how = ''; x.plan = shotPlan(x); shotApply(i); done(); });
+  if ($('#shot-all')) $('#shot-all').onclick = () => { SHOT.forEach((x, i) => { if (x.ok && !x.done && !(x.warn || []).length) shotApply(i); }); done(); };
   $('#shot-close').onclick = () => { box.classList.add('hide'); box.innerHTML = ''; SHOT = null; };
 }
 $('#s-shot').onchange = e => { const f = [...e.target.files]; e.target.value = ''; if (f.length) shotRead(f); };
@@ -1833,7 +1877,7 @@ async function refreshLive() {
 }
 function scoreLine(g) { if (!g || !(g.state === 'in' || g.state === 'post' || g.done)) return '';
   return `<div class="sline ${g.state === 'in' ? 'in' : ''}">${g.as} – ${g.hs} <span class="small">${esc(g.detail || 'Final')}</span></div>`; }
-const PAGE_VER = "20261121155032";   // stamped by tracker.py; a newer published page reloads itself
+const PAGE_VER = "20261121155547";   // stamped by tracker.py; a newer published page reloads itself
 // ---------------- AUTO REFRESH (while the page is open) ----------------
 const busy = () => { const a = document.activeElement; return a && ['INPUT', 'SELECT', 'TEXTAREA'].includes(a.tagName) || $('#m-form').classList.contains('open'); };
 let tickN = 0;
