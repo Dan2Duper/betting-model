@@ -9,7 +9,7 @@ Pushing to main/package/sync/data from a Claude session with git works.
 - NFL DFS: Rich's Android phone (Tasker, every morning) pulls DK draftables -> relay /salaries -> data branch -> GitHub Action builds dfs_nfl.json -> DFS tab (cash/GPP, classic + showdown, write-ups, shuffle, "my read" AI box).
 - Relay = Cloudflare Worker "bet-tracker-relay" (code: dfs/worker.js; deploy by pasting into the dashboard editor in Rich's Chrome).
   Routes: / (DFS AI read), /salaries, /betslip (screenshot bet import: up to 8 screenshots in one read; a parlay split across
-  screenshots is merged into one bet; page has Save all + an already-in-My-bets check; odds worked out from stake + payout / to-win / leg odds when not read; odds box on the card as a last resort; deployed Nov 21 2026 as d26bb8ea), /report (?force=now|preview|update|final, ?dry=1).
+  screenshots is merged into one bet; page has Save all + an already-in-My-bets check; odds worked out from stake + payout / to-win / leg odds when not read; odds box on the card as a last resort; the page sends this week's ESPN games and the reader (claude-opus-5-5, env SLIP_MODEL) picks each leg's game_id on both teams + date; page checks team/opponent and odds vs payout, flags mismatches and keeps them out of Save all; deployed Nov 21 2026 as a252459d), /report (?force=now|preview|update|final, ?dry=1).
   Cron every 15 min -> runReports(): reads report.json, refreshes scores from ESPN, computes records/$ in code, Claude writes the
   report in a random comic style (mean/vulgar allowed, numbers exact) -> reports.json. "🔥 Roast me now" button on the Reports tab.
   Secrets: ANTHROPIC_API_KEY, ACCESS_CODE (also saved in the phone app as "DFS AI code"), GH_TOKEN. Model claude-sonnet-5-5.
