@@ -1611,22 +1611,38 @@ function shotImage(file) { return new Promise((res, rej) => { const img = new Im
     c.getContext('2d').drawImage(img, 0, 0, c.width, c.height); URL.revokeObjectURL(url); res(c.toDataURL('image/jpeg', 0.82).split(',')[1]); };
   img.onerror = rej; img.src = url; }); }
 const shotNorm = s => String(s || '').toLowerCase().replace(/[^a-z0-9 ]/g, ' ').replace(/\s+/g, ' ').trim();
-function shotTeamSide(g, team) {   // which side of ESPN game g is this slip team on?
-  const t = shotNorm(team); if (!t) return null;
-  const hit = (loc, ab) => { const L = shotNorm(loc), A = shotNorm(ab); return (L && (t.includes(L) || L.includes(t))) || (A && (t.split(' ').includes(A))); };
-  if (hit(g.home, g.habbr)) return 'home'; if (hit(g.away, g.aabbr)) return 'away'; return null;
+function shotTeamScore(loc, ab, team) {   // how well a slip team name matches an ESPN school/team: 3 exact ... 0 none
+  const t = shotNorm(team), L = shotNorm(loc), A = shotNorm(ab); if (!t || !L) return 0;
+  if (t === L) return 3;
+  const tw = t.split(' '), Lw = L.split(' ');
+  if (A && tw.includes(A)) return 2.5;
+  if (Lw.every(w => tw.includes(w))) return 2 + Lw.length / tw.length * 0.5;   // "Tennessee Volunteers" -> Tennessee
+  if (tw.every(w => Lw.includes(w))) return 0.6 * tw.length / Lw.length;      // "Tennessee" -> Tennessee Tech: weak, only if nothing better
+  return 0;
 }
-async function shotFindGame(lg, leg, around) {
+function shotTeamSide(g, team) {   // which side of ESPN game g is this slip team on, and how sure (score)
+  const h = shotTeamScore(g.home, g.habbr, team), a = shotTeamScore(g.away, g.aabbr, team);
+  return h >= a ? (h ? {side: 'home', s: h} : null) : {side: 'away', s: a};
+}
+async function shotFindGame(lg, leg, around) {   // best-scoring game on the nearest days; an exact school name always beats a partial one
   const days = []; const base = new Date((leg.game_date || around) + 'T12:00:00');
   for (const k of (leg.game_date ? [0, -1, 1] : [0, 1, 2, 3, 4, 5, 6, -1])) { const d = new Date(base); d.setDate(d.getDate() + k); days.push(d.toISOString().slice(0, 10)); }
+  let best = null;
   for (const d of days) {
     if (!ST.slate[lg + ':' + d]) { try { await espnDay(lg, d); } catch (e) { continue; } }
     for (const g of Object.values(ST.slate[lg + ':' + d] || {})) {
-      const side = shotTeamSide(g, leg.team) || (leg.opponent && ({home: 'away', away: 'home'})[shotTeamSide(g, leg.opponent)]);
-      if (side || (leg.market === 'total' && (shotTeamSide(g, leg.team) || shotTeamSide(g, leg.opponent)))) return {g, side};
+      const T = shotTeamSide(g, leg.team), O = leg.opponent ? shotTeamSide(g, leg.opponent) : null;
+      let side = null, sc = 0;
+      if (T && O && T.side !== O.side) { side = T.side; sc = T.s + O.s; }
+      else if (T && (!O || T.s >= O.s)) { side = T.side; sc = T.s; }
+      else if (O) { side = O.side === 'home' ? 'away' : 'home'; sc = O.s; }
+      if (!side || sc < 0.3) continue;
+      if (leg.market === 'total') side = side || 'home';
+      if (!best || sc > best.sc) best = {g, side, sc};
     }
+    if (best && best.sc >= 2) break;          // a solid match on the nearest day: stop looking further out
   }
-  return null;
+  return best && {g: best.g, side: best.side};
 }
 function shotLeg(lg, leg, g, side) {   // one leg in this page's format (spread lines stored from the home team's side)
   const m = leg.market === 'moneyline' ? 'ml' : leg.market;
@@ -1783,7 +1799,7 @@ async function refreshLive() {
 }
 function scoreLine(g) { if (!g || !(g.state === 'in' || g.state === 'post' || g.done)) return '';
   return `<div class="sline ${g.state === 'in' ? 'in' : ''}">${g.as} – ${g.hs} <span class="small">${esc(g.detail || 'Final')}</span></div>`; }
-const PAGE_VER = "20261121152336";   // stamped by tracker.py; a newer published page reloads itself
+const PAGE_VER = "20261121152838";   // stamped by tracker.py; a newer published page reloads itself
 // ---------------- AUTO REFRESH (while the page is open) ----------------
 const busy = () => { const a = document.activeElement; return a && ['INPUT', 'SELECT', 'TEXTAREA'].includes(a.tagName) || $('#m-form').classList.contains('open'); };
 let tickN = 0;
