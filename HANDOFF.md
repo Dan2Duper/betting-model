@@ -1,7 +1,7 @@
 # Bet Tracker — handoff (Nov 21 2026)
 
 Repo: Dan2Duper/betting-model (public). Site: https://dan2duper.github.io/betting-model/ (main branch, index.html).
-Branches: main (published page + t.js + dfs-todo workflow) · package (all code; tracker_template.html is the page source) ·
+Branches: main (published page + t.js + dfs-todo and mlb workflows) · package (all code; tracker_template.html is the page source) ·
 sync (state.json, report.json written by the page; reports.json written by the relay) · data (DFS salaries, dfs_todo.json, dfs_nfl.json, dfs-build workflow).
 Pushing to main/package/sync/data from a Claude session with git works.
 
@@ -29,17 +29,29 @@ Pushing to main/package/sync/data from a Claude session with git works.
   sample. Model moneyline edges lose the vig (-2% to -4%). Three leans seeded in rules.json / rules_seed.json, all lean_only:
   mlb_total_gap_over 909-773, mlb_total_gap_under 1206-1051 (model total 0.75+ runs off the line), mlb_wrigley_wind_out_over 73-46.
 
-## Next: MLB live (before Opening Day, late March 2027)
-1. 2026 season: rerun `bash mlb/setup_data.sh <dir> 2026` once Retrosheet publishes 2026 (chadwickbureau/retrosheet seasons/2026 and
-   retrosplits playing-2026.csv were not up yet on Nov 21). No closing odds source for 2026 yet.
-2. Daily job (GitHub Action on main, like dfs): mlb/live.py pulls MLB Stats API (statsapi.mlb.com schedule with
-   hydrate=probablePitcher,lineups,officials,weather + /game/{pk}/boxscore), converts to the games/pit/bat schema (MLBAM -> Retrosheet ids
-   via chadwickbureau/register people-*.csv; unknown rookies keep "mlbam:<id>"), appends today's games and runs features.build() on
-   history + season-to-date so live features are identical to the backtest. Output mlb.json on the data branch.
-   Lineups post ~3 h before first pitch: until then project each team's last lineup against the same-handed starter.
-3. Page: MLB in Week/Live/Tracker (snapshot ships base runs at 72F/no wind + the GLM temp/wind weights; the page applies the forecast,
-   as it does for football), reports (add an MLB espnDay URL in dfs/worker.js runReports), moneyline + total + run line bet types.
-4. MLB DFS: projections from the same features + dfs/optimizer.py (P,P,C,1B,2B,3B,SS,OF,OF,OF, $50K, 4-5 hitter stacks).
+## MLB live - built Nov 21 2026
+- Daily job: workflow "MLB model" (main: .github/workflows/mlb.yml; 8:23 am + 3:41 pm Central, March-November, or Run workflow).
+  mlb/live.py pulls the MLB Stats API (schedule + box scores, each game cached once in data:mlb/live_*.parquet), maps MLBAM ids to
+  Retrosheet ids (chadwickbureau/register; venues/umpires learned from the last 3 Retrosheet seasons; data:mlb/xwalk.json), appends the
+  slate and runs features.build() on mlb/hist (2016-25) + season to date, so live features = backtest features. Writes data:mlb.json.
+  Lineups: posted ones if up, else the team's last lineup. Weather: the Stats API's game-day weather once posted, else 72F and calm.
+- Verified: workflow input parity=2025 replays 2025 from the Stats API with history cut at 2024: winner 56.09%, log loss 0.6781,
+  avg total 8.84 vs the Retrosheet path's 56.01%, 0.6786, 8.85. 2026 season (Stats API, out of sample, no odds): 2,255 games through
+  Sept 14, winner 55.3%, log loss 0.6834 (a rough year; 2025 was 56.0%).
+- Page: MLB tab (tracker_template.html, mlbLoad/mlbRender): model score, win %, DraftKings moneyline + total from ESPN's MLB scoreboard,
+  lean chips, warnings for unannounced starters / unposted lineups / missing weather. Not yet seen against a real in-season ESPN feed.
+- Seasons: applySeasons() shows a league and its tabs only in season (SEASONS: MLB Mar 18-Nov 5, CFB Aug 20-Jan 25, NFL Sep 1-Feb 15).
+  Football tabs = Week, Scores, DFS. Preview any day with ?asof=YYYY-MM-DD on the page address.
+
+## Next for MLB
+1. First week of the 2027 season: open the MLB tab on a game day and check the ESPN odds fields (mlbOdds reads both feed shapes) and
+   team matching; fix whatever the real feed shows.
+2. Log MLB leans as picks so they grade on the Tracker and in reports (frozenPicks / picks_log; grade.py needs MLB finals; worker.js
+   runReports needs an MLB espnDay URL). Until then the MLB tab is display only.
+3. Retrosheet 2026 (not published yet Nov 21): `bash mlb/setup_data.sh <dir> 2026`, then `python3 mlb/make_hist.py <dir>` and commit
+   mlb/hist + model.json; the Stats API cache then only carries 2027. No closing-odds source for 2026 yet (backtest stays 2013-25).
+4. Forecast weather before the Stats API posts it (Open-Meteo at the park + field azimuth from the Stats API venue record).
+5. MLB DFS: projections from the same features + dfs/optimizer.py (P,P,C,1B,2B,3B,SS,OF,OF,OF, $50K, 4-5 hitter stacks).
 
 ## Loose ends
 - TE floor/ceiling calibration in dfs/nfl_model.py is off.

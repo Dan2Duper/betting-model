@@ -147,6 +147,14 @@ def main():
     seasons = list(range(int(H['games'].season.max()) + 1, d0.year + 1))
     T = update_cache(A.cache, X, seasons, day0, A.max_new)
     LG = T['games'][T['games'].date < day0] if len(T['games']) else T['games']
+    # ids learned after a game was cached (a rookie gets his Retrosheet id, a park or umpire gets mapped) are applied to the cached rows
+    rp = lambda i: X['players'].get(str(i)[1:], i) if str(i).startswith('m') else i
+    if len(LG):
+        LG = LG.copy(); LG['park'] = [X['venues'].get(str(p)[1:], p) if str(p).startswith('v') else p for p in LG.park]
+        LG['ump'] = [X['umps'].get(str(u)[1:], u) if str(u).startswith('m') else u for u in LG.ump]
+        for c in ('asp', 'hsp'): LG[c] = LG[c].map(rp)
+        for c in ('a_lineup', 'h_lineup'): LG[c] = [','.join(rp(i) for i in str(v).split(',')) for v in LG[c]]
+        for n in ('pit', 'bat'): T[n] = T[n].assign(pid=T[n].pid.map(rp))
     # ---- the slate ----
     slate = []
     for g in schedule(startDate=day0, endDate=str(d0 + dt.timedelta(days=A.days - 1)), gameType='R', hydrate='probablePitcher,lineups,venue,weather,officials'):
@@ -183,7 +191,7 @@ def main():
     pit['date'] = pd.to_datetime(pit.date); bat['date'] = pd.to_datetime(bat.date)
     ids = set(G[G.season > H['games'].season.max()][['asp', 'hsp']].values.ravel()) | {i for s in G[G.season > H['games'].season.max()][['a_lineup', 'h_lineup']].values.ravel() for i in str(s).split(',')}
     hands_for(X, sorted(i for i in ids if i), A.cache)
-    hands = pd.concat([H['hands'], pd.DataFrame([(k, v[0], v[1]) for k, v in X['hands'].items()], columns=['pid', 'bats', 'throws'])]).drop_duplicates('pid')
+    hands = pd.concat([H['hands'], pd.DataFrame([(q, v[0], v[1]) for k, v in X['hands'].items() for q in {k, rp(k)}], columns=['pid', 'bats', 'throws'])]).drop_duplicates('pid')
     F = build(G, pit, bat, hands)
     mu, sd, beta = np.array(M['mu']), np.array(M['sd']), np.array(M['beta'])
     F['lam'] = np.exp(M['b0'] + ((F[FEATS].values - mu) / sd) @ beta)

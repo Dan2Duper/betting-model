@@ -127,6 +127,8 @@ tr.struck td.keep{text-decoration:none;opacity:1}
 .edit td{padding:10px}
 .editgrid{display:flex;flex-wrap:wrap;gap:12px;align-items:end}
 .hide{display:none!important}
+.mg{border-top:1px solid var(--border);padding:11px 0}.mg:first-child{border-top:0}.mg .top{display:flex;justify-content:space-between;gap:8px;flex-wrap:wrap;font-weight:700;font-size:17px}
+.mg .row{display:flex;gap:6px 18px;flex-wrap:wrap;margin-top:4px}.mg .row b{font-weight:700}.mg .k{color:var(--ink-2);font-size:13px;display:block}.mg .lean{background:#d29a00;color:#1b1400}
 .ftoggle{display:none}
 .rtext p{margin:6px 0 10px;color:var(--ink-2)}
 .sb{display:grid;grid-template-columns:repeat(auto-fill,minmax(260px,1fr));gap:10px}
@@ -221,9 +223,10 @@ a{color:var(--series)}
     </div>
   </header>
   <div class="tabs" id="tabs">
-    <button data-t="week" class="on">Week</button>
-    <button data-t="live">Scores</button>
-    <button data-t="dfs">DFS</button>
+    <button data-t="week" data-sport="fb" class="on">Week</button>
+    <button data-t="mlb" data-sport="mlb" class="hide">MLB</button>
+    <button data-t="live" data-sport="fb">Scores</button>
+    <button data-t="dfs" data-sport="fb">DFS</button>
     <button data-t="reports">Reports</button>
     <button data-t="track">Tracker</button>
     <button data-t="stats">Stats</button>
@@ -289,6 +292,17 @@ a{color:var(--series)}
       <div class="filters" style="margin:8px 0 10px;padding:10px"><label class="f">Day<select id="sb-day"></select></label><label class="f">Conference<select id="sb-conf"></select></label><label class="f">Sort<select id="sb-sort"><option value="live">Live first</option><option value="kick">Kickoff</option><option value="conf">Conference</option></select></label><label class="f">Team<input id="sb-team" placeholder="any team"></label></div>
       <div id="scoreboard"></div>
     </div>
+  </section>
+
+  <section id="t-mlb" class="hide">
+    <div class="card">
+      <div class="cardhead">
+        <div><h2>MLB: model vs DraftKings</h2><div class="small" id="mlb-built">loading…</div></div>
+        <div style="display:flex;gap:8px;flex-wrap:wrap"><div class="seg" id="mlb-day"></div><button class="btn small" id="mlb-refresh">Refresh</button></div>
+      </div>
+      <div id="mlb-games"></div>
+    </div>
+    <div class="card"><div class="small" id="mlb-note"></div></div>
   </section>
 
   <section id="t-dfs" class="hide">
@@ -873,7 +887,7 @@ let BOARD = [], BETS = [], PICKS = [];
 function buildBoard() {
   computeQB();
   BOARD = [];
-  for (const lg of ['CFB', 'NFL']) for (const g of SNAP[lg.toLowerCase()].games) { const L = lineFor(lg, g), P = predict(lg, g); BOARD.push({lg, g, L, P, F: flagsFor(lg, g, P, L)}); }
+  for (const lg of ['CFB', 'NFL']) if (inSeason(lg)) for (const g of SNAP[lg.toLowerCase()].games) { const L = lineFor(lg, g), P = predict(lg, g); BOARD.push({lg, g, L, P, F: flagsFor(lg, g, P, L)}); }
   ST.glines = ST.glines || {}; ST.glast = ST.glast || {};
   for (const x of BOARD) { if (x.L.spread == null && x.L.total == null) continue; const k = x.lg + ':' + (x.lg === 'NFL' ? (x.g.espn || x.g.id) : x.g.id);
     if (!started(x.g.kick)) ST.glast[k] = {spread: x.L.spread, total: x.L.total, src: x.L.src || ''};
@@ -1749,6 +1763,8 @@ async function tick() {
   if (tickN % 5 === 0) syncCycle();
   if (tickN % 30 === 0) refreshAll(false);
   if (tickN % 5 === 0 && location.protocol.startsWith('http')) checkNewWeek();
+  if (tickN % 30 === 0) applySeasons();
+  if (TAB === 'mlb' && tickN % 3 === 0) { if (MLB) await Promise.allSettled([...new Set(MLB.games.map(g => g.date))].map(d => mlbEspnDay(d))); mlbRender(); }
   if (!busy()) recompute(true);
 }
 async function checkNewWeek() {   // the Tuesday update publishes a new page; load it on its own
@@ -1969,12 +1985,113 @@ $('#dfs-ai').onclick = async () => {
 try { $('#s-dfscode').value = localStorage.getItem('dfsAiCode') || ''; } catch (e) {}
 $('#s-savedfs').onclick = () => { try { localStorage.setItem('dfsAiCode', $('#s-dfscode').value.trim()); $('#s-dfsmsg').textContent = 'Saved'; } catch (e) { $('#s-dfsmsg').textContent = 'Could not save on this device'; } };
 // ---------------- boot ----------------
+// ---------------- seasons: a league (and its tabs) shows only while it is being played ----------------
+const ASOF = new URLSearchParams(location.search).get('asof');   // preview another day: add ?asof=2027-04-10 to the address
+function asofDate() { return ASOF ? new Date(ASOF + 'T12:00:00') : new Date(); }
+const SEASONS = {MLB: [318, 1105], CFB: [820, 125], NFL: [901, 215]};   // first and last day shown, as month*100 + day
+function inSeason(lg, d) { d = d || asofDate(); const k = (d.getMonth() + 1) * 100 + d.getDate(), [a, b] = SEASONS[lg]; return a <= b ? k >= a && k <= b : k >= a || k <= b; }
+function applySeasons() {
+  const fb = {CFB: inSeason('CFB'), NFL: inSeason('NFL')}, on = {fb: fb.CFB || fb.NFL, mlb: inSeason('MLB')};
+  $$('#tabs button').forEach(b => { if (b.dataset.sport) b.classList.toggle('hide', !on[b.dataset.sport]); });
+  $('#status')?.classList.toggle('hide', !on.fb);   // score / line / QB status chips are football's
+  ['lg', 'sb-lg'].forEach(id => $$('#' + id + ' button').forEach(b => b.classList.toggle('hide', !fb[b.dataset.l])));
+  $$('#m-lg option').forEach(o => { o.hidden = o.disabled = !fb[o.value] && on.fb; });
+  if (on.fb) {   // move off a league that just ended
+    if (!fb[LG]) $$('#lg button').find(b => fb[b.dataset.l])?.click();
+    if (!fb[SB.lg]) $$('#sb-lg button').find(b => fb[b.dataset.l])?.click();
+    if (!fb[$('#m-lg').value]) { $('#m-lg').value = fb.CFB ? 'CFB' : 'NFL'; }
+  }
+  const cur = $$('#tabs button').find(b => b.dataset.t === TAB);
+  if (cur && cur.classList.contains('hide')) $$('#tabs button').find(b => !b.classList.contains('hide'))?.click();
+}
+
+// ---------------- MLB: daily model file (data branch) + DraftKings lines and scores from ESPN ----------------
+const MLB_URL = 'https://raw.githubusercontent.com/Dan2Duper/betting-model/data/mlb.json';
+const MLB_ESPN = {LAA: 'ANA', CHC: 'CHN', CHW: 'CHA', CWS: 'CHA', KC: 'KCA', LAD: 'LAN', NYM: 'NYN', NYY: 'NYA', SD: 'SDN', SF: 'SFN', STL: 'SLN', TB: 'TBA', WSH: 'WAS', OAK: 'ATH', AZ: 'ARI'};
+const MLB_SHOW = {ANA: 'LAA', CHN: 'CHC', CHA: 'CWS', KCA: 'KC', LAN: 'LAD', NYN: 'NYM', NYA: 'NYY', SDN: 'SD', SFN: 'SF', SLN: 'STL', TBA: 'TB', WAS: 'WSH'};
+const mlbT = c => MLB_SHOW[c] || c;
+let MLB = null, mlbDay = '', mlbEspn = {}, mlbErr = '';
+const amImp = o => o < 0 ? -o / (-o + 100) : 100 / (o + 100);
+const amTxt = o => o == null || isNaN(o) ? '' : (o > 0 ? '+' : '') + Math.round(o);
+function mlbOdds(c) {   // ESPN lists the DraftKings line two ways depending on the feed version
+  const o = c.odds?.[0]; if (!o) return null;
+  const num = v => { const n = parseFloat(String(v ?? '').replace(/[^0-9.+-]/g, '')); return isNaN(n) ? null : n; };
+  const mh = num(o.homeTeamOdds?.moneyLine ?? o.moneyline?.home?.close?.odds), ma = num(o.awayTeamOdds?.moneyLine ?? o.moneyline?.away?.close?.odds);
+  return {mh, ma, total: num(o.overUnder ?? o.total?.over?.close?.line), over: num(o.overOdds ?? o.total?.over?.close?.odds), under: num(o.underOdds ?? o.total?.under?.close?.odds), src: o.provider?.name || 'ESPN'};
+}
+async function mlbEspnDay(d) {
+  const j = await getJSON('https://site.api.espn.com/apis/site/v2/sports/baseball/mlb/scoreboard?dates=' + ymd(d)); const out = [];
+  for (const ev of j.events || []) {
+    const c = ev.competitions?.[0]; if (!c) continue;
+    const H = c.competitors.find(x => x.homeAway === 'home'), A = c.competitors.find(x => x.homeAway === 'away');
+    out.push({id: ev.id, kick: ev.date, home: MLB_ESPN[H.team.abbreviation] || H.team.abbreviation, away: MLB_ESPN[A.team.abbreviation] || A.team.abbreviation, hs: +H.score, as: +A.score,
+              state: ev.status?.type?.state || '', done: !!ev.status?.type?.completed, detail: ev.status?.type?.shortDetail || '', odds: mlbOdds(c)});
+  }
+  const keep = ST.mlbLines = ST.mlbLines || {};   // remember the last pregame line so it is still shown after first pitch
+  out.forEach(e => { if (e.odds && e.state === 'pre') keep[e.id] = e.odds; else if (keep[e.id]) e.odds = keep[e.id]; });
+  mlbEspn[d] = out; save();
+}
+async function mlbLoad(force) {
+  if (!MLB || force) {
+    try { const r = await fetch(MLB_URL + '?t=' + Date.now()); if (!r.ok) throw new Error(r.status); MLB = await r.json(); mlbErr = ''; }
+    catch (e) { mlbErr = 'No MLB file yet. It appears after the next automatic refresh.'; MLB = MLB || null; }
+  }
+  if (MLB) {
+    const days = [...new Set(MLB.games.map(g => g.date))].sort(); if (!days.includes(mlbDay)) mlbDay = days[0] || '';
+    await Promise.allSettled(days.map(d => mlbEspnDay(d)));
+  }
+  mlbRender();
+}
+function mlbMatch(g) {   // the ESPN game for a model game: same teams, closest start (doubleheaders)
+  const c = (mlbEspn[g.date] || []).filter(e => e.home === g.home && e.away === g.away);
+  return c.sort((a, b) => Math.abs(new Date(a.kick) - new Date(g.kick)) - Math.abs(new Date(b.kick) - new Date(g.kick)))[0] || null;
+}
+function mlbView(g) {
+  const e = mlbMatch(g), o = e && e.odds, R = MLB.rules || {}, off = R.total_offset ?? 0.45, gapMin = R.total_gap_min ?? 0.75, ov = MLB.model.over;
+  const v = {g, e, o, fav: g.p_home >= 0.5 ? 'home' : 'away', pFav: Math.max(g.p_home, 1 - g.p_home), mtot: g.total - off, leans: []};
+  if (o && o.mh != null && o.ma != null) { const ih = amImp(o.mh), ia = amImp(o.ma); v.mktHome = ih / (ih + ia); v.edge = g.p_home - v.mktHome; }
+  if (o && o.total != null) {
+    v.gap = v.mtot - o.total; v.pOver = 1 / (1 + Math.exp(-(ov.a + ov.b * (g.total - o.total))));
+    if (v.gap >= gapMin) v.leans.push({rule: 'mlb_total_gap_over', txt: `Lean: Over ${o.total}`}); else if (v.gap <= -gapMin) v.leans.push({rule: 'mlb_total_gap_under', txt: `Lean: Under ${o.total}`});
+    if (g.park === 'CHI11' && g.wind_out >= (R.wrigley_wind_out_mph ?? 10)) v.leans.push({rule: 'mlb_wrigley_wind_out_over', txt: `Lean: Over ${o.total} (Wrigley, wind out ${g.wind_out})`});
+  }
+  return v;
+}
+function mlbRender() {
+  const el = $('#mlb-games'); if (!el) return;
+  $('#mlb-note').innerHTML = `<b>How to read this.</b> The model predicts each team's runs from the starter, bullpen, lineup, park and weather, using only games played before today. Tested on 29,045 games (2013-25) it picked the winner 57.9% of the time; DraftKings' closing line picked 58.1%. Betting its moneyline disagreements lost about the juice, so <b>no MLB bet is an AI-LOX yet</b>. The leans (model total 0.75+ runs from the line, Wrigley with the wind blowing out) won 53-61% in the backtest but have not cleared the bar; they are tracked, not staked.`;
+  if (!MLB) { $('#mlb-built').textContent = mlbErr || 'loading…'; el.innerHTML = ''; return; }
+  const days = [...new Set(MLB.games.map(g => g.date))].sort();
+  $('#mlb-day').innerHTML = days.map(d => `<button data-d="${d}" class="${d === mlbDay ? 'on' : ''}">${new Date(d + 'T12:00:00').toLocaleDateString([], {weekday: 'short', month: 'short', day: 'numeric'})}</button>`).join('');
+  $$('#mlb-day button').forEach(b => b.onclick = () => { mlbDay = b.dataset.d; mlbRender(); });
+  $('#mlb-built').textContent = `Model built ${new Date(MLB.built).toLocaleString([], {weekday: 'short', hour: 'numeric', minute: '2-digit'})} · lines: DraftKings via ESPN`;
+  const G = MLB.games.filter(g => g.date === mlbDay).sort((a, b) => a.kick < b.kick ? -1 : 1);
+  if (!G.length) { el.innerHTML = '<div class="small">No games on this day.</div>'; return; }
+  el.innerHTML = G.map(g => {
+    const v = mlbView(g), o = v.o, e = v.e, favT = mlbT(v.fav === 'home' ? g.home : g.away);
+    const when = new Date(g.kick).toLocaleTimeString([], {hour: 'numeric', minute: '2-digit'});
+    const score = e && (e.state === 'in' || e.done) ? `<span>${mlbT(g.away)} ${e.as}, ${mlbT(g.home)} ${e.hs} <span class="small">${esc(e.detail)}</span></span>` : `<span class="small">${when}</span>`;
+    const warn = [!g.sp_away_known || !g.sp_home_known ? 'starter not announced' : '', g.lineup_away !== 'posted' || g.lineup_home !== 'posted' ? 'lineups not posted (using last game)' : '', g.wx !== 'posted' ? 'weather not in yet (72°, calm)' : ''].filter(Boolean);
+    const ml = o && o.mh != null ? `${mlbT(g.away)} ${amTxt(o.ma)} / ${mlbT(g.home)} ${amTxt(o.mh)}` : 'no line yet';
+    const mktFav = v.mktHome != null ? (v.fav === 'home' ? v.mktHome : 1 - v.mktHome) : null;
+    return `<div class="mg"><div class="top"><span>${mlbT(g.away)} @ ${mlbT(g.home)}${g.num ? ' (G' + g.num + ')' : ''}</span>${score}</div>
+      <div class="small">${esc(g.sp_away)} vs ${esc(g.sp_home)} · ${esc(g.venue)}${g.wx === 'posted' && !g.dome ? ` · ${g.temp}°${g.wind_out ? ', wind out ' + g.wind_out : g.wind_in ? ', wind in ' + g.wind_in : ''}` : ''}</div>
+      <div class="row"><div><span class="k">Model score</span><b>${mlbT(g.away)} ${g.pa.toFixed(1)}, ${mlbT(g.home)} ${g.ph.toFixed(1)}</b></div>
+        <div><span class="k">Model winner</span><b>${favT} ${(100 * v.pFav).toFixed(0)}%</b></div>
+        <div><span class="k">DraftKings moneyline</span>${ml}${mktFav != null ? ` <span class="small">(${favT} ${(100 * mktFav).toFixed(0)}%)</span>` : ''}</div>
+        <div><span class="k">Total: model / line</span><b>${v.mtot.toFixed(1)}</b> / ${o && o.total != null ? o.total + (o.over != null ? ` <span class="small">(o ${amTxt(o.over)}, u ${amTxt(o.under)})</span>` : '') : 'no line yet'}</div></div>
+      <div>${v.leans.map(l => `<span class="chip lean" title="${esc((BR.rules[l.rule] || {}).src || '')}">${esc(l.txt)}</span>`).join('')}${warn.map(w => `<span class="chip">${esc(w)}</span>`).join('')}</div></div>`;
+  }).join('');
+}
+$('#mlb-refresh').onclick = () => mlbLoad(true);
+
 let TAB = 'week';
-$$('#tabs button').forEach(b => b.onclick = () => { TAB = b.dataset.t; if (TAB === 'live') setTimeout(refreshLive, 0); if (TAB === 'reports') setTimeout(repLoad, 0); if (TAB === 'dfs') setTimeout(dfsLoad, 0); $$('#tabs button').forEach(x => x.classList.toggle('on', x === b)); ['week', 'live', 'dfs', 'reports', 'track', 'stats', 'rules', 'settings'].forEach(t => $('#t-' + t).classList.toggle('hide', t !== TAB)); renderAll(); });
+$$('#tabs button').forEach(b => b.onclick = () => { TAB = b.dataset.t; if (TAB === 'live') setTimeout(refreshLive, 0); if (TAB === 'reports') setTimeout(repLoad, 0); if (TAB === 'dfs') setTimeout(dfsLoad, 0); if (TAB === 'mlb') setTimeout(mlbLoad, 0); $$('#tabs button').forEach(x => x.classList.toggle('on', x === b)); ['week', 'mlb', 'live', 'dfs', 'reports', 'track', 'stats', 'rules', 'settings'].forEach(t => $('#t-' + t).classList.toggle('hide', t !== TAB)); renderAll(); });
 function recompute(keepOpen) { const open = keepOpen ? $$('#games tr.edit.open').map(t => t.dataset.edit) : []; buildBoard(); buildBets(); buildMine(); renderAll(); open.forEach(i => $(`#games tr[data-edit="${i}"]`)?.classList.add('open')); }
 function renderAll() {
-  $('#sub').textContent = `Ratings through CFB week ${SNAP.cfb.week - 1} and NFL week ${SNAP.nfl.week - 1} · $${(+ST.budget).toFixed(0)} a day`;
-  if (TAB === 'week') renderWeek(); else if (TAB === 'live') renderLive(); else if (TAB === 'track') renderTracker(); else if (TAB === 'stats') renderStats(); else if (TAB === 'reports') renderReports(); else if (TAB === 'dfs') dfsRender();
+  const fbs = [inSeason('CFB') && `CFB week ${SNAP.cfb.week - 1}`, inSeason('NFL') && `NFL week ${SNAP.nfl.week - 1}`].filter(Boolean);
+  $('#sub').textContent = (fbs.length ? `Ratings through ${fbs.join(' and ')}` : 'Football is out of season') + (inSeason('MLB') ? ' · MLB daily' : '') + ` · $${(+ST.budget).toFixed(0)} a day`;
+  if (TAB === 'week') renderWeek(); else if (TAB === 'live') renderLive(); else if (TAB === 'track') renderTracker(); else if (TAB === 'stats') renderStats(); else if (TAB === 'reports') renderReports(); else if (TAB === 'dfs') dfsRender(); else if (TAB === 'mlb') mlbRender();
 }
 async function refreshAll(force) {
   $('#refresh').disabled = true; $('#refresh').textContent = 'Refreshing…';
@@ -1983,7 +2100,7 @@ async function refreshAll(force) {
 }
 $('#refresh').onclick = () => { refreshAll(true); syncCycle(); };
 setStatus('scores', '<b>Scores:</b> loading…'); setStatus('lines', '<b>Lines:</b> loading…'); setStatus('wx', '<b>Weather:</b> loading…'); setStatus('qb', '<b>QB news:</b> loading…');
-themeLbl(); sbLoad(); restoreGF(); $$('.ftoggle').forEach(b => b._set && b._set()); recompute(); refreshAll(false); syncCycle(); repLoad();
+themeLbl(); applySeasons(); if (TAB !== 'mlb') sbLoad(); restoreGF(); $$('.ftoggle').forEach(b => b._set && b._set()); recompute(); refreshAll(false); syncCycle(); repLoad();
 if (screen.width <= 700 && innerWidth >= 900) $('#dsnote').innerHTML = '<div class="note">Your phone is showing the desktop version, so everything is tiny. In Chrome tap <b>⋮</b> and uncheck <b>Desktop site</b>.</div>';
 let rt; addEventListener('resize', () => { clearTimeout(rt); rt = setTimeout(renderAll, 150); });
 </script>
