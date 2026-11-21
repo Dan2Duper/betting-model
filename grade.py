@@ -59,9 +59,12 @@ for name in ('picks_log', 'bets_log', 'my_bets_log'):
     f = f'{PKG}/logs/{name}.csv'
     if not os.path.exists(f): continue
     L = pd.read_csv(f, dtype={'game_id': str}); L['result'] = [grade(r) for r in L.itertuples()]
+    sold = pd.to_numeric(L['sold'], errors='coerce') if 'sold' in L else pd.Series(float('nan'), index=L.index)   # sold / cashed out: the sale decides
     if name in ('bets_log', 'my_bets_log'):
         odds = L.odds.astype(float); b = (100 / odds.abs()).where(odds < 0, odds / 100)
         L['profit'] = [round(float(s) * bb, 2) if res == 'W' else (-float(s) if res == 'L' else (0.0 if res == 'P' else '')) for s, bb, res in zip(L.stake, b, L.result)]
+        sd = sold.notna(); pl = (sold - L.stake.astype(float)).round(2)
+        L.loc[sd, 'profit'] = pl[sd]; L.loc[sd, 'result'] = ['W' if v > 0.005 else ('L' if v < -0.005 else 'P') for v in pl[sd]]
     L.to_csv(f, index=False)
     g = L[L.result.isin(['W', 'L', 'P'])]
     print(f"== {dict(picks_log='every model flag', bets_log='ALL AI-LOX (suggested stakes)', my_bets_log='MY BETS (real money)')[name]}: {len(g)} graded, {len(L) - len(g)} pending")

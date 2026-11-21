@@ -46,7 +46,18 @@ async function saveSalaries(req, env, url, origin) {
   return reply({saved: path, players: J.draftables.length}, 200, origin);
 }
 
-const SLIP = `You read sportsbook bet slips and DraftKings Predictions trades from phone screenshots. List every bet you can see.
+const SLIP = `You read bets and trades from phone screenshots: any sportsbook (DraftKings, FanDuel, BetMGM, Caesars, ESPN BET, Fanatics,
+bet365...) or prediction market (DraftKings Predictions, Kalshi, Polymarket, Robinhood, Novig...), in any view: the bet slip, My Bets /
+My Activity lists, a single bet's detail page, a settled or cashed-out card, a mid-game card with a live score, or a history/
+transaction row. Rich dumps screenshots of all kinds; another part of the app matches what you return against bets already saved, so
+report each bet/position exactly as the screen shows it NOW and never merge two different positions.
+For every item give: book (the app), kind ("trade" for prediction-market contracts, "bet" for sportsbook wagers), bet_ref (the bet ID if
+shown, else the placed date/time exactly as printed, e.g. "Nov 21, 2026, 7:33:13AM"), status: open | live (game in progress, not
+settled) | won | lost | push | void | sold (fully sold / cashed out) | partially_sold, stake = the money currently in it (Wager, Bought,
+Cost; after a partial sale, the cost still riding), sold_for = money received from selling or cashing out (fully or partly; total so
+far), sell_offer = the value on an open Sell / Cash Out button (only an offer, NOT a sale), placed = false for a slip that has not been
+placed yet (a Place Bet / Buy button still showing). A screenshot with no bet on it (ads, promos, boosts menus, account or wallet
+screens, odds boards) -> one item with ignore: true and ignore_reason, no legs.
 DraftKings PREDICTIONS (My Activity > Trades; cards tagged "Trade") look different from sportsbook slips: "Tennessee | 39.36% To Win",
 "Bought: $44.25 | To Pay: $107.00", a Sell button, and an Open/Settled badge. Read them as bets: Bought = stake, To Pay = payout
 (stake included), the % = price_pct (the contract price, NOT odds; leave odds blank unless American odds are printed).
@@ -79,7 +90,9 @@ Before answering, check yourself: every leg's team and opponent are the two team
 stake x odds agrees with the to-win amount.
 Never guess a number you can't read. Answer only by calling the bet_slip tool.`;
 const SLIP_TOOL = {name: 'bet_slip', description: 'The bets read from the screenshot.', input_schema: {type: 'object', required: ['bets'], properties: {bets: {type: 'array', items: {type: 'object', properties: {
-  league: {type: 'string'}, type: {type: 'string'}, legs_expected: {type: ['number', 'string']}, price_pct: {type: ['number', 'string']}, cut_off: {type: 'boolean'}, cut_note: {type: 'string'}, odds: {type: ['number', 'string']}, stake: {type: 'number'}, to_win: {type: 'number'}, payout: {type: 'number'}, placed_date: {type: 'string'},
+  league: {type: 'string'}, type: {type: 'string'}, legs_expected: {type: ['number', 'string']}, book: {type: 'string'}, kind: {type: 'string', enum: ['bet', 'trade']}, bet_ref: {type: 'string'},
+  status: {type: 'string', enum: ['open', 'live', 'won', 'lost', 'push', 'void', 'sold', 'partially_sold']}, sold_for: {type: ['number', 'string']},
+  sell_offer: {type: ['number', 'string']}, placed: {type: 'boolean'}, ignore: {type: 'boolean'}, ignore_reason: {type: 'string'}, price_pct: {type: ['number', 'string']}, cut_off: {type: 'boolean'}, cut_note: {type: 'string'}, odds: {type: ['number', 'string']}, stake: {type: 'number'}, to_win: {type: 'number'}, payout: {type: 'number'}, placed_date: {type: 'string'},
   legs: {type: 'array', items: {type: 'object', properties: {team: {type: 'string'}, opponent: {type: 'string'}, market: {type: 'string', enum: ['spread', 'total', 'moneyline', 'prop']},
     pick: {type: 'string'}, line: {type: ['number', 'string']}, game_date: {type: 'string'}, odds: {type: ['number', 'string']}, matchup: {type: 'string'}, game_id: {type: 'string'}, description: {type: 'string'}}}}}}}}}};
 async function readSlip(req, env, origin) {
@@ -174,7 +187,7 @@ function statusOf(b) {
   if (b.score && b.score.state === 'post') return b.m > 0 ? 'W' : b.m < 0 ? 'L' : 'P';
   return b.m > 0 ? 'winning' : b.m < 0 ? 'losing' : 'even';
 }
-const money = (b, s) => s === 'W' ? b.to_win : s === 'L' ? -b.stake : 0;
+const money = (b, s) => b.pl !== undefined && b.pl !== null ? b.pl : s === 'W' ? b.to_win : s === 'L' ? -b.stake : 0;   // pl: a sold / cashed-out bet's real profit
 const fmt$ = v => (v < 0 ? '-$' : '+$') + Math.abs(v).toFixed(2);
 function elapsed(detail) {
   const d = String(detail || '').toLowerCase(); if (d.includes('half')) return 0.5; if (d.includes('final')) return 1;
