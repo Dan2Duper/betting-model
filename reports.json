@@ -2,6 +2,15 @@
  "_note": "Written automatically by the relay (and by Claude); newest first; the Bet Tracker Reports tab reads this.",
  "reports": [
   {
+   "id": "2026-11-21T02:45:47Z-CFB",
+   "time": "2026-11-21T02:45:47Z",
+   "league": "CFB",
+   "kind": "update",
+   "title": "Do I Hear Under? SOLD! Iowa State Sets $22.00 on Fire at UCF Auction",
+   "text": "**AI-LOX:**\n\n- LOST -$22.00. Ladies and gents, we had the UNDER 48.5 in Iowa State at UCF. Iowa State 17, UCF 48, FINAL. Blew past the number by 16.5! Defense never showed up, just a bunch of guys in jerseys. Gone!\n- WINNING. UNDER 37.5, New Mexico at Wyoming, $108.00 to win $98.18. It's 7-0 with 1:11 left in the first. Pace says 30 against a 37.5 number. Looks sweet, but it's one quarter, you excitable bastard. Don't you cheer yet!\n\n**THE MODEL:**\n\nOne of six games final, and the model whiffed the winner, 0 for 1. It's 0-1 against the spread, with an average miss of 35.5 points. Thirty-five and a half! The model had Iowa State and UCF 27-22. Nowhere close, and it still charged admission.\n\nLive on the block right now:\n\n- Clemson 3, Duke 0, 9:40 left in the 3rd (model 13-29)\n- Bowling Green 0, Toledo 16, 8:11 left in the 3rd (model 14-36)\n- Oregon 17, Michigan State 0, halftime (model 32-15)\n- UTEP 3, Air Force 28, halftime (model 13-36)\n- New Mexico 7, Wyoming 0, 1:11 left in the 1st (model 26-13)\n\n**STILL TO COME:**\n\nStep right up, the Saturday and Sunday lots are open!\n\n- Northwestern -2.5 at Minnesota, $23.00 to win $20.54, noon EST.\n- UNDER 70.5, Houston at West Virginia, $38.00 to win $33.93, 1:00 PM EST.\n- Rutgers +26.5 at Penn State, $23.00 to win $20.54, 3:30 PM EST.\n- Texas A&M +7.5 at Oklahoma, $11.00 to win $9.02, 3:45 PM EST.\n- Arizona State +2.5 vs Oklahoma State, $35.00 to win $32.41, 10:15 PM EST.\n- UNDER 44.5, MIA at BUF, $60.00 to win $57.14, Sunday 1:00 PM EST.\n- UNDER 43.5, BAL at CAR, $50.00 to win $45.45, Sunday 1:00 PM EST.\n- UNDER 40.5, ARI at KC, $20.00 to win $19.05, Sunday 1:00 PM EST.\n\nThree NFL unders stacked like cordwood, Rich! Pray for incompetence and bad weather. SOLD, to the idiot in the recliner!",
+   "style": "a fast-talking auctioneer"
+  },
+  {
    "id": "2026-11-20T15:00:47Z-CFB",
    "time": "2026-11-20T15:00:47Z",
    "league": "CFB",
@@ -192,12 +201,13 @@
    ]
   },
   "2026-11-20": {
-   "n": 1,
-   "last": "2026-11-20T15:00:47Z",
-   "fp": "|0",
-   "fpBets": "",
+   "n": 2,
+   "last": "2026-11-21T02:45:47Z",
+   "fp": "2026-11-20|401856869|cfb_wind_underL|1",
+   "fpBets": "2026-11-20|401856869|cfb_wind_underL",
    "kinds": [
-    "preview"
+    "preview",
+    "update"
    ]
   }
  }
