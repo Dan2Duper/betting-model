@@ -44,8 +44,8 @@ for f in glob.glob(f'{RAW}/ros/*.ROS'):
 pd.DataFrame([(k, b, t) for k, (b, t) in H.items()], columns=['pid', 'bats', 'throws']).to_parquet(f'{D}/hands.parquet')
 
 # ---------------- player lines (retrosplits daybyday) ----------------
-BC = ['B_PA', 'B_AB', 'B_H', 'B_2B', 'B_3B', 'B_HR', 'B_BB', 'B_IBB', 'B_SO', 'B_HP', 'B_SF', 'B_SB']
-PC = ['P_G', 'P_GS', 'P_OUT', 'P_TBF', 'P_R', 'P_ER', 'P_H', 'P_HR', 'P_BB', 'P_IBB', 'P_SO', 'P_HP', 'P_GO', 'P_AO', 'P_PITCH']
+BC = ['B_PA', 'B_AB', 'B_R', 'B_H', 'B_2B', 'B_3B', 'B_HR', 'B_RBI', 'B_BB', 'B_IBB', 'B_SO', 'B_HP', 'B_SF', 'B_SB', 'B_CS']   # B_R, B_RBI, B_CS: DK scoring
+PC = ['P_G', 'P_GS', 'P_CG', 'P_SHO', 'P_W', 'P_OUT', 'P_TBF', 'P_R', 'P_ER', 'P_H', 'P_HR', 'P_BB', 'P_IBB', 'P_SO', 'P_HP', 'P_GO', 'P_AO', 'P_PITCH']
 bat, pit = [], []
 for f in sorted(glob.glob(f'{RAW}/playing-20*.csv')):
     p = pd.read_csv(f, usecols=['game.key', 'game.date', 'season.phase', 'team.key', 'opponent.key', 'person.key', 'slot', 'seq'] + BC + PC, low_memory=False)

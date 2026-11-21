@@ -97,17 +97,21 @@ def box_rows(g, X):
             i = pid(X, p['person']['id']); st = p.get('stats', {}); B = st.get('batting') or {}; P = st.get('pitching') or {}
             if B.get('plateAppearances', 0) > 0:
                 bat.append(dict(gid=row['gid'], date=row['date'], team=team, pid=i, B_PA=B.get('plateAppearances', 0), B_AB=B.get('atBats', 0), B_H=B.get('hits', 0), B_2B=B.get('doubles', 0), B_3B=B.get('triples', 0),
-                                B_HR=B.get('homeRuns', 0), B_BB=B.get('baseOnBalls', 0), B_IBB=B.get('intentionalWalks', 0), B_SO=B.get('strikeOuts', 0), B_HP=B.get('hitByPitch', 0), B_SF=B.get('sacFlies', 0), B_SB=B.get('stolenBases', 0)))
+                                B_HR=B.get('homeRuns', 0), B_BB=B.get('baseOnBalls', 0), B_IBB=B.get('intentionalWalks', 0), B_SO=B.get('strikeOuts', 0), B_HP=B.get('hitByPitch', 0), B_SF=B.get('sacFlies', 0), B_SB=B.get('stolenBases', 0),
+                                B_R=B.get('runs', 0), B_RBI=B.get('rbi', 0), B_CS=B.get('caughtStealing', 0)))
             if P.get('battersFaced', 0) > 0 or P.get('outs', 0) > 0:
                 gs = int(order and p['person']['id'] == order[0])
                 pit.append(dict(gid=row['gid'], date=row['date'], team=team, pid=i, P_G=1, P_GS=gs, P_OUT=P.get('outs', 0), P_TBF=P.get('battersFaced', 0), P_R=P.get('runs', 0), P_ER=P.get('earnedRuns', 0), P_H=P.get('hits', 0),
                                 P_HR=P.get('homeRuns', 0), P_BB=P.get('baseOnBalls', 0), P_IBB=P.get('intentionalWalks', 0), P_SO=P.get('strikeOuts', 0), P_HP=P.get('hitByPitch', P.get('hitBatsmen', 0)),
-                                P_GO=P.get('groundOuts', 0), P_AO=P.get('airOuts', 0), P_PITCH=P.get('numberOfPitches', P.get('pitchesThrown', 0))))
+                                P_GO=P.get('groundOuts', 0), P_AO=P.get('airOuts', 0), P_PITCH=P.get('numberOfPitches', P.get('pitchesThrown', 0)),
+                                P_W=P.get('wins', 0), P_CG=P.get('completeGames', 0), P_SHO=P.get('shutouts', 0)))
     return row, pit, bat
 
 def update_cache(cache, X, seasons, before, max_new=4000):
     """Download box scores for finished regular-season games not in the cache yet."""
     T = {n: (pd.read_parquet(f'{cache}/live_{n}.parquet') if os.path.exists(f'{cache}/live_{n}.parquet') else pd.DataFrame()) for n in ('games', 'pit', 'bat')}
+    if len(T['bat']) and 'B_RBI' not in T['bat'].columns:   # cache written before the DK-scoring columns (runs, RBI, wins) existed: fetch it again
+        print('cache lacks runs/RBI/wins: re-downloading every box score'); T = {n: pd.DataFrame() for n in T}
     have = set(T['games'].pk) if len(T['games']) else set()
     todo = [g for s in seasons for g in schedule(season=s, gameType='R') if is_final(g) and g['officialDate'] < before and g['gamePk'] not in have]
     todo = list({g['gamePk']: g for g in todo}.values())[:max_new]
