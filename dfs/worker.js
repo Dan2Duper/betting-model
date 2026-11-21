@@ -48,11 +48,13 @@ async function saveSalaries(req, env, url, origin) {
 
 const SLIP = `You read sportsbook bet slips (mostly DraftKings) from phone screenshots. List every bet you can see.
 For each bet give: league (NFL, College Football, MLB, NBA ...), type (Single, Parlay, Teaser, Same Game Parlay),
-odds (American, e.g. -110 or +450, for the whole bet), stake (dollars wagered), placed_date (YYYY-MM-DD if shown, else blank),
+odds (American, e.g. -110 or +450, for the whole bet; on DraftKings it sits at the top right of the slip or beside the selection on a
+single; EVEN = +100), stake (dollars wagered: "Wager"), to_win ("To Win" / "Won" amount) and payout ("Payout" / "Total Payout") when shown,
+placed_date (YYYY-MM-DD if shown, else blank),
 and legs. Each leg: team (the team the bet is on, as written; for a total, either team in the game), opponent (the other team if shown),
 market: spread | total | moneyline | prop, pick (for a total: Over or Under; otherwise the team), line (the number for that leg as shown:
 spread from the picked team's side like -3.5 or +7; total like 47.5; blank for moneyline), game_date (YYYY-MM-DD if the slip shows the game day),
-description (the leg as written). Use "prop" for player props and anything else that isn't a spread, total or moneyline.
+odds (that leg's own American odds if shown), description (the leg as written). Use "prop" for player props and anything else that isn't a spread, total or moneyline.
 You may get several screenshots at once. A long parlay often does not fit on one screen, so one slip can be split across two or
 more screenshots that overlap: the top part shows some legs, the next screenshot repeats a leg or two and shows the rest, and the
 odds / stake / to-win line may appear on only one of them. Treat those parts as ONE bet: list each leg once (an overlapping leg seen
@@ -60,9 +62,9 @@ twice is one leg) and take odds and stake from whichever part shows them. Separa
 clearly different bets) stay separate bets. If the very same slip appears twice, list it once.
 Never guess a number you can't read. Answer only by calling the bet_slip tool.`;
 const SLIP_TOOL = {name: 'bet_slip', description: 'The bets read from the screenshot.', input_schema: {type: 'object', required: ['bets'], properties: {bets: {type: 'array', items: {type: 'object', properties: {
-  league: {type: 'string'}, type: {type: 'string'}, odds: {type: 'number'}, stake: {type: 'number'}, placed_date: {type: 'string'},
+  league: {type: 'string'}, type: {type: 'string'}, odds: {type: ['number', 'string']}, stake: {type: 'number'}, to_win: {type: 'number'}, payout: {type: 'number'}, placed_date: {type: 'string'},
   legs: {type: 'array', items: {type: 'object', properties: {team: {type: 'string'}, opponent: {type: 'string'}, market: {type: 'string', enum: ['spread', 'total', 'moneyline', 'prop']},
-    pick: {type: 'string'}, line: {type: ['number', 'string']}, game_date: {type: 'string'}, description: {type: 'string'}}}}}}}}}};
+    pick: {type: 'string'}, line: {type: ['number', 'string']}, game_date: {type: 'string'}, odds: {type: ['number', 'string']}, description: {type: 'string'}}}}}}}}}};
 async function readSlip(req, env, origin) {
   let body; try { body = await req.json(); } catch (e) { return reply({error: 'bad request'}, 400, origin); }
   const imgs = (Array.isArray(body.images) && body.images.length ? body.images : [body.image]).filter(Boolean).slice(0, 8);
