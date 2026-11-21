@@ -2,6 +2,15 @@
  "_note": "Written automatically by the relay (and by Claude); newest first; the Bet Tracker Reports tab reads this.",
  "reports": [
   {
+   "id": "2026-11-21T20:45:47Z-CFB",
+   "time": "2026-11-21T20:45:47Z",
+   "league": "CFB",
+   "kind": "update",
+   "title": "HEAR YE, RICH: Northwestern Shat the Bed, the Model Is a Drunk Jester, Your Wallet Is Safe",
+   "text": "HEAR YE, HEAR YE, good people of the realm! Rich, thou lazy bastard, lend thine ears. Thou hast no real coin down today, so the only blood spilled is imaginary.\n\n**AI-LOX:**\n- Northwestern -2.5 at Minnesota: LOST, -$20.00. They fell 17-20 and missed the number by 5.5. Bury the ass-wipes in a shallow grave. Settled record: 0-1-0.\n- UNDER 70.5, Houston at West Virginia: WINNING. It is 24-31 with 11:29 left in the 4th, scoring pace 68, beating the number by 15.5. $41.00 to win $39.05. Pray the defenses keep their shit together.\n- Rutgers +26.5 at Penn State: WINNING, because it is 0-0 in the 1st with 11:29 left. Clearing the number by 26.5 means fuck-all yet. $18.00 to win $16.36.\n\n**THE MODEL:**\nThe royal oracle hath finished 10 of 54 games. It picked the winner in 4 of 10, went 4-4 against the spread and a shameful 3-7 on totals. Its average miss on the margin is 9.5 points. A blind goat with a dartboard would blush.\n\n- Closest call: Colorado 28-35 Cincinnati (model 25-31). Even a broken sundial is right twice a day.\n- Worst miss: Wisconsin 42-10 Purdue (model 24-20). Purdue got dragged through the village square.\n- Live and laughable: South Florida trails Florida Atlantic 0-17 (model 32-30). Western Kentucky is down 7-35 to Liberty (model 17-35). BYU and Kansas are tied 29-29 in 3OT, because God hates a tidy ending.\n\n**STILL TO COME:**\n- Texas A&M +7 at Oklahoma, 3:45 PM EST, $20.00 to win $18.52.\n- Arizona State +2.5 vs Oklahoma State, 10:15 PM EST, $31.00 to win $29.52.\n- UNDER 44.5, MIA at BUF, Sunday 1:00 PM EST, $57.00 to win $54.29.\n- UNDER 48.5, NO at CHI, Sunday 1:00 PM EST, $54.00 to win $50.47.\n- UNDER 40.5, ARI at KC, Sunday 1:00 PM EST, $19.00 to win $18.10.\n- UNDER 53.5, CIN at WAS, Monday 8:15 PM EST, $130.00 to win $126.21. A fat, juicy pig of a stake.\n\nSo it is proclaimed! Go forth and sweat, ye degenerate.",
+   "style": "a medieval town crier with terrible news"
+  },
+  {
    "id": "2026-11-21T13:20:45Z-CFB",
    "time": "2026-11-21T13:20:45Z",
    "league": "CFB",
@@ -230,12 +239,13 @@
    ]
   },
   "2026-11-21": {
-   "n": 1,
-   "last": "2026-11-21T13:20:45Z",
-   "fp": "|0",
-   "fpBets": "",
+   "n": 2,
+   "last": "2026-11-21T20:45:47Z",
+   "fp": "2026-11-21|401858530|cfb_secb1g_road_bounceL|10",
+   "fpBets": "2026-11-21|401858530|cfb_secb1g_road_bounceL",
    "kinds": [
-    "preview"
+    "preview",
+    "update"
    ]
   }
  }
