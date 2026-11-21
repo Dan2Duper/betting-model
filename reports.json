@@ -2,6 +2,15 @@
  "_note": "Written automatically by the relay (and by Claude); newest first; the Bet Tracker Reports tab reads this.",
  "reports": [
   {
+   "id": "2026-11-21T13:20:45Z-CFB",
+   "time": "2026-11-21T13:20:45Z",
+   "league": "CFB",
+   "kind": "preview",
+   "title": "Rich's Forecast: Scattered Unders, a Cold Front of Bad Ideas, 0% Chance of Mercy",
+   "text": "Good morning, Rich, and welcome to the Bet Tracker 7-Day Outlook. It's 7:20 AM Central and the radar is clear. The skies are empty because nobody has kicked off yet.\n\n**MY BETS:**\n- Nothing today. Your real money is sitting in the dry, sunny bunker of inaction. Enjoy it, you degenerate.\n\n**AI-LOX:**\nAI-LOX has $130.00 staked across 5 paper picks. Net is +$0.00, with 0 live and 5 not started. Here's the forecast:\n\n- **Northwestern -2.5 at Minnesota**, 12:00 PM EST. $23.00 to win $20.54. Northwestern is a favorite, which is rare enough to be a meteorological event. Needs a win by 3 or more.\n- **UNDER 70.5, Houston at West Virginia**, 1:00 PM EST. $38.00 to win $33.93. This is the biggest stake of the day. It needs two offenses to stay in the house and not score like a pinball machine.\n- **Rutgers +26.5 at Penn State**, 3:30 PM EST. $23.00 to win $20.54. Rutgers needs to lose by 26 or fewer, or win. Expect a high chance of humiliation with a slight chance of covering.\n- **Texas A&M +7.5 at Oklahoma**, 3:45 PM EST. $11.00 to win $9.02. The tiniest stake, a light drizzle of confidence. Needs a loss by 7 or fewer, or a win.\n- **Arizona State +2.5 vs Oklahoma State**, 10:15 PM EST. $35.00 to win $32.41. This one is for the night owls. Stay up late and watch your paper money get mugged.\n\n**THE MODEL:**\n0 of 54 modeled games are final. The record is 0-0 against the spread, 0-0 on totals, and the average miss is 0.0 points. That's a perfect model with a perfect record of doing nothing. Enjoy it, because the front moves in at noon.\n\n**STILL TO COME:**\n- **UNDER 44.5, MIA at BUF**, Sunday 1:00 PM EST. $60.00 to win $57.14.\n- **UNDER 43.5, BAL at CAR**, Sunday 1:00 PM EST. $50.00 to win $45.45.\n- **UNDER 40.5, ARI at KC**, Sunday 1:00 PM EST. $20.00 to win $19.05.\n- **UNDER 53.5, CIN at WAS**, Monday 8:15 PM EST. $130.00 to win $126.21. That's a monster stake, so bring an umbrella.\n\nThat's your forecast, Rich. Back to you in the studio.",
+   "style": "a local TV weatherman giving the forecast"
+  },
+  {
    "id": "2026-11-21T05:45:47Z-CFB",
    "time": "2026-11-21T05:45:47Z",
    "league": "CFB",
@@ -218,6 +227,15 @@
     "preview",
     "update",
     "final"
+   ]
+  },
+  "2026-11-21": {
+   "n": 1,
+   "last": "2026-11-21T13:20:45Z",
+   "fp": "|0",
+   "fpBets": "",
+   "kinds": [
+    "preview"
    ]
   }
  }
