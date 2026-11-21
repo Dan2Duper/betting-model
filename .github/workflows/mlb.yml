@@ -11,6 +11,7 @@ on:
       date: {description: 'First day to predict (YYYY-MM-DD). Blank = today', required: false, default: ''}
       days: {description: 'How many days', required: false, default: '2'}
       check: {description: 'Grade the season so far (walk-forward)', type: boolean, default: false}
+      parity: {description: 'Self-test: replay this season from the Stats API as if Retrosheet ended the year before (nothing is saved)', required: false, default: ''}
 permissions:
   contents: write
 concurrency: mlb
@@ -26,11 +27,16 @@ jobs:
       - uses: actions/setup-python@v5
         with: {python-version: '3.12'}
       - run: pip install -q pandas pyarrow numpy requests
+      - name: Self-test against a Retrosheet season
+        if: ${{ inputs.parity != '' }}
+        run: python3 pkg/mlb/live.py --cache /tmp/par --out /tmp/par.json --date "${{ inputs.parity }}-11-15" --days 1 --check --hist-last $(( ${{ inputs.parity || 0 }} - 1 ))
       - name: Build mlb.json
+        if: ${{ inputs.parity == '' }}
         run: |
           mkdir -p data/mlb
           python3 pkg/mlb/live.py --cache data/mlb --out data/mlb.json --days "${{ inputs.days || '2' }}" ${{ inputs.date && format('--date {0}', inputs.date) || '' }} ${{ inputs.check && '--check' || '' }}
       - name: Save to the data branch
+        if: ${{ inputs.parity == '' }}
         run: |
           cd data
           git config user.name "mlb-bot"; git config user.email "mlb-bot@users.noreply.github.com"
