@@ -43,6 +43,28 @@ Pushing to main/package/sync/data from a Claude session with git works.
 - Seasons: applySeasons() shows a league and its tabs only in season (SEASONS: MLB Mar 18-Nov 5, CFB Aug 20-Jan 25, NFL Sep 1-Feb 15).
   Football tabs = Week, Scores, DFS. Preview any day with ?asof=YYYY-MM-DD on the page address.
 
+## START HERE next session: MLB DFS (Rich picked this Nov 21 2026; it can be built and proven before the season)
+Goal (same as NFL DFS): DraftKings cash + tournament lineups, main slate + Showdown, write-up per lineup, shuffle, "my read" AI box.
+1. Projections, from the tables that already exist (mlb/hist + the Stats API cache on data:mlb/, features.build()):
+   - Add what DK scoring needs and the tables lack: batter runs + RBI (retrosplits B_R, B_RBI; Stats API batting.runs / rbi) and
+     pitcher wins (P_W / pitching.wins) in mlb/build_data.py, mlb/make_hist.py and mlb/live.py box_rows; rebuild mlb/hist.
+   - DK classic scoring. Hitters: 1B 3, 2B 5, 3B 8, HR 10, RBI 2, R 2, BB 2, HBP 2, SB 5. Pitchers: 2.25 per inning (0.75 per out),
+     K 2, W 4, ER -2, H -0.6, BB -0.6, HBP -0.6, CG 2.5, CG shutout 2.5, no-hitter 5.
+   - Hitter: per-PA rates (decayed + shrunk like the lineup wOBA) x expected PA by lineup slot x opposing starter/bullpen, park,
+     weather, platoon, team implied runs (model lam). Pitcher: expected outs (sp_ogs), K rate vs the lineup's K rate, runs allowed,
+     win prob (p_home). Floor/ceiling from each player's historical DK-point spread.
+   - Prove it walk-forward on 2025 and 2026 box scores (no look-ahead): projection vs actual DK points, MAE and rank correlation by
+     position, calibration of floor/ceiling. This needs no salaries, so it can all be done now.
+2. Lineups: dfs/optimizer.py (PuLP) gets an MLB classic builder: P,P,C,1B,2B,3B,SS,OF,OF,OF, $50,000, max 5 hitters from one team,
+   players from 2+ games; GPP stacks of 4-5 hitters from one lineup (consecutive slots), no hitters against your own pitcher.
+   Showdown = Captain 1.5x + 5 UTIL (optimizer.showdown already exists for NFL).
+   NO MLB salary files exist yet (data:salaries/ holds NFL only; the phone's Tasker job started in November). dfs/make_todo.py already
+   lists MLB slates and the relay /salaries accepts sport=MLB, so files arrive by themselves once DraftKings posts MLB slates
+   (spring). Until then test the optimizer with made-up salaries; real-salary testing and ownership tuning wait for the season.
+3. Build + page: dfs/build_mlb.py -> data:dfs_mlb.json from the "MLB model" workflow (or its own), DFS tab reads NFL or MLB by season
+   (applySeasons / inSeason already exist; the DFS tab is marked data-sport="fb" today and must show for MLB too).
+4. Loose NFL DFS item worth fixing on the way: TE floor/ceiling calibration in dfs/nfl_model.py.
+
 ## Next for MLB
 1. First week of the 2027 season: open the MLB tab on a game day and check the ESPN odds fields (mlbOdds reads both feed shapes) and
    team matching; fix whatever the real feed shows.
