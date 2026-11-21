@@ -46,7 +46,13 @@ async function saveSalaries(req, env, url, origin) {
   return reply({saved: path, players: J.draftables.length}, 200, origin);
 }
 
-const SLIP = `You read sportsbook bet slips (mostly DraftKings) from phone screenshots. List every bet you can see.
+const SLIP = `You read sportsbook bet slips and DraftKings Predictions trades from phone screenshots. List every bet you can see.
+DraftKings PREDICTIONS (My Activity > Trades; cards tagged "Trade") look different from sportsbook slips: "Tennessee | 39.36% To Win",
+"Bought: $44.25 | To Pay: $107.00", a Sell button, and an Open/Settled badge. Read them as bets: Bought = stake, To Pay = payout
+(stake included), the % = price_pct (the contract price, NOT odds; leave odds blank unless American odds are printed).
+"4 Pick Combo" = a parlay with legs_expected 4, its legs listed on one line ("BYU -5.5, Wisconsin -5.5, Tennessee, Washington"):
+a team with a number is a spread leg, a team with no number is a to-win (moneyline) leg; the scoreboard under a single trade names
+both teams. "To Win" under a single trade = moneyline. type for these: "Trade" (single) or "Combo".
 For each bet give: league (NFL, College Football, MLB, NBA ...), type (Single, Parlay, Teaser, Same Game Parlay),
 odds (American, e.g. -110 or +450, for the whole bet; on DraftKings it sits at the top right of the slip or beside the selection on a
 single; EVEN = +100), stake (dollars wagered: "Wager"), to_win ("To Win" / "Won" amount) and payout ("Payout" / "Total Payout") when shown,
@@ -73,7 +79,7 @@ Before answering, check yourself: every leg's team and opponent are the two team
 stake x odds agrees with the to-win amount.
 Never guess a number you can't read. Answer only by calling the bet_slip tool.`;
 const SLIP_TOOL = {name: 'bet_slip', description: 'The bets read from the screenshot.', input_schema: {type: 'object', required: ['bets'], properties: {bets: {type: 'array', items: {type: 'object', properties: {
-  league: {type: 'string'}, type: {type: 'string'}, legs_expected: {type: ['number', 'string']}, cut_off: {type: 'boolean'}, cut_note: {type: 'string'}, odds: {type: ['number', 'string']}, stake: {type: 'number'}, to_win: {type: 'number'}, payout: {type: 'number'}, placed_date: {type: 'string'},
+  league: {type: 'string'}, type: {type: 'string'}, legs_expected: {type: ['number', 'string']}, price_pct: {type: ['number', 'string']}, cut_off: {type: 'boolean'}, cut_note: {type: 'string'}, odds: {type: ['number', 'string']}, stake: {type: 'number'}, to_win: {type: 'number'}, payout: {type: 'number'}, placed_date: {type: 'string'},
   legs: {type: 'array', items: {type: 'object', properties: {team: {type: 'string'}, opponent: {type: 'string'}, market: {type: 'string', enum: ['spread', 'total', 'moneyline', 'prop']},
     pick: {type: 'string'}, line: {type: ['number', 'string']}, game_date: {type: 'string'}, odds: {type: ['number', 'string']}, matchup: {type: 'string'}, game_id: {type: 'string'}, description: {type: 'string'}}}}}}}}}};
 async function readSlip(req, env, origin) {
