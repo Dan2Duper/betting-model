@@ -137,6 +137,7 @@ def main():
     os.makedirs(A.cache, exist_ok=True)
     day0 = A.date or str((dt.datetime.now(dt.timezone.utc) - dt.timedelta(hours=6)).date()); d0 = dt.date.fromisoformat(day0)
     H = {n: pd.read_parquet(f'{HERE}/hist/{n}.parquet') for n in ('games', 'pit', 'bat', 'hands')}
+    for n in ('games', 'pit', 'bat'): H[n]['date'] = pd.to_datetime(H[n].date).dt.strftime('%Y-%m-%d')
     M = json.load(open(f'{HERE}/model.json')); RULES = json.load(open(f'{os.path.dirname(HERE)}/rules.json')).get('mlb', {})
     X = load_xwalk(A.cache, H['games'])
     seasons = list(range(int(H['games'].season.max()) + 1, d0.year + 1))
