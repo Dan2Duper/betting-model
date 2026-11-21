@@ -83,3 +83,9 @@ Saved, trained models. Nothing needs to be rebuilt week to week: you fill in two
 - This week: bets and games.
 - Tracker: slicers by rule, conference, team, kickoff window, bet type, line size, wind, model gap and more.
 - Model stats: backtests, factor weights, live accuracy, and each rule's live record.
+
+## MLB (mlb/)
+- `bash mlb/setup_data.sh [DATA_DIR] [LAST_SEASON]` downloads the history and runs everything: `build_data.py` (games, player lines, closing odds), `features.py` (no look-ahead), `model.py` (walk-forward Poisson run model -> `model.json`, `stats.json`), `backtest.py` (52 rules vs closing lines -> `rules_bt.json`).
+- A rule passes only if it wins in 2013-20 AND clears break-even by itself in the 2021-25 hold-out at DraftKings closing prices. None did. The model picks winners 57.9% (closing line 58.1%); its moneyline edges lose the vig.
+- Leans only (never staked until 50 live picks at 55%+): model total 0.75+ runs over or under the closing total; Wrigley wind out 10+ mph over.
+- Odds data trap: the 2021-25 source mixes live in-game lines into "closing" lines; `build_data.py` filters them (see HANDOFF.md).
