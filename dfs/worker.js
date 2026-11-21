@@ -54,17 +54,24 @@ placed_date (YYYY-MM-DD if shown, else blank),
 and legs. Each leg: team (the team the bet is on, as written; for a total, either team in the game), opponent (the other team if shown),
 market: spread | total | moneyline | prop, pick (for a total: Over or Under; otherwise the team), line (the number for that leg as shown:
 spread from the picked team's side like -3.5 or +7; total like 47.5; blank for moneyline), game_date (YYYY-MM-DD if the slip shows the game day),
-odds (that leg's own American odds if shown), description (the leg as written). Use "prop" for player props and anything else that isn't a spread, total or moneyline.
+odds (that leg's own American odds if shown), matchup (the game exactly as the slip prints it under the leg, e.g. "ARK Razorbacks @ TEX Longhorns"),
+game_id (see GAMES below), description (the leg as written). Use "prop" for player props and anything else that isn't a spread, total or moneyline.
 You may get several screenshots at once. A long parlay often does not fit on one screen, so one slip can be split across two or
 more screenshots that overlap: the top part shows some legs, the next screenshot repeats a leg or two and shows the rest, and the
 odds / stake / to-win line may appear on only one of them. Treat those parts as ONE bet: list each leg once (an overlapping leg seen
 twice is one leg) and take odds and stake from whichever part shows them. Separate slips (different bet IDs, different stakes, or
 clearly different bets) stay separate bets. If the very same slip appears twice, list it once.
+GAMES: when a list of real games is given (id | league | date | away @ home), set each leg's game_id to the one game that leg is on.
+Match on BOTH teams in the slip's matchup line and on the date, never on one team name alone: schools share words (Tennessee vs
+Tennessee Tech, Texas vs Texas Tech / Texas A&M / UTSA, Miami vs Miami (OH)), so the opponent decides. Use the school/city on the
+slip, not the mascot. If no game in the list has both teams, leave game_id blank rather than guess.
+Before answering, check yourself: every leg's team and opponent are the two teams of its game_id; the leg count matches the slip;
+stake x odds agrees with the to-win amount.
 Never guess a number you can't read. Answer only by calling the bet_slip tool.`;
 const SLIP_TOOL = {name: 'bet_slip', description: 'The bets read from the screenshot.', input_schema: {type: 'object', required: ['bets'], properties: {bets: {type: 'array', items: {type: 'object', properties: {
   league: {type: 'string'}, type: {type: 'string'}, odds: {type: ['number', 'string']}, stake: {type: 'number'}, to_win: {type: 'number'}, payout: {type: 'number'}, placed_date: {type: 'string'},
   legs: {type: 'array', items: {type: 'object', properties: {team: {type: 'string'}, opponent: {type: 'string'}, market: {type: 'string', enum: ['spread', 'total', 'moneyline', 'prop']},
-    pick: {type: 'string'}, line: {type: ['number', 'string']}, game_date: {type: 'string'}, odds: {type: ['number', 'string']}, description: {type: 'string'}}}}}}}}}};
+    pick: {type: 'string'}, line: {type: ['number', 'string']}, game_date: {type: 'string'}, odds: {type: ['number', 'string']}, matchup: {type: 'string'}, game_id: {type: 'string'}, description: {type: 'string'}}}}}}}}}};
 async function readSlip(req, env, origin) {
   let body; try { body = await req.json(); } catch (e) { return reply({error: 'bad request'}, 400, origin); }
   const imgs = (Array.isArray(body.images) && body.images.length ? body.images : [body.image]).filter(Boolean).slice(0, 8);
@@ -72,12 +79,13 @@ async function readSlip(req, env, origin) {
   const content = [];
   imgs.forEach((data, i) => { if (imgs.length > 1) content.push({type: 'text', text: `Screenshot ${i + 1} of ${imgs.length}:`});
     content.push({type: 'image', source: {type: 'base64', media_type: 'image/jpeg', data}}); });
+  if (body.games) content.push({type: 'text', text: 'GAMES (id | league | date | away @ home):\n' + String(body.games).slice(0, 60000)});
   content.push({type: 'text', text: `Today is ${body.today || ''}. ` + (imgs.length > 1
     ? 'Read every bet across these screenshots. Merge the parts of any slip that is split across screenshots into one bet.'
     : 'Read every bet on this slip.')});
   const r = await fetch('https://api.anthropic.com/v1/messages', {method: 'POST',
     headers: {'x-api-key': env.ANTHROPIC_API_KEY, 'anthropic-version': '2023-06-01', 'content-type': 'application/json'},
-    body: JSON.stringify({model: env.MODEL || 'claude-sonnet-5-5', max_tokens: 4000, system: SLIP, tools: [SLIP_TOOL], tool_choice: {type: 'auto'},
+    body: JSON.stringify({model: env.SLIP_MODEL || 'claude-opus-5-5', max_tokens: 6000, system: SLIP, tools: [SLIP_TOOL], tool_choice: {type: 'auto'},
       messages: [{role: 'user', content}]})});
   const j = await r.json();
   if (!r.ok) return reply({error: (j.error && j.error.message) || 'AI error'}, 502, origin);
