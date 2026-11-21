@@ -24,7 +24,7 @@ def select(preds, skip=()):
         for p in o.get('picks', []):
             r = R.get(p['rule'])
             if r is None: continue                         # e.g. *_model_disagrees -> excluded
-            if r.get('lean_only') or r['p'] < (B['cfb_min_hit'] if o['league'] == 'CFB' else B['nfl_min_hit']): continue
+            if r.get('lean_only') or r['p'] < B.get(o['league'].lower() + '_min_hit', B['nfl_min_hit']): continue
             ps = (r['p'] * r['n'] + 0.5 * B['shrink_k']) / (r['n'] + B['shrink_k'])
             b = payout(B['default_odds']); kelly = max(ps - (1 - ps) / b, 0.001)
             cand.append(dict(date=str(o['date']), league=o['league'], week=o.get('week'), game_id=str(o['game_id']), game=f"{o['away']} @ {o['home']}",

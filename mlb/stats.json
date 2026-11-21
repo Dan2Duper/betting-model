@@ -1,0 +1,2159 @@
+{
+ "built": "2026-11-21",
+ "engine": "Poisson GLM, walk-forward by season",
+ "seasons": [
+  {
+   "season": 2013,
+   "games": 2426,
+   "model_winner": 0.576,
+   "market_winner": 0.572,
+   "model_logloss": 0.6783,
+   "market_logloss": 0.6755,
+   "model_total_mae": 3.3,
+   "line_total_mae": 3.32
+  },
+  {
+   "season": 2014,
+   "games": 2424,
+   "model_winner": 0.562,
+   "market_winner": 0.568,
+   "model_logloss": 0.681,
+   "market_logloss": 0.6765,
+   "model_total_mae": 3.2,
+   "line_total_mae": 3.23
+  },
+  {
+   "season": 2015,
+   "games": 2425,
+   "model_winner": 0.566,
+   "market_winner": 0.575,
+   "model_logloss": 0.6822,
+   "market_logloss": 0.6761,
+   "model_total_mae": 3.39,
+   "line_total_mae": 3.4
+  },
+  {
+   "season": 2016,
+   "games": 2418,
+   "model_winner": 0.579,
+   "market_winner": 0.589,
+   "model_logloss": 0.6762,
+   "market_logloss": 0.6733,
+   "model_total_mae": 3.47,
+   "line_total_mae": 3.52
+  },
+  {
+   "season": 2017,
+   "games": 2427,
+   "model_winner": 0.575,
+   "market_winner": 0.572,
+   "model_logloss": 0.6764,
+   "market_logloss": 0.6745,
+   "model_total_mae": 3.52,
+   "line_total_mae": 3.53
+  },
+  {
+   "season": 2018,
+   "games": 2423,
+   "model_winner": 0.589,
+   "market_winner": 0.585,
+   "model_logloss": 0.6713,
+   "market_logloss": 0.6708,
+   "model_total_mae": 3.54,
+   "line_total_mae": 3.58
+  },
+  {
+   "season": 2019,
+   "games": 2423,
+   "model_winner": 0.595,
+   "market_winner": 0.603,
+   "model_logloss": 0.6659,
+   "market_logloss": 0.6635,
+   "model_total_mae": 3.67,
+   "line_total_mae": 3.69
+  },
+  {
+   "season": 2020,
+   "games": 896,
+   "model_winner": 0.581,
+   "market_winner": 0.586,
+   "model_logloss": 0.6732,
+   "market_logloss": 0.6742,
+   "model_total_mae": 3.49,
+   "line_total_mae": 3.47
+  },
+  {
+   "season": 2021,
+   "games": 2420,
+   "model_winner": 0.585,
+   "market_winner": 0.588,
+   "model_logloss": 0.6727,
+   "market_logloss": 0.6702,
+   "model_total_mae": 3.45,
+   "line_total_mae": 3.49
+  },
+  {
+   "season": 2022,
+   "games": 2342,
+   "model_winner": 0.598,
+   "market_winner": 0.6,
+   "model_logloss": 0.6686,
+   "market_logloss": 0.6681,
+   "model_total_mae": 3.41,
+   "line_total_mae": 3.4
+  },
+  {
+   "season": 2023,
+   "games": 2382,
+   "model_winner": 0.571,
+   "market_winner": 0.575,
+   "model_logloss": 0.679,
+   "market_logloss": 0.6768,
+   "model_total_mae": 3.57,
+   "line_total_mae": 3.61
+  },
+  {
+   "season": 2024,
+   "games": 2226,
+   "model_winner": 0.579,
+   "market_winner": 0.575,
+   "model_logloss": 0.676,
+   "market_logloss": 0.6742,
+   "model_total_mae": 3.37,
+   "line_total_mae": 3.38
+  },
+  {
+   "season": 2025,
+   "games": 1813,
+   "model_winner": 0.562,
+   "market_winner": 0.567,
+   "model_logloss": 0.6791,
+   "market_logloss": 0.6772,
+   "model_total_mae": 3.58,
+   "line_total_mae": 3.6
+  }
+ ],
+ "overall": {
+  "games": 29045,
+  "model_winner": 0.5785,
+  "market_winner": 0.5812,
+  "model_logloss": 0.6754,
+  "market_logloss": 0.673
+ },
+ "weights": {
+  "is_home": 1.24,
+  "sp_k": -1.19,
+  "sp_bb": 1.54,
+  "sp_hr": 0.63,
+  "sp_ra": -0.35,
+  "sp_h": 1.07,
+  "sp_gb": -1.21,
+  "sp_ogs": -0.88,
+  "sp_exp": -1.66,
+  "sp_k_s": -3.79,
+  "sp_bb_s": 0.32,
+  "sp_ra_s": 0.99,
+  "sp_rest": 0.03,
+  "sp_left": -1.45,
+  "pen_k": -0.87,
+  "pen_bb": 0.73,
+  "pen_hr": 0.61,
+  "pen_ra": 0.72,
+  "pen_out1": -0.47,
+  "pen_out3": 0.51,
+  "opp_ra": 2.19,
+  "off_rs": 0.67,
+  "off_rs_s": 0.33,
+  "lu_woba": 5.18,
+  "lu_k": -0.69,
+  "lu_iso": 2.39,
+  "lu_plat": 1.93,
+  "lu_exp": 0.71,
+  "park": 5.38,
+  "lg_rpg": 2.44,
+  "lg_rpg_s": 1.56,
+  "dome": 0.74,
+  "temp": 3.7,
+  "wind_out": 2.35,
+  "wind_in": 0.65,
+  "wind_x": 1.29,
+  "dh": -4.17,
+  "sched7": -1.39,
+  "day_game": 0.3,
+  "ump_idx": 0.6
+ },
+ "rules": [
+  {
+   "rule": "model_over_p54",
+   "market": "total",
+   "note": "model P(over) >= 0.54",
+   "disc": {
+    "n": 45,
+    "w": 27,
+    "l": 18,
+    "hit": 0.6,
+    "be": 0.5238,
+    "z": 1.02,
+    "units": 6.5,
+    "roi": 0.1309,
+    "avg_odds": -110
+   },
+   "hold": {
+    "n": 10,
+    "w": 5,
+    "l": 5,
+    "hit": 0.5,
+    "be": 0.5251,
+    "z": -0.16,
+    "units": -0.6,
+    "roi": -0.0505,
+    "avg_odds": -110
+   },
+   "all": {
+    "n": 55,
+    "w": 32,
+    "l": 23,
+    "hit": 0.5818,
+    "be": 0.524,
+    "z": 0.86,
+    "units": 5.9,
+    "roi": 0.0958,
+    "avg_odds": -110
+   },
+   "verdict": "fail"
+  },
+  {
+   "rule": "model_under_p54",
+   "market": "total",
+   "note": "model P(under) >= 0.54",
+   "disc": {
+    "n": 158,
+    "w": 90,
+    "l": 68,
+    "hit": 0.5696,
+    "be": 0.5238,
+    "z": 1.15,
+    "units": 13.8,
+    "roi": 0.0848,
+    "avg_odds": -110
+   },
+   "hold": {
+    "n": 73,
+    "w": 41,
+    "l": 32,
+    "hit": 0.5616,
+    "be": 0.5263,
+    "z": 0.61,
+    "units": 5.0,
+    "roi": 0.0645,
+    "avg_odds": -110
+   },
+   "all": {
+    "n": 231,
+    "w": 131,
+    "l": 100,
+    "hit": 0.5671,
+    "be": 0.5246,
+    "z": 1.29,
+    "units": 18.8,
+    "roi": 0.0783,
+    "avg_odds": -110
+   },
+   "verdict": "fail"
+  },
+  {
+   "rule": "model_over_p56",
+   "market": "total",
+   "note": "model P(over) >= 0.56",
+   "disc": {
+    "n": 5,
+    "w": 1,
+    "l": 4,
+    "hit": 0.2,
+    "be": 0.5238,
+    "z": -1.45,
+    "units": -3.1,
+    "roi": -0.5152,
+    "avg_odds": -110
+   },
+   "hold": {
+    "n": 0
+   },
+   "all": {
+    "n": 5,
+    "w": 1,
+    "l": 4,
+    "hit": 0.2,
+    "be": 0.5238,
+    "z": -1.45,
+    "units": -3.1,
+    "roi": -0.5152,
+    "avg_odds": -110
+   },
+   "verdict": "fail"
+  },
+  {
+   "rule": "model_under_p56",
+   "market": "total",
+   "note": "model P(under) >= 0.56",
+   "disc": {
+    "n": 15,
+    "w": 12,
+    "l": 3,
+    "hit": 0.8,
+    "be": 0.5238,
+    "z": 2.14,
+    "units": 7.9,
+    "roi": 0.5273,
+    "avg_odds": -110
+   },
+   "hold": {
+    "n": 13,
+    "w": 6,
+    "l": 7,
+    "hit": 0.4615,
+    "be": 0.5229,
+    "z": -0.44,
+    "units": -1.5,
+    "roi": -0.1065,
+    "avg_odds": -110
+   },
+   "all": {
+    "n": 28,
+    "w": 18,
+    "l": 10,
+    "hit": 0.6429,
+    "be": 0.5234,
+    "z": 1.27,
+    "units": 6.4,
+    "roi": 0.2213,
+    "avg_odds": -110
+   },
+   "verdict": "fail"
+  },
+  {
+   "rule": "model_over_p57",
+   "market": "total",
+   "note": "model P(over) >= 0.58",
+   "disc": {
+    "n": 0
+   },
+   "hold": {
+    "n": 0
+   },
+   "all": {
+    "n": 0
+   },
+   "verdict": "fail"
+  },
+  {
+   "rule": "model_under_p57",
+   "market": "total",
+   "note": "model P(under) >= 0.58",
+   "disc": {
+    "n": 4,
+    "w": 3,
+    "l": 1,
+    "hit": 0.75,
+    "be": 0.5238,
+    "z": 0.91,
+    "units": 1.7,
+    "roi": 0.4318,
+    "avg_odds": -110
+   },
+   "hold": {
+    "n": 10,
+    "w": 4,
+    "l": 6,
+    "hit": 0.4,
+    "be": 0.5241,
+    "z": -0.79,
+    "units": -2.3,
+    "roi": -0.2304,
+    "avg_odds": -110
+   },
+   "all": {
+    "n": 14,
+    "w": 7,
+    "l": 7,
+    "hit": 0.5,
+    "be": 0.524,
+    "z": -0.18,
+    "units": -0.6,
+    "roi": -0.0412,
+    "avg_odds": -110
+   },
+   "verdict": "fail"
+  },
+  {
+   "rule": "model_over_p60",
+   "market": "total",
+   "note": "model P(over) >= 0.6",
+   "disc": {
+    "n": 0
+   },
+   "hold": {
+    "n": 0
+   },
+   "all": {
+    "n": 0
+   },
+   "verdict": "fail"
+  },
+  {
+   "rule": "model_under_p60",
+   "market": "total",
+   "note": "model P(under) >= 0.6",
+   "disc": {
+    "n": 1,
+    "w": 0,
+    "l": 1,
+    "hit": 0.0,
+    "be": 0.5238,
+    "z": -1.05,
+    "units": -1.0,
+    "roi": -1.0,
+    "avg_odds": -110
+   },
+   "hold": {
+    "n": 6,
+    "w": 3,
+    "l": 3,
+    "hit": 0.5,
+    "be": 0.526,
+    "z": -0.13,
+    "units": -0.3,
+    "roi": -0.0426,
+    "avg_odds": -110
+   },
+   "all": {
+    "n": 7,
+    "w": 3,
+    "l": 4,
+    "hit": 0.4286,
+    "be": 0.5257,
+    "z": -0.51,
+    "units": -1.3,
+    "roi": -0.1794,
+    "avg_odds": -110
+   },
+   "verdict": "fail"
+  },
+  {
+   "rule": "model_gap_over_0.75",
+   "market": "total",
+   "note": "model total 0.75+ runs over the line (after the mean-vs-median offset)",
+   "disc": {
+    "n": 955,
+    "w": 506,
+    "l": 449,
+    "hit": 0.5298,
+    "be": 0.5238,
+    "z": 0.37,
+    "units": 11.0,
+    "roi": 0.0108,
+    "avg_odds": -110
+   },
+   "hold": {
+    "n": 727,
+    "w": 403,
+    "l": 324,
+    "hit": 0.5543,
+    "be": 0.5329,
+    "z": 1.16,
+    "units": 29.7,
+    "roi": 0.0391,
+    "avg_odds": -115
+   },
+   "all": {
+    "n": 1682,
+    "w": 909,
+    "l": 773,
+    "hit": 0.5404,
+    "be": 0.5277,
+    "z": 1.04,
+    "units": 40.7,
+    "roi": 0.023,
+    "avg_odds": -110
+   },
+   "verdict": "lean"
+  },
+  {
+   "rule": "model_gap_under_0.75",
+   "market": "total",
+   "note": "model total 0.75+ runs under the line",
+   "disc": {
+    "n": 1561,
+    "w": 822,
+    "l": 739,
+    "hit": 0.5266,
+    "be": 0.5238,
+    "z": 0.22,
+    "units": 8.3,
+    "roi": 0.0051,
+    "avg_odds": -110
+   },
+   "hold": {
+    "n": 696,
+    "w": 384,
+    "l": 312,
+    "hit": 0.5517,
+    "be": 0.5298,
+    "z": 1.16,
+    "units": 29.2,
+    "roi": 0.0403,
+    "avg_odds": -113
+   },
+   "all": {
+    "n": 2257,
+    "w": 1206,
+    "l": 1051,
+    "hit": 0.5343,
+    "be": 0.5256,
+    "z": 0.83,
+    "units": 37.4,
+    "roi": 0.0159,
+    "avg_odds": -110
+   },
+   "verdict": "lean"
+  },
+  {
+   "rule": "model_gap_over_1.0",
+   "market": "total",
+   "note": "model total 1.0+ runs over the line (after the mean-vs-median offset)",
+   "disc": {
+    "n": 454,
+    "w": 247,
+    "l": 207,
+    "hit": 0.5441,
+    "be": 0.5238,
+    "z": 0.86,
+    "units": 17.5,
+    "roi": 0.036,
+    "avg_odds": -110
+   },
+   "hold": {
+    "n": 270,
+    "w": 146,
+    "l": 124,
+    "hit": 0.5407,
+    "be": 0.5327,
+    "z": 0.26,
+    "units": 4.8,
+    "roi": 0.0171,
+    "avg_odds": -115
+   },
+   "all": {
+    "n": 724,
+    "w": 393,
+    "l": 331,
+    "hit": 0.5428,
+    "be": 0.5271,
+    "z": 0.84,
+    "units": 22.3,
+    "roi": 0.0291,
+    "avg_odds": -110
+   },
+   "verdict": "lean"
+  },
+  {
+   "rule": "model_gap_under_1.0",
+   "market": "total",
+   "note": "model total 1.0+ runs under the line",
+   "disc": {
+    "n": 666,
+    "w": 367,
+    "l": 299,
+    "hit": 0.5511,
+    "be": 0.5238,
+    "z": 1.41,
+    "units": 34.6,
+    "roi": 0.0497,
+    "avg_odds": -110
+   },
+   "hold": {
+    "n": 271,
+    "w": 144,
+    "l": 127,
+    "hit": 0.5314,
+    "be": 0.5291,
+    "z": 0.08,
+    "units": 1.6,
+    "roi": 0.0056,
+    "avg_odds": -112
+   },
+   "all": {
+    "n": 937,
+    "w": 511,
+    "l": 426,
+    "hit": 0.5454,
+    "be": 0.5253,
+    "z": 1.23,
+    "units": 36.2,
+    "roi": 0.037,
+    "avg_odds": -110
+   },
+   "verdict": "lean"
+  },
+  {
+   "rule": "model_gap_over_1.5",
+   "market": "total",
+   "note": "model total 1.5+ runs over the line (after the mean-vs-median offset)",
+   "disc": {
+    "n": 139,
+    "w": 74,
+    "l": 65,
+    "hit": 0.5324,
+    "be": 0.5238,
+    "z": 0.2,
+    "units": 2.3,
+    "roi": 0.0155,
+    "avg_odds": -110
+   },
+   "hold": {
+    "n": 35,
+    "w": 23,
+    "l": 12,
+    "hit": 0.6571,
+    "be": 0.5308,
+    "z": 1.5,
+    "units": 8.2,
+    "roi": 0.216,
+    "avg_odds": -114
+   },
+   "all": {
+    "n": 174,
+    "w": 97,
+    "l": 77,
+    "hit": 0.5575,
+    "be": 0.5252,
+    "z": 0.85,
+    "units": 10.5,
+    "roi": 0.0566,
+    "avg_odds": -110
+   },
+   "verdict": "fail"
+  },
+  {
+   "rule": "model_gap_under_1.5",
+   "market": "total",
+   "note": "model total 1.5+ runs under the line",
+   "disc": {
+    "n": 92,
+    "w": 52,
+    "l": 40,
+    "hit": 0.5652,
+    "be": 0.5238,
+    "z": 0.8,
+    "units": 7.3,
+    "roi": 0.0774,
+    "avg_odds": -110
+   },
+   "hold": {
+    "n": 45,
+    "w": 26,
+    "l": 19,
+    "hit": 0.5778,
+    "be": 0.5258,
+    "z": 0.7,
+    "units": 4.5,
+    "roi": 0.0937,
+    "avg_odds": -110
+   },
+   "all": {
+    "n": 137,
+    "w": 78,
+    "l": 59,
+    "hit": 0.5693,
+    "be": 0.5245,
+    "z": 1.05,
+    "units": 11.8,
+    "roi": 0.0829,
+    "avg_odds": -110
+   },
+   "verdict": "fail"
+  },
+  {
+   "rule": "model_ml_edge_2",
+   "market": "ml",
+   "note": "model win prob 2+ pts above the no-vig close",
+   "disc": {
+    "n": 9745,
+    "w": 4218,
+    "l": 5527,
+    "hit": 0.4328,
+    "be": 0.4511,
+    "z": -3.63,
+    "units": -388.1,
+    "roi": -0.0398,
+    "avg_odds": 124
+   },
+   "hold": {
+    "n": 5493,
+    "w": 2513,
+    "l": 2980,
+    "hit": 0.4575,
+    "be": 0.4777,
+    "z": -3.01,
+    "units": -220.6,
+    "roi": -0.0402,
+    "avg_odds": 110
+   },
+   "all": {
+    "n": 15238,
+    "w": 6731,
+    "l": 8507,
+    "hit": 0.4417,
+    "be": 0.4607,
+    "z": -4.71,
+    "units": -608.7,
+    "roi": -0.0399,
+    "avg_odds": 119
+   },
+   "verdict": "fail"
+  },
+  {
+   "rule": "model_ml_edge_3",
+   "market": "ml",
+   "note": "model win prob 3+ pts above the no-vig close",
+   "disc": {
+    "n": 6522,
+    "w": 2762,
+    "l": 3760,
+    "hit": 0.4235,
+    "be": 0.4411,
+    "z": -2.86,
+    "units": -249.9,
+    "roi": -0.0383,
+    "avg_odds": 130
+   },
+   "hold": {
+    "n": 3356,
+    "w": 1526,
+    "l": 1830,
+    "hit": 0.4547,
+    "be": 0.4704,
+    "z": -1.83,
+    "units": -107.0,
+    "roi": -0.0319,
+    "avg_odds": 114
+   },
+   "all": {
+    "n": 9878,
+    "w": 4288,
+    "l": 5590,
+    "hit": 0.4341,
+    "be": 0.451,
+    "z": -3.39,
+    "units": -356.9,
+    "roi": -0.0361,
+    "avg_odds": 125
+   },
+   "verdict": "fail"
+  },
+  {
+   "rule": "model_ml_edge_4",
+   "market": "ml",
+   "note": "model win prob 4+ pts above the no-vig close",
+   "disc": {
+    "n": 4153,
+    "w": 1710,
+    "l": 2443,
+    "hit": 0.4118,
+    "be": 0.4319,
+    "z": -2.62,
+    "units": -177.8,
+    "roi": -0.0428,
+    "avg_odds": 135
+   },
+   "hold": {
+    "n": 1869,
+    "w": 843,
+    "l": 1026,
+    "hit": 0.451,
+    "be": 0.4586,
+    "z": -0.65,
+    "units": -42.2,
+    "roi": -0.0226,
+    "avg_odds": 120
+   },
+   "all": {
+    "n": 6022,
+    "w": 2553,
+    "l": 3469,
+    "hit": 0.4239,
+    "be": 0.4401,
+    "z": -2.53,
+    "units": -220.0,
+    "roi": -0.0365,
+    "avg_odds": 130
+   },
+   "verdict": "fail"
+  },
+  {
+   "rule": "model_ml_edge_6",
+   "market": "ml",
+   "note": "model win prob 6+ pts above the no-vig close",
+   "disc": {
+    "n": 1291,
+    "w": 504,
+    "l": 787,
+    "hit": 0.3904,
+    "be": 0.4131,
+    "z": -1.66,
+    "units": -47.6,
+    "roi": -0.0369,
+    "avg_odds": 141
+   },
+   "hold": {
+    "n": 537,
+    "w": 218,
+    "l": 319,
+    "hit": 0.406,
+    "be": 0.4413,
+    "z": -1.65,
+    "units": -50.6,
+    "roi": -0.0942,
+    "avg_odds": 130
+   },
+   "all": {
+    "n": 1828,
+    "w": 722,
+    "l": 1106,
+    "hit": 0.395,
+    "be": 0.4214,
+    "z": -2.29,
+    "units": -98.2,
+    "roi": -0.0537,
+    "avg_odds": 140
+   },
+   "verdict": "fail"
+  },
+  {
+   "rule": "model_ml_edge_8",
+   "market": "ml",
+   "note": "model win prob 8+ pts above the no-vig close",
+   "disc": {
+    "n": 354,
+    "w": 136,
+    "l": 218,
+    "hit": 0.3842,
+    "be": 0.3959,
+    "z": -0.45,
+    "units": -4.0,
+    "roi": -0.0113,
+    "avg_odds": 155
+   },
+   "hold": {
+    "n": 156,
+    "w": 67,
+    "l": 89,
+    "hit": 0.4295,
+    "be": 0.4351,
+    "z": -0.14,
+    "units": -2.3,
+    "roi": -0.0148,
+    "avg_odds": 130
+   },
+   "all": {
+    "n": 510,
+    "w": 203,
+    "l": 307,
+    "hit": 0.398,
+    "be": 0.4079,
+    "z": -0.45,
+    "units": -6.3,
+    "roi": -0.0123,
+    "avg_odds": 148
+   },
+   "verdict": "fail"
+  },
+  {
+   "rule": "model_ml_edge_4_dog",
+   "market": "ml",
+   "note": "same, underdogs only",
+   "disc": {
+    "n": 3345,
+    "w": 1295,
+    "l": 2050,
+    "hit": 0.3871,
+    "be": 0.4036,
+    "z": -1.94,
+    "units": -125.7,
+    "roi": -0.0376,
+    "avg_odds": 145
+   },
+   "hold": {
+    "n": 1284,
+    "w": 521,
+    "l": 763,
+    "hit": 0.4058,
+    "be": 0.4084,
+    "z": -0.19,
+    "units": -19.9,
+    "roi": -0.0155,
+    "avg_odds": 140
+   },
+   "all": {
+    "n": 4629,
+    "w": 1816,
+    "l": 2813,
+    "hit": 0.3923,
+    "be": 0.4049,
+    "z": -1.75,
+    "units": -145.6,
+    "roi": -0.0315,
+    "avg_odds": 145
+   },
+   "verdict": "fail"
+  },
+  {
+   "rule": "model_ml_edge_4_fav",
+   "market": "ml",
+   "note": "same, favorites only",
+   "disc": {
+    "n": 808,
+    "w": 415,
+    "l": 393,
+    "hit": 0.5136,
+    "be": 0.5489,
+    "z": -2.02,
+    "units": -52.1,
+    "roi": -0.0645,
+    "avg_odds": -116
+   },
+   "hold": {
+    "n": 585,
+    "w": 322,
+    "l": 263,
+    "hit": 0.5504,
+    "be": 0.5686,
+    "z": -0.89,
+    "units": -22.3,
+    "roi": -0.0382,
+    "avg_odds": -125
+   },
+   "all": {
+    "n": 1393,
+    "w": 737,
+    "l": 656,
+    "hit": 0.5291,
+    "be": 0.5572,
+    "z": -2.11,
+    "units": -74.4,
+    "roi": -0.0534,
+    "avg_odds": -120
+   },
+   "verdict": "fail"
+  },
+  {
+   "rule": "both_models_ml_edge_3",
+   "market": "ml",
+   "note": "GLM and boosted model both 3+ pts off the close, same side",
+   "disc": {
+    "n": 4275,
+    "w": 1696,
+    "l": 2579,
+    "hit": 0.3967,
+    "be": 0.42,
+    "z": -3.08,
+    "units": -225.8,
+    "roi": -0.0528,
+    "avg_odds": 140
+   },
+   "hold": {
+    "n": 2028,
+    "w": 902,
+    "l": 1126,
+    "hit": 0.4448,
+    "be": 0.4523,
+    "z": -0.68,
+    "units": -25.9,
+    "roi": -0.0128,
+    "avg_odds": 122
+   },
+   "all": {
+    "n": 6303,
+    "w": 2598,
+    "l": 3705,
+    "hit": 0.4122,
+    "be": 0.4304,
+    "z": -2.91,
+    "units": -251.7,
+    "roi": -0.0399,
+    "avg_odds": 135
+   },
+   "verdict": "fail"
+  },
+  {
+   "rule": "wrigley_wind_out10_over",
+   "market": "total",
+   "note": "Wrigley, wind out 10+ mph",
+   "disc": {
+    "n": 71,
+    "w": 41,
+    "l": 30,
+    "hit": 0.5775,
+    "be": 0.5238,
+    "z": 0.91,
+    "units": 7.3,
+    "roi": 0.0996,
+    "avg_odds": -110
+   },
+   "hold": {
+    "n": 48,
+    "w": 32,
+    "l": 16,
+    "hit": 0.6667,
+    "be": 0.5253,
+    "z": 1.96,
+    "units": 12.7,
+    "roi": 0.2589,
+    "avg_odds": -110
+   },
+   "all": {
+    "n": 119,
+    "w": 73,
+    "l": 46,
+    "hit": 0.6134,
+    "be": 0.5244,
+    "z": 1.94,
+    "units": 20.0,
+    "roi": 0.1636,
+    "avg_odds": -110
+   },
+   "verdict": "fail"
+  },
+  {
+   "rule": "wrigley_wind_in10_under",
+   "market": "total",
+   "note": "Wrigley, wind in 10+ mph",
+   "disc": {
+    "n": 108,
+    "w": 57,
+    "l": 51,
+    "hit": 0.5278,
+    "be": 0.5238,
+    "z": 0.08,
+    "units": 0.8,
+    "roi": 0.0069,
+    "avg_odds": -110
+   },
+   "hold": {
+    "n": 55,
+    "w": 29,
+    "l": 26,
+    "hit": 0.5273,
+    "be": 0.52,
+    "z": 0.11,
+    "units": 0.8,
+    "roi": 0.0127,
+    "avg_odds": -108
+   },
+   "all": {
+    "n": 163,
+    "w": 86,
+    "l": 77,
+    "hit": 0.5276,
+    "be": 0.5225,
+    "z": 0.13,
+    "units": 1.6,
+    "roi": 0.0089,
+    "avg_odds": -110
+   },
+   "verdict": "fail"
+  },
+  {
+   "rule": "wind_out15_over",
+   "market": "total",
+   "note": "any park, wind out 15+ mph",
+   "disc": {
+    "n": 690,
+    "w": 337,
+    "l": 353,
+    "hit": 0.4884,
+    "be": 0.5238,
+    "z": -1.86,
+    "units": -46.6,
+    "roi": -0.063,
+    "avg_odds": -110
+   },
+   "hold": {
+    "n": 369,
+    "w": 180,
+    "l": 189,
+    "hit": 0.4878,
+    "be": 0.528,
+    "z": -1.55,
+    "units": -28.0,
+    "roi": -0.0727,
+    "avg_odds": -110
+   },
+   "all": {
+    "n": 1059,
+    "w": 517,
+    "l": 542,
+    "hit": 0.4882,
+    "be": 0.5253,
+    "z": -2.42,
+    "units": -74.6,
+    "roi": -0.0663,
+    "avg_odds": -110
+   },
+   "verdict": "fail"
+  },
+  {
+   "rule": "wind_in12_under",
+   "market": "total",
+   "note": "any park, wind in 12+ mph",
+   "disc": {
+    "n": 693,
+    "w": 347,
+    "l": 346,
+    "hit": 0.5007,
+    "be": 0.5238,
+    "z": -1.22,
+    "units": -30.5,
+    "roi": -0.0418,
+    "avg_odds": -110
+   },
+   "hold": {
+    "n": 258,
+    "w": 130,
+    "l": 128,
+    "hit": 0.5039,
+    "be": 0.5245,
+    "z": -0.66,
+    "units": -10.1,
+    "roi": -0.0377,
+    "avg_odds": -110
+   },
+   "all": {
+    "n": 951,
+    "w": 477,
+    "l": 474,
+    "hit": 0.5016,
+    "be": 0.524,
+    "z": -1.38,
+    "units": -40.7,
+    "roi": -0.0407,
+    "avg_odds": -110
+   },
+   "verdict": "fail"
+  },
+  {
+   "rule": "wind_in8_under",
+   "market": "total",
+   "note": "any park, wind in 8+ mph",
+   "disc": {
+    "n": 1734,
+    "w": 901,
+    "l": 833,
+    "hit": 0.5196,
+    "be": 0.5238,
+    "z": -0.35,
+    "units": -13.9,
+    "roi": -0.0076,
+    "avg_odds": -110
+   },
+   "hold": {
+    "n": 897,
+    "w": 451,
+    "l": 446,
+    "hit": 0.5028,
+    "be": 0.5251,
+    "z": -1.34,
+    "units": -37.5,
+    "roi": -0.0403,
+    "avg_odds": -110
+   },
+   "all": {
+    "n": 2631,
+    "w": 1352,
+    "l": 1279,
+    "hit": 0.5139,
+    "be": 0.5242,
+    "z": -1.06,
+    "units": -51.4,
+    "roi": -0.0187,
+    "avg_odds": -110
+   },
+   "verdict": "fail"
+  },
+  {
+   "rule": "hot90_over",
+   "market": "total",
+   "note": "90F+ outdoors",
+   "disc": {
+    "n": 860,
+    "w": 438,
+    "l": 422,
+    "hit": 0.5093,
+    "be": 0.5238,
+    "z": -0.85,
+    "units": -23.8,
+    "roi": -0.0264,
+    "avg_odds": -110
+   },
+   "hold": {
+    "n": 447,
+    "w": 235,
+    "l": 212,
+    "hit": 0.5257,
+    "be": 0.5287,
+    "z": -0.13,
+    "units": -2.4,
+    "roi": -0.0051,
+    "avg_odds": -113
+   },
+   "all": {
+    "n": 1307,
+    "w": 673,
+    "l": 634,
+    "hit": 0.5149,
+    "be": 0.5255,
+    "z": -0.77,
+    "units": -26.2,
+    "roi": -0.0192,
+    "avg_odds": -110
+   },
+   "verdict": "fail"
+  },
+  {
+   "rule": "cold50_under",
+   "market": "total",
+   "note": "50F or colder outdoors",
+   "disc": {
+    "n": 503,
+    "w": 245,
+    "l": 258,
+    "hit": 0.4871,
+    "be": 0.5238,
+    "z": -1.65,
+    "units": -35.3,
+    "roi": -0.0672,
+    "avg_odds": -110
+   },
+   "hold": {
+    "n": 282,
+    "w": 147,
+    "l": 135,
+    "hit": 0.5213,
+    "be": 0.5235,
+    "z": -0.07,
+    "units": -0.8,
+    "roi": -0.0028,
+    "avg_odds": -110
+   },
+   "all": {
+    "n": 785,
+    "w": 392,
+    "l": 393,
+    "hit": 0.4994,
+    "be": 0.5237,
+    "z": -1.36,
+    "units": -36.1,
+    "roi": -0.0439,
+    "avg_odds": -110
+   },
+   "verdict": "fail"
+  },
+  {
+   "rule": "cold50_over",
+   "market": "total",
+   "note": "50F or colder outdoors (market over-adjusts?)",
+   "disc": {
+    "n": 503,
+    "w": 258,
+    "l": 245,
+    "hit": 0.5129,
+    "be": 0.5238,
+    "z": -0.49,
+    "units": -10.5,
+    "roi": -0.0199,
+    "avg_odds": -110
+   },
+   "hold": {
+    "n": 282,
+    "w": 135,
+    "l": 147,
+    "hit": 0.4787,
+    "be": 0.5264,
+    "z": -1.6,
+    "units": -25.2,
+    "roi": -0.0849,
+    "avg_odds": -110
+   },
+   "all": {
+    "n": 785,
+    "w": 393,
+    "l": 392,
+    "hit": 0.5006,
+    "be": 0.5247,
+    "z": -1.35,
+    "units": -35.7,
+    "roi": -0.0434,
+    "avg_odds": -110
+   },
+   "verdict": "fail"
+  },
+  {
+   "rule": "ump_over",
+   "market": "total",
+   "note": "plate umpire's games run 2.5%+ above league",
+   "disc": {
+    "n": 992,
+    "w": 506,
+    "l": 486,
+    "hit": 0.5101,
+    "be": 0.5238,
+    "z": -0.87,
+    "units": -26.0,
+    "roi": -0.0247,
+    "avg_odds": -110
+   },
+   "hold": {
+    "n": 651,
+    "w": 346,
+    "l": 305,
+    "hit": 0.5315,
+    "be": 0.5272,
+    "z": 0.22,
+    "units": 4.6,
+    "roi": 0.0068,
+    "avg_odds": -110
+   },
+   "all": {
+    "n": 1643,
+    "w": 852,
+    "l": 791,
+    "hit": 0.5186,
+    "be": 0.5251,
+    "z": -0.53,
+    "units": -21.4,
+    "roi": -0.0124,
+    "avg_odds": -110
+   },
+   "verdict": "fail"
+  },
+  {
+   "rule": "ump_under",
+   "market": "total",
+   "note": "plate umpire's games run 2.5%+ below league",
+   "disc": {
+    "n": 1371,
+    "w": 687,
+    "l": 684,
+    "hit": 0.5011,
+    "be": 0.5238,
+    "z": -1.68,
+    "units": -59.5,
+    "roi": -0.0411,
+    "avg_odds": -110
+   },
+   "hold": {
+    "n": 633,
+    "w": 324,
+    "l": 309,
+    "hit": 0.5118,
+    "be": 0.5262,
+    "z": -0.72,
+    "units": -16.8,
+    "roi": -0.0252,
+    "avg_odds": -110
+   },
+   "all": {
+    "n": 2004,
+    "w": 1011,
+    "l": 993,
+    "hit": 0.5045,
+    "be": 0.5246,
+    "z": -1.8,
+    "units": -76.2,
+    "roi": -0.0361,
+    "avg_odds": -110
+   },
+   "verdict": "fail"
+  },
+  {
+   "rule": "total_105_under",
+   "market": "total",
+   "note": "closing total 10.5+",
+   "disc": {
+    "n": 1073,
+    "w": 550,
+    "l": 523,
+    "hit": 0.5126,
+    "be": 0.5238,
+    "z": -0.74,
+    "units": -23.0,
+    "roi": -0.0209,
+    "avg_odds": -110
+   },
+   "hold": {
+    "n": 532,
+    "w": 284,
+    "l": 248,
+    "hit": 0.5338,
+    "be": 0.5251,
+    "z": 0.4,
+    "units": 9.3,
+    "roi": 0.0172,
+    "avg_odds": -110
+   },
+   "all": {
+    "n": 1605,
+    "w": 834,
+    "l": 771,
+    "hit": 0.5196,
+    "be": 0.5242,
+    "z": -0.37,
+    "units": -13.7,
+    "roi": -0.0083,
+    "avg_odds": -110
+   },
+   "verdict": "fail"
+  },
+  {
+   "rule": "total_7_over",
+   "market": "total",
+   "note": "closing total 7 or lower",
+   "disc": {
+    "n": 2488,
+    "w": 1249,
+    "l": 1239,
+    "hit": 0.502,
+    "be": 0.5238,
+    "z": -2.18,
+    "units": -103.5,
+    "roi": -0.0377,
+    "avg_odds": -110
+   },
+   "hold": {
+    "n": 882,
+    "w": 456,
+    "l": 426,
+    "hit": 0.517,
+    "be": 0.5322,
+    "z": -0.91,
+    "units": -26.8,
+    "roi": -0.0271,
+    "avg_odds": -115
+   },
+   "all": {
+    "n": 3370,
+    "w": 1705,
+    "l": 1665,
+    "hit": 0.5059,
+    "be": 0.526,
+    "z": -2.33,
+    "units": -130.3,
+    "roi": -0.0349,
+    "avg_odds": -110
+   },
+   "verdict": "fail"
+  },
+  {
+   "rule": "total_7_under",
+   "market": "total",
+   "note": "closing total 7 or lower",
+   "disc": {
+    "n": 2488,
+    "w": 1239,
+    "l": 1249,
+    "hit": 0.498,
+    "be": 0.5238,
+    "z": -2.58,
+    "units": -122.6,
+    "roi": -0.0447,
+    "avg_odds": -110
+   },
+   "hold": {
+    "n": 882,
+    "w": 426,
+    "l": 456,
+    "hit": 0.483,
+    "be": 0.5181,
+    "z": -2.09,
+    "units": -61.0,
+    "roi": -0.0619,
+    "avg_odds": -107
+   },
+   "all": {
+    "n": 3370,
+    "w": 1665,
+    "l": 1705,
+    "hit": 0.4941,
+    "be": 0.5223,
+    "z": -3.28,
+    "units": -183.6,
+    "roi": -0.0492,
+    "avg_odds": -110
+   },
+   "verdict": "fail"
+  },
+  {
+   "rule": "tired_pens_over",
+   "market": "total",
+   "note": "both bullpens threw 12+ innings in the last 3 days",
+   "disc": {
+    "n": 842,
+    "w": 424,
+    "l": 418,
+    "hit": 0.5036,
+    "be": 0.5238,
+    "z": -1.18,
+    "units": -32.5,
+    "roi": -0.0366,
+    "avg_odds": -110
+   },
+   "hold": {
+    "n": 771,
+    "w": 384,
+    "l": 387,
+    "hit": 0.4981,
+    "be": 0.5263,
+    "z": -1.57,
+    "units": -41.6,
+    "roi": -0.0513,
+    "avg_odds": -110
+   },
+   "all": {
+    "n": 1613,
+    "w": 808,
+    "l": 805,
+    "hit": 0.5009,
+    "be": 0.525,
+    "z": -1.94,
+    "units": -74.1,
+    "roi": -0.0436,
+    "avg_odds": -110
+   },
+   "verdict": "fail"
+  },
+  {
+   "rule": "tired_pen_fade",
+   "market": "ml",
+   "note": "bet the team whose bullpen is 7+ innings fresher over 3 days",
+   "disc": {
+    "n": 1416,
+    "w": 729,
+    "l": 687,
+    "hit": 0.5148,
+    "be": 0.518,
+    "z": -0.24,
+    "units": -14.7,
+    "roi": -0.0104,
+    "avg_odds": -108
+   },
+   "hold": {
+    "n": 833,
+    "w": 411,
+    "l": 422,
+    "hit": 0.4934,
+    "be": 0.5312,
+    "z": -2.19,
+    "units": -58.0,
+    "roi": -0.0697,
+    "avg_odds": -115
+   },
+   "all": {
+    "n": 2249,
+    "w": 1140,
+    "l": 1109,
+    "hit": 0.5069,
+    "be": 0.5229,
+    "z": -1.52,
+    "units": -72.7,
+    "roi": -0.0323,
+    "avg_odds": -110
+   },
+   "verdict": "fail"
+  },
+  {
+   "rule": "sunday_day_under",
+   "market": "total",
+   "note": "Sunday day games",
+   "disc": {
+    "n": 2566,
+    "w": 1335,
+    "l": 1231,
+    "hit": 0.5203,
+    "be": 0.5238,
+    "z": -0.36,
+    "units": -17.4,
+    "roi": -0.0065,
+    "avg_odds": -110
+   },
+   "hold": {
+    "n": 1661,
+    "w": 859,
+    "l": 802,
+    "hit": 0.5172,
+    "be": 0.5239,
+    "z": -0.55,
+    "units": -22.0,
+    "roi": -0.0127,
+    "avg_odds": -110
+   },
+   "all": {
+    "n": 4227,
+    "w": 2194,
+    "l": 2033,
+    "hit": 0.519,
+    "be": 0.5239,
+    "z": -0.63,
+    "units": -39.4,
+    "roi": -0.0089,
+    "avg_odds": -110
+   },
+   "verdict": "fail"
+  },
+  {
+   "rule": "home_dog",
+   "market": "ml",
+   "note": "all home underdogs",
+   "disc": {
+    "n": 5346,
+    "w": 2272,
+    "l": 3074,
+    "hit": 0.425,
+    "be": 0.4373,
+    "z": -1.82,
+    "units": -159.7,
+    "roi": -0.0299,
+    "avg_odds": 122
+   },
+   "hold": {
+    "n": 3330,
+    "w": 1401,
+    "l": 1929,
+    "hit": 0.4207,
+    "be": 0.434,
+    "z": -1.55,
+    "units": -87.7,
+    "roi": -0.0263,
+    "avg_odds": 125
+   },
+   "all": {
+    "n": 8676,
+    "w": 3673,
+    "l": 5003,
+    "hit": 0.4234,
+    "be": 0.4361,
+    "z": -2.39,
+    "units": -247.4,
+    "roi": -0.0285,
+    "avg_odds": 124
+   },
+   "verdict": "fail"
+  },
+  {
+   "rule": "home_dog_150",
+   "market": "ml",
+   "note": "home underdogs +150 or longer",
+   "disc": {
+    "n": 1225,
+    "w": 425,
+    "l": 800,
+    "hit": 0.3469,
+    "be": 0.3626,
+    "z": -1.14,
+    "units": -55.8,
+    "roi": -0.0455,
+    "avg_odds": 170
+   },
+   "hold": {
+    "n": 823,
+    "w": 312,
+    "l": 511,
+    "hit": 0.3791,
+    "be": 0.3637,
+    "z": 0.92,
+    "units": 36.0,
+    "roi": 0.0438,
+    "avg_odds": 170
+   },
+   "all": {
+    "n": 2048,
+    "w": 737,
+    "l": 1311,
+    "hit": 0.3599,
+    "be": 0.3631,
+    "z": -0.3,
+    "units": -19.7,
+    "roi": -0.0096,
+    "avg_odds": 170
+   },
+   "verdict": "fail"
+  },
+  {
+   "rule": "road_dog_150",
+   "market": "ml",
+   "note": "road underdogs +150 or longer",
+   "disc": {
+    "n": 4059,
+    "w": 1401,
+    "l": 2658,
+    "hit": 0.3452,
+    "be": 0.3571,
+    "z": -1.58,
+    "units": -141.0,
+    "roi": -0.0347,
+    "avg_odds": 172
+   },
+   "hold": {
+    "n": 2446,
+    "w": 822,
+    "l": 1624,
+    "hit": 0.3361,
+    "be": 0.3508,
+    "z": -1.53,
+    "units": -116.0,
+    "roi": -0.0474,
+    "avg_odds": 180
+   },
+   "all": {
+    "n": 6505,
+    "w": 2223,
+    "l": 4282,
+    "hit": 0.3417,
+    "be": 0.3547,
+    "z": -2.19,
+    "units": -257.1,
+    "roi": -0.0395,
+    "avg_odds": 175
+   },
+   "verdict": "fail"
+  },
+  {
+   "rule": "big_fav_200",
+   "market": "ml",
+   "note": "favorites -200 or shorter",
+   "disc": {
+    "n": 2434,
+    "w": 1700,
+    "l": 734,
+    "hit": 0.6984,
+    "be": 0.7037,
+    "z": -0.57,
+    "units": -16.8,
+    "roi": -0.0069,
+    "avg_odds": -230
+   },
+   "hold": {
+    "n": 2034,
+    "w": 1405,
+    "l": 629,
+    "hit": 0.6908,
+    "be": 0.7087,
+    "z": -1.78,
+    "units": -50.8,
+    "roi": -0.025,
+    "avg_odds": -238
+   },
+   "all": {
+    "n": 4468,
+    "w": 3105,
+    "l": 1363,
+    "hit": 0.6949,
+    "be": 0.706,
+    "z": -1.62,
+    "units": -67.5,
+    "roi": -0.0151,
+    "avg_odds": -230
+   },
+   "verdict": "fail"
+  },
+  {
+   "rule": "fade_big_fav_250",
+   "market": "ml",
+   "note": "dogs against favorites -250 or shorter",
+   "disc": {
+    "n": 839,
+    "w": 231,
+    "l": 608,
+    "hit": 0.2753,
+    "be": 0.2889,
+    "z": -0.87,
+    "units": -36.7,
+    "roi": -0.0437,
+    "avg_odds": 240
+   },
+   "hold": {
+    "n": 816,
+    "w": 228,
+    "l": 588,
+    "hit": 0.2794,
+    "be": 0.3015,
+    "z": -1.38,
+    "units": -56.9,
+    "roi": -0.0697,
+    "avg_odds": 230
+   },
+   "all": {
+    "n": 1655,
+    "w": 459,
+    "l": 1196,
+    "hit": 0.2773,
+    "be": 0.2951,
+    "z": -1.59,
+    "units": -93.6,
+    "roi": -0.0565,
+    "avg_odds": 235
+   },
+   "verdict": "fail"
+  },
+  {
+   "rule": "small_home_fav",
+   "market": "ml",
+   "note": "home favorites -105 to -130",
+   "disc": {
+    "n": 4197,
+    "w": 2217,
+    "l": 1980,
+    "hit": 0.5282,
+    "be": 0.538,
+    "z": -1.27,
+    "units": -75.4,
+    "roi": -0.018,
+    "avg_odds": -117
+   },
+   "hold": {
+    "n": 2488,
+    "w": 1280,
+    "l": 1208,
+    "hit": 0.5145,
+    "be": 0.5394,
+    "z": -2.5,
+    "units": -114.9,
+    "roi": -0.0462,
+    "avg_odds": -118
+   },
+   "all": {
+    "n": 6685,
+    "w": 3497,
+    "l": 3188,
+    "hit": 0.5231,
+    "be": 0.5386,
+    "z": -2.53,
+    "units": -190.3,
+    "roi": -0.0285,
+    "avg_odds": -117
+   },
+   "verdict": "fail"
+  },
+  {
+   "rule": "fade_after_10runs",
+   "market": "ml",
+   "note": "fade a team that scored 10+ in its last game",
+   "disc": {
+    "n": 2352,
+    "w": 1127,
+    "l": 1225,
+    "hit": 0.4792,
+    "be": 0.4877,
+    "z": -0.83,
+    "units": -23.5,
+    "roi": -0.01,
+    "avg_odds": 106
+   },
+   "hold": {
+    "n": 1492,
+    "w": 715,
+    "l": 777,
+    "hit": 0.4792,
+    "be": 0.4925,
+    "z": -1.02,
+    "units": -52.1,
+    "roi": -0.0349,
+    "avg_odds": 102
+   },
+   "all": {
+    "n": 3844,
+    "w": 1842,
+    "l": 2002,
+    "hit": 0.4792,
+    "be": 0.4896,
+    "z": -1.29,
+    "units": -75.6,
+    "roi": -0.0197,
+    "avg_odds": 105
+   },
+   "verdict": "fail"
+  },
+  {
+   "rule": "after_10runs_under",
+   "market": "total",
+   "note": "a team scored 10+ in its last game",
+   "disc": {
+    "n": 2315,
+    "w": 1137,
+    "l": 1178,
+    "hit": 0.4911,
+    "be": 0.5238,
+    "z": -3.15,
+    "units": -144.4,
+    "roi": -0.0588,
+    "avg_odds": -110
+   },
+   "hold": {
+    "n": 1469,
+    "w": 760,
+    "l": 709,
+    "hit": 0.5174,
+    "be": 0.5253,
+    "z": -0.61,
+    "units": -21.0,
+    "roi": -0.0137,
+    "avg_odds": -110
+   },
+   "all": {
+    "n": 3784,
+    "w": 1897,
+    "l": 1887,
+    "hit": 0.5013,
+    "be": 0.5244,
+    "z": -2.84,
+    "units": -165.4,
+    "roi": -0.0414,
+    "avg_odds": -110
+   },
+   "verdict": "fail"
+  },
+  {
+   "rule": "back_after_shutout",
+   "market": "ml",
+   "note": "back a team that was shut out in its last game",
+   "disc": {
+    "n": 2163,
+    "w": 1064,
+    "l": 1099,
+    "hit": 0.4919,
+    "be": 0.4988,
+    "z": -0.64,
+    "units": -31.2,
+    "roi": -0.0144,
+    "avg_odds": 100
+   },
+   "hold": {
+    "n": 1424,
+    "w": 671,
+    "l": 753,
+    "hit": 0.4712,
+    "be": 0.4989,
+    "z": -2.09,
+    "units": -77.1,
+    "roi": -0.0542,
+    "avg_odds": 100
+   },
+   "all": {
+    "n": 3587,
+    "w": 1735,
+    "l": 1852,
+    "hit": 0.4837,
+    "be": 0.4988,
+    "z": -1.81,
+    "units": -108.3,
+    "roi": -0.0302,
+    "avg_odds": 100
+   },
+   "verdict": "fail"
+  },
+  {
+   "rule": "losing_streak5_dog",
+   "market": "ml",
+   "note": "underdog on a 5+ game losing streak",
+   "disc": {
+    "n": 805,
+    "w": 338,
+    "l": 467,
+    "hit": 0.4199,
+    "be": 0.4061,
+    "z": 0.8,
+    "units": 29.5,
+    "roi": 0.0366,
+    "avg_odds": 144
+   },
+   "hold": {
+    "n": 568,
+    "w": 203,
+    "l": 365,
+    "hit": 0.3574,
+    "be": 0.3964,
+    "z": -1.9,
+    "units": -50.4,
+    "roi": -0.0888,
+    "avg_odds": 150
+   },
+   "all": {
+    "n": 1373,
+    "w": 541,
+    "l": 832,
+    "hit": 0.394,
+    "be": 0.4021,
+    "z": -0.61,
+    "units": -20.9,
+    "roi": -0.0152,
+    "avg_odds": 145
+   },
+   "verdict": "fail"
+  },
+  {
+   "rule": "win_streak5_fade",
+   "market": "ml",
+   "note": "fade a team on a 5+ game win streak",
+   "disc": {
+    "n": 1255,
+    "w": 587,
+    "l": 668,
+    "hit": 0.4677,
+    "be": 0.4705,
+    "z": -0.2,
+    "units": -9.7,
+    "roi": -0.0077,
+    "avg_odds": 115
+   },
+   "hold": {
+    "n": 866,
+    "w": 379,
+    "l": 487,
+    "hit": 0.4376,
+    "be": 0.4699,
+    "z": -1.9,
+    "units": -56.5,
+    "roi": -0.0652,
+    "avg_odds": 110
+   },
+   "all": {
+    "n": 2121,
+    "w": 966,
+    "l": 1155,
+    "hit": 0.4554,
+    "be": 0.4702,
+    "z": -1.37,
+    "units": -66.1,
+    "roi": -0.0312,
+    "avg_odds": 114
+   },
+   "verdict": "fail"
+  },
+  {
+   "rule": "rookie_sp_fade",
+   "market": "ml",
+   "note": "fade a starter with under ~100 career batters faced",
+   "disc": {
+    "n": 1998,
+    "w": 1111,
+    "l": 887,
+    "hit": 0.5561,
+    "be": 0.5551,
+    "z": 0.09,
+    "units": 16.8,
+    "roi": 0.0084,
+    "avg_odds": -127
+   },
+   "hold": {
+    "n": 1384,
+    "w": 765,
+    "l": 619,
+    "hit": 0.5527,
+    "be": 0.5596,
+    "z": -0.52,
+    "units": -20.5,
+    "roi": -0.0148,
+    "avg_odds": -130
+   },
+   "all": {
+    "n": 3382,
+    "w": 1876,
+    "l": 1506,
+    "hit": 0.5547,
+    "be": 0.557,
+    "z": -0.26,
+    "units": -3.6,
+    "roi": -0.0011,
+    "avg_odds": -128
+   },
+   "verdict": "fail"
+  },
+  {
+   "rule": "rookie_sp_back",
+   "market": "ml",
+   "note": "back a starter with under ~100 career batters faced",
+   "disc": {
+    "n": 1998,
+    "w": 886,
+    "l": 1112,
+    "hit": 0.4434,
+    "be": 0.4706,
+    "z": -2.43,
+    "units": -108.7,
+    "roi": -0.0544,
+    "avg_odds": 115
+   },
+   "hold": {
+    "n": 1384,
+    "w": 619,
+    "l": 765,
+    "hit": 0.4473,
+    "be": 0.4818,
+    "z": -2.57,
+    "units": -103.1,
+    "roi": -0.0745,
+    "avg_odds": 110
+   },
+   "all": {
+    "n": 3382,
+    "w": 1505,
+    "l": 1877,
+    "hit": 0.445,
+    "be": 0.4752,
+    "z": -3.51,
+    "units": -211.8,
+    "roi": -0.0626,
+    "avg_odds": 114
+   },
+   "verdict": "fail"
+  },
+  {
+   "rule": "interleague_home",
+   "market": "ml",
+   "note": "interleague home teams",
+   "disc": {
+    "n": 2395,
+    "w": 1263,
+    "l": 1132,
+    "hit": 0.5273,
+    "be": 0.554,
+    "z": -2.62,
+    "units": -115.3,
+    "roi": -0.0481,
+    "avg_odds": -126
+   },
+   "hold": {
+    "n": 2469,
+    "w": 1289,
+    "l": 1180,
+    "hit": 0.5221,
+    "be": 0.5569,
+    "z": -3.48,
+    "units": -146.4,
+    "roi": -0.0593,
+    "avg_odds": -125
+   },
+   "all": {
+    "n": 4864,
+    "w": 2552,
+    "l": 2312,
+    "hit": 0.5247,
+    "be": 0.5555,
+    "z": -4.32,
+    "units": -261.6,
+    "roi": -0.0538,
+    "avg_odds": -126
+   },
+   "verdict": "fail"
+  }
+ ]
+}

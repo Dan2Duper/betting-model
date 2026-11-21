@@ -263,10 +263,47 @@
     "n_bt": 1266,
     "live_w": 0,
     "live_n": 0
+   },
+   "mlb_total_gap_over": {
+    "p": 0.5404,
+    "n": 1682,
+    "lean_only": true,
+    "src": "model total 0.75+ runs over the closing total, walk-forward: 506-449 (53.0%) 2013-20, 403-324 (55.4% vs 53.3% break-even at DraftKings closing juice) 2021-25. Not proven: lean only",
+    "p_bt": 0.5404,
+    "n_bt": 1682,
+    "live_w": 0,
+    "live_n": 0
+   },
+   "mlb_total_gap_under": {
+    "p": 0.5343,
+    "n": 2257,
+    "lean_only": true,
+    "src": "model total 0.75+ runs under the closing total, walk-forward: 822-739 (52.7%) 2013-20, 384-312 (55.2% vs 53.0% break-even at DraftKings closing juice) 2021-25. Not proven: lean only",
+    "p_bt": 0.5343,
+    "n_bt": 2257,
+    "live_w": 0,
+    "live_n": 0
+   },
+   "mlb_wrigley_wind_out_over": {
+    "p": 0.6134,
+    "n": 119,
+    "lean_only": true,
+    "src": "Wrigley Field, wind blowing out 10+ mph, over the closing total: 41-30 (57.8%) 2013-20, 32-16 (66.7% vs 52.5% break-even at DraftKings closing juice) 2021-25. Small sample: lean only",
+    "p_bt": 0.6134,
+    "n_bt": 119,
+    "live_w": 0,
+    "live_n": 0
    }
   },
   "excluded": "time-zone spots where the model disagrees; any game passed with --skip",
   "_lean_note": "lean_only rules are shown and graded on the report card but never become bets until their live record earns it",
-  "_kill_switch": "After 50 live bets, retire any rule below 52.4% (teasers: legs below 73.9%). Leans are promoted after 50 live picks at 55%+."
+  "_kill_switch": "After 50 live bets, retire any rule below 52.4% (teasers: legs below 73.9%). Leans are promoted after 50 live picks at 55%+.",
+  "mlb_min_hit": 0.535
+ },
+ "mlb": {
+  "total_gap_min": 0.75,
+  "total_offset": 0.45,
+  "wrigley_wind_out_mph": 10,
+  "_note": "Nov 2026 backtest, 52 candidate rules vs closing lines 2013-25: none proven. The model picks winners 57.9% vs the closing line's 58.1%; betting its moneyline edges loses about the vig (-2% to -4%). Three leans only. total_offset: the model total is a mean, a betting total is a median."
  }
 }
