@@ -39,11 +39,12 @@ def load_xwalk(cache, hist_games):
             d = d.dropna(); P.update({str(int(m)): r for m, r in zip(d.key_mlbam, d.key_retro)})
         if P: X['players'] = P; X['players_ts'] = time.time()
         print('crosswalk players', len(X.get('players', {})))
-    if 'venues' not in X:   # learn venue and plate-umpire ids from the last Retrosheet season, matched game by game
-        last = int(hist_games.season.max()); hg = hist_games[hist_games.season == last]
+    last = int(hist_games.season.max())
+    if X.get('venues_from') != last:   # learn venue and plate-umpire ids from the last three Retrosheet seasons, matched game by game
+        hg = hist_games[hist_games.season >= last - 2]
         key = {(str(pd.Timestamp(r.date).date()), r.home, int(r.num)): r for r in hg.itertuples()}
         ven, ump = {}, {}
-        for g in schedule(season=last, gameType='R', hydrate='officials,venue'):
+        for g in [g for s in range(last - 2, last + 1) for g in schedule(season=s, gameType='R', hydrate='officials,venue')]:
             if not is_final(g): continue
             r = key.get((g.get('officialDate'), TEAM.get(g['teams']['home']['team']['id']), num_of(g)))
             if r is None: continue
@@ -51,7 +52,7 @@ def load_xwalk(cache, hist_games):
             for o in g.get('officials', []):
                 if o.get('officialType') == 'Home Plate' and r.ump:
                     u = ump.setdefault(str(o['official']['id']), {}); u[r.ump] = u.get(r.ump, 0) + 1
-        X['venues'] = {k: max(v, key=v.get) for k, v in ven.items()}; X['umps'] = {k: max(v, key=v.get) for k, v in ump.items()}
+        X['venues'] = {k: max(v, key=v.get) for k, v in ven.items()}; X['umps'] = {k: max(v, key=v.get) for k, v in ump.items()}; X['venues_from'] = last
         print('crosswalk venues', len(X['venues']), 'umpires', len(X['umps']))
     X.setdefault('hands', {})
     json.dump(X, open(f, 'w')); return X
@@ -133,11 +134,14 @@ def hands_for(X, ids, cache):
 
 def main():
     ap = argparse.ArgumentParser(); ap.add_argument('--cache', required=True); ap.add_argument('--out', required=True); ap.add_argument('--date'); ap.add_argument('--days', type=int, default=2)
-    ap.add_argument('--check', action='store_true'); ap.add_argument('--max-new', type=int, default=4000); A = ap.parse_args()
+    ap.add_argument('--check', action='store_true'); ap.add_argument('--max-new', type=int, default=4000)
+    ap.add_argument('--hist-last', type=int, help='parity test: pretend Retrosheet history ends with this season'); A = ap.parse_args()
     os.makedirs(A.cache, exist_ok=True)
     day0 = A.date or str((dt.datetime.now(dt.timezone.utc) - dt.timedelta(hours=6)).date()); d0 = dt.date.fromisoformat(day0)
     H = {n: pd.read_parquet(f'{HERE}/hist/{n}.parquet') for n in ('games', 'pit', 'bat', 'hands')}
     for n in ('games', 'pit', 'bat'): H[n]['date'] = pd.to_datetime(H[n].date).dt.strftime('%Y-%m-%d')
+    if A.hist_last:
+        for n in ('games', 'pit', 'bat'): H[n] = H[n][H[n].date < f'{A.hist_last + 1}-01-01']
     M = json.load(open(f'{HERE}/model.json')); RULES = json.load(open(f'{os.path.dirname(HERE)}/rules.json')).get('mlb', {})
     X = load_xwalk(A.cache, H['games'])
     seasons = list(range(int(H['games'].season.max()) + 1, d0.year + 1))
@@ -148,7 +152,12 @@ def main():
     for g in schedule(startDate=day0, endDate=str(d0 + dt.timedelta(days=A.days - 1)), gameType='R', hydrate='probablePitcher,lineups,venue,weather,officials'):
         if g.get('status', {}).get('detailedState') in ('Postponed', 'Cancelled'): continue
         r = game_row(g, X); r['hruns'] = np.nan; r['aruns'] = np.nan; r['ump'] = ''
-        r['temp'], r['sky'], r['windspeed'], r['winddir'] = 72.0, '', 0.0, 'unknown'      # neutral weather: the page applies the forecast
+        wx = g.get('weather') or {}
+        if wx.get('temp') and not A.hist_last:
+            r['temp'], r['sky'], r['windspeed'], r['winddir'] = parse_weather(f"{wx.get('temp')} degrees, {wx.get('condition', '')}", wx.get('wind', '')); r['wx'] = 'posted'
+            if r['temp'] != r['temp']: r['temp'] = 72.0
+            if r['windspeed'] != r['windspeed']: r['windspeed'] = 0.0
+        else: r['temp'], r['sky'], r['windspeed'], r['winddir'], r['wx'] = 72.0, '', 0.0, 'unknown', 'neutral'      # 72F, no wind until the game-day weather is posted
         last = pd.concat([H['games'], LG]).sort_values('date') if len(LG) else H['games'].sort_values('date')
         for side, pre in (('away', 'a'), ('home', 'h')):
             t = g['teams'][side]; pp = t.get('probablePitcher') or {}
@@ -190,7 +199,7 @@ def main():
         out['games'].append(dict(id=r.gid, pk=int(r.pk), date=r.date, kick=r.start_utc, away=r.away, home=r.home, venue=r.venue, park=r.park, num=int(r.num), sched7=bool(r.sched7),
                                  sp_away=r.asp_name, sp_home=r.hsp_name, sp_away_known=bool(r.asp), sp_home_known=bool(r.hsp), lineup_away=r.a_lineup_src, lineup_home=r.h_lineup_src,
                                  pa=round(float(p.lam_a), 2), ph=round(float(p.lam_h), 2), p_home=round(float(p.p_home), 4), total=round(float(p.lam_a + p.lam_h), 2),
-                                 park_factor=round(float(fh.park), 3), sp_away_k=round(float(fh.sp_k), 2), sp_home_k=round(float(fa.sp_k), 2), lu_away=round(float(fa.lu_woba), 3), lu_home=round(float(fh.lu_woba), 3)))
+                                 wx=r.wx, temp=round(float(fh.temp)), wind_out=round(float(fh.wind_out)), wind_in=round(float(fh.wind_in)), dome=bool(fh.dome), park_factor=round(float(fh.park), 3), sp_away_k=round(float(fh.sp_k), 2), sp_home_k=round(float(fa.sp_k), 2), lu_away=round(float(fa.lu_woba), 3), lu_home=round(float(fh.lu_woba), 3)))
     if A.check and len(LG):
         C = LG.set_index('gid').join(P, how='inner'); C = C[C.lam_h.notna()]
         hw = (C.hruns > C.aruns).astype(int); ll = float(-(hw * np.log(C.p_home) + (1 - hw) * np.log(1 - C.p_home)).mean())
