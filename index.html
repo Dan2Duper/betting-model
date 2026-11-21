@@ -1635,6 +1635,17 @@ function shotLeg(lg, leg, g, side) {   // one leg in this page's format (spread 
           line: m === 'ml' ? '' : (side === 'away' ? -(+leg.line) : +leg.line)};
 }
 let SHOT = null;
+const shotNum = v => { if (v == null || v === '') return NaN; if (/even/i.test(String(v))) return 100; return parseFloat(String(v).replace(/[^\d.+-]/g, '')); };
+const decToAm = d => d >= 1 ? Math.round(d * 100) : -Math.round(100 / d);   // d = profit per $1 staked
+function shotOdds(b) {   // the slip's American odds; if the reader missed them, work them out from what it did read
+  const o = shotNum(b.odds); if (Math.abs(o) >= 100) return {odds: o, how: ''};
+  const stake = shotNum(b.stake); let win = shotNum(b.to_win);
+  if (!(win > 0)) { const pay = shotNum(b.payout); if (pay > stake) win = pay - stake; }
+  if (stake > 0 && win > 0) return {odds: decToAm(win / stake), how: 'worked out from the stake and to-win'};
+  const lo = (b.legs || []).map(l => shotNum(l.odds));
+  if (lo.length && lo.every(x => Math.abs(x) >= 100)) return {odds: decToAm(lo.reduce((a, x) => a * (x > 0 ? 1 + x / 100 : 1 + 100 / -x), 1) - 1), how: lo.length > 1 ? 'worked out from the leg odds' : 'from the leg'};
+  return {odds: NaN, how: ''};
+}
 async function shotRead(files) {
   files = [...files].slice(0, 8);
   const box = $('#shot-box'); box.classList.remove('hide');
@@ -1647,6 +1658,7 @@ async function shotRead(files) {
     const j = await r.json(); if (!r.ok) throw new Error(j.error || r.status);
     const out = [];
     for (const b of j.bets || []) {
+      const od = shotOdds(b); b.odds = od.odds; b.odds_how = od.how; b.stake = shotNum(b.stake);
       const lg = /college|ncaa|cfb/i.test(b.league || '') ? 'CFB' : /nfl/i.test(b.league || '') ? 'NFL' : (b.league || '').toUpperCase();
       const legs = [], miss = [];
       if (lg !== 'NFL' && lg !== 'CFB') { out.push({b, err: `${b.league || 'This sport'} isn't tracked yet (NFL and college football only for now).`}); continue; }
@@ -1675,7 +1687,7 @@ function shotDup(x) {   // already in My bets? same games, market, odds and stak
 }
 function shotShow() {
   const box = $('#shot-box');
-  SHOT.forEach(x => { x.ok = !x.err && x.legs.length && !x.miss.length && x.b.stake > 0 && Math.abs(+x.b.odds) >= 100; x.dup = x.ok && shotDup(x); });
+  SHOT.forEach(x => { x.legsOk = !x.err && x.legs.length && !x.miss.length; x.ok = x.legsOk && x.b.stake > 0 && Math.abs(+x.b.odds) >= 100; x.dup = x.ok && shotDup(x); });
   const ready = SHOT.filter(x => x.ok && !x.dup).length;
   const head = `<div class="small" style="margin:2px 0 6px">${SHOT.n > 1 ? `Read ${SHOT.n} screenshots together (a slip split across screenshots counts once): ` : ''}${SHOT.length} bet${SHOT.length === 1 ? '' : 's'} found.</div>`;
   box.innerHTML = head + SHOT.map((x, i) => {
@@ -1683,16 +1695,26 @@ function shotShow() {
     const ok = x.ok;
     const bt = ok ? shotBet(x) : null; if (bt) bt.bet = '';
     const desc = x.legs.map(l => legText(l, {})).join(' · ');
-    return `<div class="card" style="margin:6px 0;padding:10px"><b>${esc(x.b.type || 'Bet')}</b> · ${esc(x.lg)} · odds ${+x.b.odds > 0 ? '+' : ''}${esc(x.b.odds)} · stake ${fmt$(+x.b.stake || 0)}
+    const oTxt = Math.abs(+x.b.odds) >= 100 ? `${+x.b.odds > 0 ? '+' : ''}${+x.b.odds}` : '?';
+    return `<div class="card" style="margin:6px 0;padding:10px"><b>${esc(x.b.type || 'Bet')}</b> · ${esc(x.lg)} · odds ${oTxt}${x.b.odds_how ? ` <span class="small">(${esc(x.b.odds_how)})</span>` : ''} · stake ${x.b.stake > 0 ? fmt$(+x.b.stake) : '?'}
       <div class="small" style="margin:4px 0">${esc(desc) || 'No gradeable legs found.'}</div>
       ${x.miss.length ? `<div class="small" style="color:#c0392b">${x.miss.map(esc).join('<br>')}</div>` : ''}
       ${x.dup ? `<div class="small" style="margin:4px 0"><b>Already in My bets.</b></div><button class="btn small" data-shotsave="${i}">Save it again anyway</button>`
-        : ok ? `<button class="btn primary small" data-shotsave="${i}">Save this bet</button>` : '<div class="small">Can\'t save this one automatically — use + Add a bet.</div>'}</div>`;
+        : ok ? `<button class="btn primary small" data-shotsave="${i}">Save this bet</button>`
+        : x.legsOk ? `<div class="small" style="margin:4px 0">The ${[!(Math.abs(+x.b.odds) >= 100) && 'odds', !(x.b.stake > 0) && 'stake'].filter(Boolean).join(' and ')} didn't read — type ${!(Math.abs(+x.b.odds) >= 100) && !(x.b.stake > 0) ? 'them' : 'it'} in:</div>
+            <div style="display:flex;gap:6px;align-items:center;flex-wrap:wrap"><label class="small">Odds <input id="shot-o-${i}" inputmode="text" placeholder="-110 or +450" value="${Math.abs(+x.b.odds) >= 100 ? +x.b.odds : ''}" style="width:96px"></label>
+            <label class="small">Stake $ <input id="shot-s-${i}" inputmode="decimal" value="${x.b.stake > 0 ? x.b.stake : ''}" style="width:72px"></label>
+            <button class="btn primary small" data-shotfix="${i}">Save this bet</button></div>`
+        : '<div class="small">Can\'t save this one automatically — use + Add a bet.</div>'}</div>`;
   }).join('') + `<div style="display:flex;gap:8px;margin-top:6px">${ready > 1 ? `<button class="btn primary small" id="shot-all">Save all ${ready}</button>` : ''}<button class="btn small" id="shot-close">Close</button></div>`;
   const save = (i, el) => { const x = SHOT[i]; if (x.saved) return; const b = shotBet(x); b.id += '|' + i;
     if (b.legs) b.legs.forEach(l => { if (!l.kick) delete l.kick; });
     ST.mine[b.id] = b; x.saved = true; if (el) el.outerHTML = '<span class="small"><b>Saved.</b></span>'; };
   $$('[data-shotsave]').forEach(el => el.onclick = () => { save(+el.dataset.shotsave, el); usave(); recompute(); });
+  $$('[data-shotfix]').forEach(el => el.onclick = () => { const i = +el.dataset.shotfix, x = SHOT[i];
+    const o = shotNum($(`#shot-o-${i}`).value), st = shotNum($(`#shot-s-${i}`).value);
+    if (!(Math.abs(o) >= 100) || !(st > 0)) { el.insertAdjacentHTML('afterend', '<span class="small" style="color:#c0392b"> Odds like -110 or +450, and a stake.</span>'); return; }
+    x.b.odds = o; x.b.stake = st; x.b.odds_how = ''; x.ok = true; save(i, el.parentElement); usave(); recompute(); });
   if ($('#shot-all')) $('#shot-all').onclick = e => { SHOT.forEach((x, i) => { if (x.ok && !x.dup) save(i, $(`[data-shotsave="${i}"]`)); }); usave(); recompute(); e.target.outerHTML = '<span class="small"><b>All saved.</b></span>'; };
   $('#shot-close').onclick = () => { box.classList.add('hide'); box.innerHTML = ''; SHOT = null; };
 }
@@ -1761,7 +1783,7 @@ async function refreshLive() {
 }
 function scoreLine(g) { if (!g || !(g.state === 'in' || g.state === 'post' || g.done)) return '';
   return `<div class="sline ${g.state === 'in' ? 'in' : ''}">${g.as} – ${g.hs} <span class="small">${esc(g.detail || 'Final')}</span></div>`; }
-const PAGE_VER = "20261121151632";   // stamped by tracker.py; a newer published page reloads itself
+const PAGE_VER = "20261121152336";   // stamped by tracker.py; a newer published page reloads itself
 // ---------------- AUTO REFRESH (while the page is open) ----------------
 const busy = () => { const a = document.activeElement; return a && ['INPUT', 'SELECT', 'TEXTAREA'].includes(a.tagName) || $('#m-form').classList.contains('open'); };
 let tickN = 0;
