@@ -60,7 +60,11 @@ You may get several screenshots at once. A long parlay often does not fit on one
 more screenshots that overlap: the top part shows some legs, the next screenshot repeats a leg or two and shows the rest, and the
 odds / stake / to-win line may appear on only one of them. Treat those parts as ONE bet: list each leg once (an overlapping leg seen
 twice is one leg) and take odds and stake from whichever part shows them. Separate slips (different bet IDs, different stakes, or
-clearly different bets) stay separate bets. If the very same slip appears twice, list it once.
+clearly different bets) stay separate bets. If the very same slip appears twice, list it once. One screenshot can hold several
+whole or partial slips; read each one.
+For every bet also give legs_expected (the leg count the slip states, e.g. "4 Pick Parlay" or "4 Leg SGP" = 4; 1 for a single; blank if
+not shown) and cut_off: true when a slip runs off the top or bottom of the screenshots you have (legs, odds or wager clearly missing and
+no other screenshot supplies them), with cut_note saying what is missing. Never invent the missing legs.
 GAMES: when a list of real games is given (id | league | date | away @ home), set each leg's game_id to the one game that leg is on.
 Match on BOTH teams in the slip's matchup line and on the date, never on one team name alone: schools share words (Tennessee vs
 Tennessee Tech, Texas vs Texas Tech / Texas A&M / UTSA, Miami vs Miami (OH)), so the opponent decides. Use the school/city on the
@@ -69,7 +73,7 @@ Before answering, check yourself: every leg's team and opponent are the two team
 stake x odds agrees with the to-win amount.
 Never guess a number you can't read. Answer only by calling the bet_slip tool.`;
 const SLIP_TOOL = {name: 'bet_slip', description: 'The bets read from the screenshot.', input_schema: {type: 'object', required: ['bets'], properties: {bets: {type: 'array', items: {type: 'object', properties: {
-  league: {type: 'string'}, type: {type: 'string'}, odds: {type: ['number', 'string']}, stake: {type: 'number'}, to_win: {type: 'number'}, payout: {type: 'number'}, placed_date: {type: 'string'},
+  league: {type: 'string'}, type: {type: 'string'}, legs_expected: {type: ['number', 'string']}, cut_off: {type: 'boolean'}, cut_note: {type: 'string'}, odds: {type: ['number', 'string']}, stake: {type: 'number'}, to_win: {type: 'number'}, payout: {type: 'number'}, placed_date: {type: 'string'},
   legs: {type: 'array', items: {type: 'object', properties: {team: {type: 'string'}, opponent: {type: 'string'}, market: {type: 'string', enum: ['spread', 'total', 'moneyline', 'prop']},
     pick: {type: 'string'}, line: {type: ['number', 'string']}, game_date: {type: 'string'}, odds: {type: ['number', 'string']}, matchup: {type: 'string'}, game_id: {type: 'string'}, description: {type: 'string'}}}}}}}}}};
 async function readSlip(req, env, origin) {
