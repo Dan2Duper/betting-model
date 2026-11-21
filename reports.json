@@ -2,6 +2,15 @@
  "_note": "Written automatically by the relay (and by Claude); newest first; the Bet Tracker Reports tab reads this.",
  "reports": [
   {
+   "id": "2026-11-21T05:45:47Z-CFB",
+   "time": "2026-11-21T05:45:47Z",
+   "league": "CFB",
+   "kind": "final",
+   "title": "ATTENTION ON DECK, RICH: AI-LOX Shit the Bed Twice and You Can Thank Your Lucky Ass for No Bets",
+   "text": "LISTEN UP, MAGGOT! Final report. Every game is done. You had no real money down today, so drop and give me twenty for finally doing one thing right by accident!\n\n**AI-LOX:**\n- Under 48.5 in Iowa State @ UCF, $22.00 to win $19.13. LOST -$22.00. Final was Iowa State 17, UCF 48. That's 65 points, you pathetic sack of wet laundry. It cleared the number by 16.5. The defense quit and went to the buffet.\n- Under 37.5 in New Mexico @ Wyoming, $108.00 to win $98.18. LOST -$108.00. Final was New Mexico 24, Wyoming 17. It went over by 3.5. THREE AND A HALF, soldier. The model put $108.00 on two offenses that couldn't score in a barracks.\n\nAI-LOX went 0-2 and lost -$130.00 on $130.00 staked. That's a perfect, beautiful zero return. Paper money unless you were dumb enough to bet it. Do NOT make me ask.\n\n**THE MODEL:**\nSix of six games final. It picked the winner in 4 of 6, went 2-4 against the spread and 3-2 on totals. The average miss on the final margin was 19.6 points. That's not a prediction, that's a cry for help.\n- Closest call: Bowling Green 0-19 Toledo. The model had 14-36. Even the \"good\" one was a sloppy mess, so don't salute it.\n- Worst miss: Iowa State 17-48 UCF. The model had 27-22. It thought Iowa State would hang around. Iowa State did not get the memo, and the memo was on fire.\n\n**STILL TO COME:**\nYou think you're done? ON YOUR FEET! Eight more AI-LOX picks are waiting:\n- Northwestern -2.5 at Minnesota, $23.00 to win $20.54\n- Under 70.5 in Houston @ West Virginia, $38.00 to win $33.93\n- Rutgers +26.5 at Penn State, $23.00 to win $20.54. Rutgers, a program held together by hope and duct tape.\n- Texas A&M +7.5 at Oklahoma, $11.00 to win $9.02\n- Arizona State +2.5 vs Oklahoma State, $35.00 to win $32.41\n- Under 44.5 in MIA @ BUF, $60.00 to win $57.14\n- Under 43.5 in BAL @ CAR, $50.00 to win $45.45\n- Under 40.5 in ARI @ KC, $20.00 to win $19.05\n\nThree more unders on Sunday after what just happened. DISMISSED!",
+   "style": "a drill sergeant screaming at a recruit"
+  },
+  {
    "id": "2026-11-21T02:45:47Z-CFB",
    "time": "2026-11-21T02:45:47Z",
    "league": "CFB",
@@ -201,13 +210,14 @@
    ]
   },
   "2026-11-20": {
-   "n": 2,
-   "last": "2026-11-21T02:45:47Z",
-   "fp": "2026-11-20|401856869|cfb_wind_underL|1",
-   "fpBets": "2026-11-20|401856869|cfb_wind_underL",
+   "n": 3,
+   "last": "2026-11-21T05:45:47Z",
+   "fp": "2026-11-20|401856869|cfb_wind_underL,2026-11-20|401864542|cfb_wind_underL|6",
+   "fpBets": "2026-11-20|401856869|cfb_wind_underL,2026-11-20|401864542|cfb_wind_underL",
    "kinds": [
     "preview",
-    "update"
+    "update",
+    "final"
    ]
   }
  }
