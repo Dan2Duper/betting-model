@@ -2,6 +2,15 @@
  "_note": "Written automatically by the relay (and by Claude); newest first; the Bet Tracker Reports tab reads this.",
  "reports": [
   {
+   "id": "2026-11-21T21:43:18Z-CFB",
+   "time": "2026-11-21T21:43:18Z",
+   "league": "CFB",
+   "kind": "update",
+   "title": "Rich, Buddy, Has Anybody Told You About Our Tennessee Lemon? Plus 8 Picks Priced to Move",
+   "text": "**MY BETS:**\n\nWelcome to the lot, Rich! Let me walk you around what you already bought. You're 1-1-0, net -$1.23 on $48.70 staked. That's a fixer-upper with a check-engine light on.\n\n- Wisconsin -5.5: WON +$8.31. Wisconsin 42-10 Purdue, beat the number by 26.5. Only clean title on the whole lot, and you got lucky.\n- BYU -5.5: LOST -$9.54. BYU 31-29 Kansas in 3OT. Short by 3.5. You paid for three overtimes and still got a flat tire.\n- Washington ML: $19.90 to win $49.15. Indiana 14-14 Washington, 8:28 left in the 2nd. Dead even. Big money, big sweat.\n- Tennessee ML: $9.54 to win $8.44. LSU 6-0 Tennessee, 11:29 in the 2nd. Losing by 6 and the offense won't turn over. Sold as-is, my friend.\n\n**THE MODEL:**\n\nThe model's a certified pre-owned 14 of 54 games final. It picked 7 of 14 winners, which is a coin flip with a warranty. It's 8-6 against the spread, 5-9 on totals, and the average miss is 9.4 points.\n\n- Closest call: Colorado 28-35 Cincinnati, model had 25-31. Even a busted odometer reads right sometimes.\n- Worst miss: Wisconsin 42-10 Purdue, model had 24-20. Off by a mile.\n- Live: South Florida is down 0-20 to Florida Atlantic at the end of the 2nd, and the model has them winning 32-30. Delusional. I love it.\n\n**STILL TO COME:**\n\nNow, Rich, let's talk AI-LOX. Nothing's settled yet, but it's all priced to move tonight (EST):\n\n- Virginia Tech +20.5 at Miami, $22.00 to win $20.95, 7:00 PM\n- South Carolina +14.5 vs Georgia, $22.00 to win $20.95, 7:30 PM\n- SMU +20.5 at Notre Dame, $33.00 to win $30.56, 7:30 PM\n- TCU +8.5 vs Utah, $14.00 to win $12.50, 9:00 PM\n- Arizona State +2.5 vs Oklahoma State, $39.00 to win $37.14, 10:15 PM\n\nSunday, 1:00 PM EST, the Unders section:\n\n- MIA @ BUF under 44.5, $63.00 to win $60.00\n- NO @ CHI under 48.5, $46.00 to win $40.71\n- ARI @ KC under 40.5, $21.00 to win $20.00\n\nThat's eight picks, no test drives, no refunds. What do I have to do to get your ass in one of these today?",
+   "style": "a used-car salesman trying to sell Rich on tomorrow's picks"
+  },
+  {
    "id": "2026-11-21T20:45:47Z-CFB",
    "time": "2026-11-21T20:45:47Z",
    "league": "CFB",
@@ -239,12 +248,13 @@
    ]
   },
   "2026-11-21": {
-   "n": 2,
-   "last": "2026-11-21T20:45:47Z",
-   "fp": "2026-11-21|401858530|cfb_secb1g_road_bounceL|10",
-   "fpBets": "2026-11-21|401858530|cfb_secb1g_road_bounceL",
+   "n": 3,
+   "last": "2026-11-21T21:43:18Z",
+   "fp": "mine|CFB|401856866|spread|1795296997882|0L,mine|CFB|401858533|spread|1795296371564|1W|14",
+   "fpBets": "mine|CFB|401856866|spread|1795296997882|0L,mine|CFB|401858533|spread|1795296371564|1W",
    "kinds": [
     "preview",
+    "update",
     "update"
    ]
   }
