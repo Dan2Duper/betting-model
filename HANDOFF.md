@@ -91,37 +91,55 @@ Pushing to main/package/sync/data from a Claude session with git works.
 - Next: page chips for adj/why + wind on DFS player rows; PROE / pass-funnel and routes-per-dropback variables (need pbp/participation download);
   kicker wind.
 
-## MLB DFS overhaul (Rich asked Nov 22 2026) - same treatment as NFL, before Opening Day 2027
-- Fresh inputs at build time (GitHub Actions can reach these): confirmed batting orders + probable pitchers + scratches (MLB StatsAPI, free);
-  home-plate umpire (StatsAPI); weather at first pitch with wind direction vs park orientation (out to CF / in), temp, humidity, rain/postponement risk, roof.
-- Backtest each candidate variable walk-forward 2021-2025 (like dfs/research): batting-order slot (PA count), platoon splits, park factor by handedness,
-  wind out/in, umpire zone, bullpen fatigue, pitcher pitch mix vs batter (Statcast, check reachability). Switch on only what beats out-of-sample error.
-- Self-tuning layer like nfl_tune.py (weights per position, graded daily/weekly against actual DK points, decayed + pulled to long-run fit).
-- Relay game-day rebuilds: MLB has many slate locks a day -> rebuild ~60-90 min before each lock and again when lineups are confirmed.
-- Tasker already pulls MLB slates too if they're in dfs_todo.json; check the slate-list workflow includes MLB in season.
+## START HERE next session: MLB complete for Opening Day 2027 (betting lines, totals, DFS)
+Goal (Rich, Nov 22 2026): MLB fully finished in the app - moneyline + run line + over/under picks that log, grade and report like
+football, and MLB DFS lineups with the same freshness / weather / self-tuning treatment NFL DFS got on Nov 22. Opening Day is late
+March 2027; spring training (late Feb) is the live dry run. Rules as always: do everything you can yourself, one step at a time when it
+has to be Rich, prove every variable walk-forward before it goes live, nothing gets "bet" stars unless it beats the closing line out of sample.
 
-## START HERE next session: MLB DFS lineups (steps 2-3)
-2. Lineups: dfs/optimizer.py (PuLP) gets an MLB classic builder: P,P,C,1B,2B,3B,SS,OF,OF,OF, $50,000, max 5 hitters from one team,
-   players from 2+ games; GPP stacks of 4-5 hitters from one lineup (consecutive slots), no hitters against your own pitcher.
-   Showdown = Captain 1.5x + 5 UTIL (optimizer.showdown already exists for NFL). DK eligibility comes from the salary file
-   (C/1B, 2B/SS etc.); proj rows join on name + team. Ownership model for MLB still to build (dfs/ownership.py is NFL).
-   NO MLB salary files exist yet (data:salaries/ holds NFL only). dfs/make_todo.py already lists MLB slates and the relay /salaries
-   accepts sport=MLB, so files arrive by themselves once DraftKings posts MLB slates (spring). Until then test with made-up salaries;
-   a lineup backtest can use the 2025-26 projection rows (dfs/mlb_proj.py backtest --out writes mlb_proj_rows.parquet).
-3. Build + page: in mlb/live.py (after F = build(...)) call mlb_proj.project_day(...) for the slate -> dfs/build_mlb.py ->
-   data:dfs_mlb.json; the workflow needs scikit-learn added to its pip line (training takes ~1 min). DFS tab reads NFL or MLB by
-   season (applySeasons / inSeason exist; the DFS tab is marked data-sport="fb" today and must show for MLB too).
-4. Loose NFL DFS item worth fixing on the way: TE floor/ceiling calibration in dfs/nfl_model.py.
+Phase 0 - setup
+- `bash mlb/setup_data.sh <dir>` rebuilds the history (~900 MB). Retrosheet 2026 may be out by now: if so `bash mlb/setup_data.sh <dir> 2026`,
+  `python3 mlb/make_hist.py <dir>`, commit mlb/hist + model.json (the Stats API cache then only carries 2027).
 
-## Next for MLB
-1. First week of the 2027 season: open the MLB tab on a game day and check the ESPN odds fields (mlbOdds reads both feed shapes) and
-   team matching; fix whatever the real feed shows.
-2. Log MLB leans as picks so they grade on the Tracker and in reports (frozenPicks / picks_log; grade.py needs MLB finals; worker.js
-   runReports needs an MLB espnDay URL). Until then the MLB tab is display only.
-3. Retrosheet 2026 (not published yet Nov 21): `bash mlb/setup_data.sh <dir> 2026`, then `python3 mlb/make_hist.py <dir>` and commit
-   mlb/hist + model.json; the Stats API cache then only carries 2027. No closing-odds source for 2026 yet (backtest stays 2013-25).
-4. Forecast weather before the Stats API posts it (Open-Meteo at the park + field azimuth from the Stats API venue record).
-5. MLB DFS: projections done (dfs/mlb_proj.py); lineups + page next (see START HERE).
+Phase 1 - betting lines and totals (mlb/)
+1. Run line: derive P(cover -1.5/+1.5) from the Poisson run model (margin distribution, plus extra-innings rule). Check whether the
+   2021-25 SBR odds file carries run lines / first-five lines; if yes, backtest them like mlb/backtest.py did moneyline + totals.
+2. Fresher inputs before first pitch (same idea as dfs/nfl_live.py): Open-Meteo forecast at the park + field azimuth from the Stats API
+   venue record (wind out to CF vs in, temp, humidity, rain/postponement risk, roof); confirmed lineups + probable pitchers + scratches;
+   home-plate umpire. Today live.py falls back to 72F/calm and last lineup until the Stats API posts them.
+3. Re-test candidate variables walk-forward 2013-25 against the closing line: wind out/in by park, bullpen fatigue (pitches last 3 days),
+   umpire zone, lineup strength vs the projected one, travel/rest. Current truth: nothing beats the close; 3 leans only
+   (mlb_total_gap_over/under, mlb_wrigley_wind_out_over). Keep that honesty on the page.
+4. Picks that count: log MLB leans/picks to frozenPicks / picks_log, grade.py with MLB finals, scorecard rows, and the relay's runReports
+   (needs an MLB espnDay URL) so MLB shows in Reports. Daily self-tuning like the football weekly refresh (rules_learn.py).
+5. More game-day runs: workflow "MLB model" (main: .github/workflows/mlb.yml) runs 8:23 am + 3:41 pm CT. Add rebuilds ~90 min before
+   each first-pitch window. Easiest: give mlb.yml a push trigger on a data-branch path (e.g. mlb/_refresh.json) and have the relay cron
+   write it, like salaries/_refresh.json for NFL. Editing a workflow on main was refused once from a Claude session - if refused again,
+   ask Rich to approve it rather than working around it.
+6. Page: MLB tab (mlbRender) gets run line + total picks with stars/lean chips, weather (wind arrow out/in), lineup-confirmed and
+   starter-confirmed badges. First game day: check ESPN odds fields (mlbOdds reads both feed shapes) and team matching on the real feed.
+
+Phase 2 - MLB DFS (dfs/)
+1. Lineups: dfs/optimizer.py MLB classic builder - P,P,C,1B,2B,3B,SS,OF,OF,OF, $50,000, max 5 hitters per team, 2+ games; GPP stacks
+   of 4-5 consecutive hitters from one lineup; no hitters against your own pitcher. Showdown = CPT 1.5x + 5 UTIL (optimizer.showdown
+   exists). DK eligibility from the salary file (C/1B, 2B/SS...); proj rows join on name + team. MLB ownership model (dfs/ownership.py is NFL).
+   No MLB salary files yet; dfs/make_todo.py lists MLB slates and the relay /salaries accepts sport=MLB, so Tasker brings them in spring
+   (confirm the slate-list workflow includes MLB in season). Test meanwhile with made-up salaries + `dfs/mlb_proj.py backtest --out` rows.
+2. Build + page: in mlb/live.py after F = build(...) call mlb_proj.project_day(...) -> dfs/build_mlb.py -> data:dfs_mlb.json (add
+   scikit-learn to that workflow's pip line). DFS tab shows NFL or MLB by season (it is data-sport="fb" today).
+3. Freshness (copy the NFL pattern): confirmed batting orders / scratches / probables from the Stats API at build time override DK's
+   tags; park weather with wind direction; relay rebuilds ~60-90 min before each slate lock and again when lineups post (MLB has several
+   locks a day - read lock times from dfs_todo.json or the Stats API schedule).
+4. Research + self-tuning (copy dfs/research + dfs/nfl_tune.py): backtest batting-order slot (PA count), platoon, park factor by hand,
+   wind out/in, umpire, bullpen fatigue, pitch mix vs batter (Statcast, check reachability from Actions) on 2021-26 projection residuals;
+   start only what beats out-of-sample error; grade daily and nudge weights.
+
+Shared, still to build (Rich asked Nov 22): "I entered this lineup" button on DFS lineups (fee / entries / contest; new synced keys,
+e.g. dfsMine/dfsDel added to SYNCED), the screenshot reader learns DK contest-result screens (points, place, field, winnings), matched
+to entered lineups by player overlap, and a "My DFS results" card (fees, winnings, net, ROI, cash rate, cash vs GPP). Works for NFL now
+and MLB later.
+
+Phase 3 - spring training dry run (late Feb 2027): run every piece on real spring games/slates, fix feed surprises, then go live.
 
 ## Loose ends
 - TE floor/ceiling calibration in dfs/nfl_model.py is off.
