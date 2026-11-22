@@ -1,11 +1,13 @@
 """Driver for the data-branch workflow "MLB build": a push of mlb/_refresh.json to the data branch (the relay cron does that before each
 first-pitch window, and at set times each day) starts it. Normal run: today's slate -> mlb.json, mlb/log_<season>.json, dfs_mlb.json.
 _refresh.json may carry {"test": {"date": "YYYY-MM-DD", "days": 1, "check": true}} to replay a past day into /tmp (nothing saved),
-or {"parity": 2025} for the Retrosheet self-test. Usage: python3 mlb/run_refresh.py DATA_BRANCH_DIR"""
+or {"parity": 2025} for the Retrosheet self-test, {"feeds_test": true} (venues, forecasts, ESPN odds shape), {"wx_check": 2026} (forecast vs posted weather).
+Usage: python3 mlb/run_refresh.py DATA_BRANCH_DIR [--scheduled] [--check]"""
 import os, sys, json, subprocess
-HERE = os.path.dirname(os.path.abspath(__file__)); DB = sys.argv[1]
-try: J = json.load(open(f'{DB}/mlb/_refresh.json'))
+HERE = os.path.dirname(os.path.abspath(__file__)); DB = sys.argv[1]; SCHED = '--scheduled' in sys.argv[2:]
+try: J = {} if SCHED else json.load(open(f'{DB}/mlb/_refresh.json'))      # a scheduled run ignores whatever request is sitting in the file
 except Exception: J = {}
+if '--check' in sys.argv[2:]: J['check'] = True
 print('refresh request:', json.dumps(J)[:300])
 def run(args): print('+', ' '.join(args), flush=True); return subprocess.run([sys.executable] + args).returncode
 if J.get('parity'):
