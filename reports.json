@@ -2,6 +2,15 @@
  "_note": "Written automatically by the relay (and by Claude); newest first; the Bet Tracker Reports tab reads this.",
  "reports": [
   {
+   "id": "2026-11-22T05:53:22Z-CFB",
+   "time": "2026-11-22T05:53:22Z",
+   "league": "CFB",
+   "kind": "update",
+   "title": "The People v. Rich: +$119.18, a 3OT Hostage Situation, and a Parlay Sentenced to Life",
+   "text": "**COURT IS IN SESSION.** The Honorable Judge Juice presiding. The defendant, Rich, stands at 5-4-0, +$119.18 on $191.46 staked. Sit down and shut up.\n\n**MY BETS:**\n- Wisconsin -5.5: WON +$8.31. Beat Purdue 42-10. Not even a trial, just a beating.\n- BYU -5.5: LOST -$9.54. Won 31-29 in 3OT and still missed by 3.5. Objection, Your Honor, this is bullshit. Overruled.\n- 4-leg parlay: LOST -$19.97 for $489.07. Three legs came in, and BYU shit on the fourth.\n- Tennessee ML: WON +$62.83. LSU lost 13-27.\n- Washington ML: WON +$67.42. Beat Indiana 27-24 in OT. Star witness.\n- Michigan ML: WON +$11.30. Beat UCLA 18-16 in 3OT. Ugly and legal.\n- Virginia Tech/Miami UNDER 66.5: WON +$18.52. Final was 20-28.\n- SMU +16.5 & Over 57.5: LOST -$9.81. Notre Dame won 24-3. Both legs dead on arrival.\n- California ML: LOST -$9.88. Stanford 44-28. Rich believed in Cal. Pathetic.\n- Utah -9.5 & Over 45.5: WINNING. Utah leads TCU 38-17, 1:47 left in the 4th. Both legs cashing for $22.11.\n- Oklahoma State/Arizona State UNDER 60.5: WINNING, barely. ASU leads 24-14 in the 3rd, with the pace at 61 against a 60.5 line. Sweat it.\n\n**THE MODEL:** Picked 35 of 49 finals. That's 22-27 against the spread, 25-23 on totals, and an average miss of 11.7 points. Mediocre witness, wrong half the time.\n- Closest call: South Alabama 40-35 Southern Miss (model had 36-31).\n- Worst miss: Arkansas State 3-48 Louisiana Tech (model had 19-35). Perjury.\n\n**STILL TO COME:** AI-LOX is out of the building today, but the docket has three Sunday-Monday unders.\n- MIA @ BUF UNDER 44.5: $98.00 to win $93.33.\n- ARI @ KC UNDER 40.5: $32.00 to win $30.48.\n- CIN @ WAS UNDER 54.5: $130.00 to win $125.00.\n\n**SENTENCING:** Rich, you're found guilty of loving a 4-leg parlay and of letting Kansas drag BYU into 3OT. Sentence: keep the $119.18, stay off the dumb parlays, and sweat Oklahoma State/Arizona State under bailiff supervision. Court adjourned.",
+   "style": "a courtroom drama ending with a sentencing"
+  },
+  {
    "id": "2026-11-22T05:13:58Z-CFB",
    "time": "2026-11-22T05:13:58Z",
    "league": "CFB",
@@ -293,12 +302,13 @@
    ]
   },
   "2026-11-21": {
-   "n": 8,
-   "last": "2026-11-22T05:13:58Z",
+   "n": 9,
+   "last": "2026-11-22T05:53:22Z",
    "fp": "mine|CFB|401856754|ml|1795297781878|0W,mine|CFB|401856866+401858533+401856754+401858535|parlay|1795297334860|0L,mine|CFB|401856866|spread|1795296997882|0L,mine|CFB|401858302|total|1795308233824|0W,mine|CFB|401858307+401858307|parlay|1795308109429|0L,mine|CFB|401858308|ml|1795308111909|1L,mine|CFB|401858528|ml|1795297783490|2W,mine|CFB|401858533|spread|1795296371564|1W,mine|CFB|401858535|ml|1795297782662|1W|49",
    "fpBets": "mine|CFB|401856754|ml|1795297781878|0W,mine|CFB|401856866+401858533+401856754+401858535|parlay|1795297334860|0L,mine|CFB|401856866|spread|1795296997882|0L,mine|CFB|401858302|total|1795308233824|0W,mine|CFB|401858307+401858307|parlay|1795308109429|0L,mine|CFB|401858308|ml|1795308111909|1L,mine|CFB|401858528|ml|1795297783490|2W,mine|CFB|401858533|spread|1795296371564|1W,mine|CFB|401858535|ml|1795297782662|1W",
    "kinds": [
     "preview",
+    "update",
     "update",
     "update",
     "update",
