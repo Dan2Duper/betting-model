@@ -407,5 +407,46 @@ export default {
   },
   async scheduled(event, env, ctx) {   // Cloudflare cron trigger (every 15 minutes)
     ctx.waitUntil(runReports(env, new Date(event.scheduledTime)).catch(e => console.log('report:', e.message)));
+    ctx.waitUntil(dfsGameDay(env, new Date(event.scheduledTime)).catch(e => console.log('dfs:', e.message)));
   }
 };
+
+// ---------- Game-day DFS rebuilds (cron) ----------
+// No PC or phone needed: on any day with NFL games, rebuild the lineups at 9:00 am CT and again ~75 minutes before each kickoff
+// (inactive lists post 90 minutes before). The build itself pulls fresh injury tags (ESPN + Sleeper) and kickoff weather.
+// The GitHub key here can only save files, so a build is started by saving salaries/_refresh.json (anything new in salaries/ starts it).
+// Once an hour it also tries to fetch any missing DraftKings salaries straight from DraftKings, in case the phone's pull didn't run.
+async function dfsKick(env, why) {
+  const path = 'salaries/_refresh.json', api = `https://api.github.com/repos/${REPO}/contents/${path}`, gh = ghHead(env);
+  const old = await fetch(`${api}?ref=${BRANCH}`, {headers: gh}); const sha = old.ok ? (await old.json()).sha : undefined;
+  const body = JSON.stringify({at: new Date().toISOString(), why});
+  const r = await fetch(api, {method: 'PUT', headers: {...gh, 'Content-Type': 'application/json'},
+    body: JSON.stringify({message: `DFS refresh: ${why}`, content: btoa(body), branch: BRANCH, ...(sha ? {sha} : {})})});
+  console.log('dfs refresh', why, r.status);
+}
+async function dfsGameDay(env, now) {
+  const sb = await fetch('https://site.api.espn.com/apis/site/v2/sports/football/nfl/scoreboard').then(r => r.json());
+  const today = ctDay(now);
+  const kicks = [...new Set((sb.events || []).map(e => Date.parse(e.date)).filter(t => ctDay(new Date(t)) === today))].sort();
+  if (!kicks.length) return;
+  const p = Object.fromEntries(new Intl.DateTimeFormat('en-US', {timeZone: CT, hour: '2-digit', minute: '2-digit', hourCycle: 'h23'}).formatToParts(now).map(x => [x.type, x.value]));
+  const hh = +p.hour, mm = +p.minute, t = now.getTime();
+  if (hh === 9 && mm < 15) await dfsKick(env, 'morning update');
+  for (const k of kicks) { const lead = (k - t) / 6e4; if (lead > 70 && lead <= 85) await dfsKick(env, `inactives for ${ctTime(new Date(k))} kickoff`); }
+  if (mm < 15 && hh >= 6 && hh <= 20) await dfsFetchMissing(env).catch(e => console.log('dk fetch:', e.message));
+}
+async function dfsFetchMissing(env) {
+  const gh = ghHead(env);
+  const todo = await fetch(`https://api.github.com/repos/${REPO}/contents/dfs_todo.json?ref=${BRANCH}`, {headers: {...gh, Accept: 'application/vnd.github.raw'}}).then(r => r.json());
+  const have = new Set(((await fetch(`https://api.github.com/repos/${REPO}/contents/salaries?ref=${BRANCH}`, {headers: gh}).then(r => r.json())) || []).map(f => f.name));
+  for (const sl of (todo.slates || []).slice(0, 20)) {
+    const name = `${sl.sport}_${sl.dg}.json`; if (have.has(name)) continue;
+    const r = await fetch(sl.url, {headers: {'User-Agent': 'Mozilla/5.0', Accept: 'application/json'}});
+    if (!r.ok) { console.log('DraftKings refused', sl.dg, r.status); return; }
+    const text = await r.text(); let J; try { J = JSON.parse(text); } catch (e) { return; }
+    if (!Array.isArray(J.draftables) || !J.draftables.length) continue;
+    const api = `https://api.github.com/repos/${REPO}/contents/salaries/${name}`;
+    await fetch(api, {method: 'PUT', headers: {...gh, 'Content-Type': 'application/json'},
+      body: JSON.stringify({message: `Salaries ${sl.sport} ${sl.dg} (relay)`, content: b64(text), branch: BRANCH})});
+  }
+}
