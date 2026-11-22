@@ -33,9 +33,9 @@ with sync_playwright() as p:
         cards = pg.eval_on_selector_all('#mlb-games .mg', 'els => els.map(e => e.innerText.replace(/\\n+/g, " | "))'); print(len(cards), 'cards'); [print(' -', c[:420]) for c in cards[:3] + cards[5:7] + cards[9:10]]
         print('my bets card in MLB tab:', pg.evaluate('!!document.querySelector("#t-mlb #mineboard")'))
         pg.screenshot(path=f'{shots}_1.png', full_page=False); pg.screenshot(path=f'{shots}_full.png', full_page=True)
-        days = pg.query_selector_all('#mlb-day button'); days[0].click(); pg.wait_for_timeout(800)
+        pg.click('#mlb-day button:first-child'); pg.wait_for_timeout(800)
         cards = pg.eval_on_selector_all('#mlb-games .mg', 'els => els.map(e => e.innerText.replace(/\\n+/g, " | "))'); print('yesterday:', len(cards), 'cards'); [print(' -', c[:330]) for c in cards[:2]]
-        days = pg.query_selector_all('#mlb-day button'); days[-1].click(); pg.wait_for_timeout(600)
+        pg.click('#mlb-day button:last-child'); pg.wait_for_timeout(600)
         cards = pg.eval_on_selector_all('#mlb-games .mg', 'els => els.map(e => e.innerText.replace(/\\n+/g, " | "))'); print('tomorrow:', len(cards), 'cards'); [print(' -', c[:330]) for c in cards[:2]]
     pg.click('#tabs button[data-t="track"]'); pg.wait_for_timeout(800)
     print('tracker lg buttons:', pg.eval_on_selector_all('#tk-lg button', 'els => els.filter(b => !b.classList.contains("hide")).map(b => b.textContent)'))

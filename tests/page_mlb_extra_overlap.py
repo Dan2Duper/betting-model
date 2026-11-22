@@ -1,0 +1,5 @@
+pg.click('#tabs button[data-t="dfs"]'); pg.wait_for_timeout(1200)
+print('BOTH: dfs sport', pg.evaluate('dfsSport'), '| switch hidden:', pg.evaluate('document.querySelector("#dfs-sport").classList.contains("hide")'), '| built:', pg.inner_text('#dfs-built')[:80])
+pg.click('#dfs-sport button[data-s="MLB"]'); pg.wait_for_timeout(1200); print('after MLB click:', pg.evaluate('dfsSport'), pg.inner_text('#dfs-built')[:60], '|', pg.inner_text('#dfs-lineup').replace('\n',' | ')[:120])
+pg.click('#dfs-sport button[data-s="NFL"]'); pg.wait_for_timeout(1200); print('back to NFL:', pg.evaluate('dfsSport'), pg.inner_text('#dfs-built')[:80])
+pg.click('#tabs button[data-t="week"]'); pg.wait_for_timeout(300); print('my bets card on week tab:', pg.evaluate('!!document.querySelector("#t-week #mineboard")'), '| m-lg:', pg.eval_on_selector_all('#m-lg option', 'els => els.filter(o => !o.hidden).map(o => o.value)'))

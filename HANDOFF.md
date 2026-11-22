@@ -163,7 +163,8 @@ Phase 2 (MLB DFS), done:
   the base model and flat: batting spot, platoon, wind, heat. Graded daily (pending rows keyed by day), weights move 30% toward the
   decayed fit. Not done: pitch mix vs batter (needs Statcast; reachability from Actions untested).
 - Page: DFS tab shows NFL or MLB by season (switch when both), MLB lineups in roster order with batting spot / lineup-not-posted /
-  rain / wind flags. PUBLISHED? Only if main:index.html is newer than package ff1c18b - check and republish if not.
+  rain / wind flags. Published Nov 22 as main 5c40a42 (index.html = template + the DATA line of the page it replaced; football-season
+  output identical to the page before it, checked with tests/page_football_check.py).
 - Tests (tests/README.md): picks_log_test.py, relay_mlb_test.mjs, make_mlb_fixtures.py + page_mlb_test.py (Chrome, ?asof=2027-06-15,
   mocked feeds), page_football_check.py (old vs new page in football season: identical), dfs_mlb_sim.py (a 2025 day end to end).
   Verified on Actions: replays of Sept 25-27 2026 (picks, log, DFS lineups on made-up prices), feeds test, forecast check.
