@@ -86,7 +86,7 @@ KEEP = ('id', 'pk', 'espn', 'date', 'kick', 'away', 'home', 'num', 'pa', 'ph', '
         'wx', 'temp', 'wind_out', 'wind_in', 'dome', 'park', 'ump', 'line', 'picks', 'rules')
 def update_log(log, games, finals, closes, now, status=None):
     """log: {'season', 'games': {pk: rec}}. games: today's mlb.json games (with picks). finals: {pk: (away runs, home runs)}.
-    closes: {pk: line dict} = the relay's last look at the line before first pitch. A game is rewritten on every build until it
+    closes: {ESPN game id: line dict} = the relay's last look at the line before first pitch. A game is rewritten on every build until it
     starts; from first pitch on its model numbers, line and picks are frozen. Returns how many records changed."""
     G = log.setdefault('games', {}); n = 0
     for g in games:
@@ -99,7 +99,7 @@ def update_log(log, games, finals, closes, now, status=None):
         elif g.get('line'): rec['open'] = dict(g['line'])                             # first line we saw for this game
         if old != rec: G[k] = rec; n += 1
     for k, rec in G.items():
-        c = closes.get(k) or closes.get(int(k)) if closes else None
+        c = closes.get(str(rec.get('espn'))) if closes and rec.get('espn') else None      # the relay keys its snapshots by ESPN game id
         if c and not rec.get('final') and rec.get('close') != c: rec['close'] = c; clv(rec); n += 1
         st = (status or {}).get(k) or (status or {}).get(int(k))
         if st and st != rec.get('status') and not rec.get('final'): rec['status'] = st; n += 1

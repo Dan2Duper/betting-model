@@ -192,15 +192,30 @@ async function ghPut(env, path, obj, sha, msg) {
   return fetch(`https://api.github.com/repos/${REPO}/contents/${path}`, {method: 'PUT', headers: {...ghHead(env), 'Content-Type': 'application/json'},
     body: JSON.stringify({message: msg, branch: SYNC, content: b64(JSON.stringify(obj, null, 1)), ...(sha ? {sha} : {})})});
 }
+const MLB_URL = 'https://site.api.espn.com/apis/site/v2/sports/baseball/mlb/scoreboard';
 async function espnDay(lg, day) {
   const base = lg === 'CFB' ? 'https://site.api.espn.com/apis/site/v2/sports/football/college-football/scoreboard?groups=80&limit=400&dates='
-                            : 'https://site.api.espn.com/apis/site/v2/sports/football/nfl/scoreboard?dates=';
+             : lg === 'MLB' ? MLB_URL + '?dates=' : 'https://site.api.espn.com/apis/site/v2/sports/football/nfl/scoreboard?dates=';
   const r = await fetch(base + day.replace(/-/g, '')); if (!r.ok) return [];
-  const j = await r.json();
+  const j = await r.json(), mlb = lg === 'MLB';
   return (j.events || []).map(ev => { const c = ev.competitions?.[0]; if (!c) return null;
     const H = c.competitors.find(x => x.homeAway === 'home'), A = c.competitors.find(x => x.homeAway === 'away');
-    return {id: String(ev.id), away: A.team.location, home: H.team.location, aab: A.team.abbreviation, hab: H.team.abbreviation, as: +A.score || 0, hs: +H.score || 0,
-            state: ev.status?.type?.state || 'pre', detail: ev.status?.type?.shortDetail || '', date: ctDay(new Date(ev.date))}; }).filter(Boolean);
+    return {id: String(ev.id), away: mlb ? A.team.abbreviation : A.team.location, home: mlb ? H.team.abbreviation : H.team.location, aab: A.team.abbreviation, hab: H.team.abbreviation, as: +A.score || 0, hs: +H.score || 0,
+            state: ev.status?.type?.state || 'pre', done: !!ev.status?.type?.completed, detail: ev.status?.type?.shortDetail || '', date: ctDay(new Date(ev.date)), kick: ev.date, odds: mlb ? mlbOdds(c.odds?.[0]) : null}; }).filter(Boolean);
+}
+// ESPN lists the DraftKings line two ways depending on the feed version; rl = the HOME run line (-1.5 / +1.5)
+function mlbOdds(o) {
+  if (!o) return null;
+  const num = v => { const n = parseFloat(String(v ?? '').replace(/[^0-9.+-]/g, '')); return isNaN(n) ? null : n; };
+  const am = v => /^ev/i.test(String(v ?? '').trim()) ? 100 : (x => x != null && Math.abs(x) >= 100 ? x : null)(num(v));
+  const out = {mh: am(o.homeTeamOdds?.moneyLine ?? o.moneyline?.home?.close?.odds), ma: am(o.awayTeamOdds?.moneyLine ?? o.moneyline?.away?.close?.odds),
+    total: num(o.overUnder ?? o.total?.over?.close?.line), over: am(o.overOdds ?? o.total?.over?.close?.odds), under: am(o.underOdds ?? o.total?.under?.close?.odds), rl: null,
+    rl_h: am(o.pointSpread?.home?.close?.odds ?? o.homeTeamOdds?.spreadOdds), rl_a: am(o.pointSpread?.away?.close?.odds ?? o.awayTeamOdds?.spreadOdds), src: o.provider?.name || 'ESPN'};
+  let hl = num(o.pointSpread?.home?.close?.line);
+  if (hl == null && o.spread != null) { const sp = Math.abs(num(o.spread) || 0); if (sp) hl = o.homeTeamOdds?.favorite ? -sp : o.awayTeamOdds?.favorite ? sp : null; }
+  if (hl != null && Math.abs(hl) === 1.5) out.rl = hl;
+  if (out.total != null && !(out.total >= 4 && out.total <= 20)) out.total = null;
+  return out.mh != null || out.total != null || out.rl != null ? out : null;
 }
 function findGame(EV, lg, sc) {
   if (!sc) return null; const L = EV[lg] || [];
@@ -238,8 +253,41 @@ const money = (b, s) => b.pl !== undefined && b.pl !== null ? b.pl : s === 'W' ?
 const fmt$ = v => (v < 0 ? '-$' : '+$') + Math.abs(v).toFixed(2);
 function elapsed(detail) {
   const d = String(detail || '').toLowerCase(); if (d.includes('half')) return 0.5; if (d.includes('final')) return 1;
+  const inn = d.match(/^(top|mid|bot|bottom|end) (\d+)/); if (inn) return Math.min(((+inn[2] - 1) + ({top: 0.25, mid: 0.5, bot: 0.75, bottom: 0.75, end: 1}[inn[1]])) / 9, 1);
   const m = d.match(/(\d+):(\d+) - (\d)/); if (!m) return null; const q = +m[3], left = +m[1] + +m[2] / 60;
   return q <= 4 ? Math.min(((q - 1) * 15 + (15 - left)) / 60, 1) : 1;
+}
+const mlbSeason = now => { const p = ctParts(now), k = +p.month * 100 + +p.day; return k >= 318 && k <= 1105; };   // same window as the page
+const pay = o => o < 0 ? 100 / -o : o / 100;
+function mlbGrade(g) {   // W / L / P for the model's winner, run line and total picks (and each lean) once the game is final; live standing before that
+  const P = g.picks || {}, m = g.hs - g.as, t = g.hs + g.as, live = g.state !== 'pre', fin = g.state === 'post' && g.done, r = d => d > 0 ? 'W' : d < 0 ? 'L' : 'P';
+  g.res = {}; g.units = {}; g.now = {};
+  const put = (k, d, odds) => { if (!live) return; g.now[k] = d; if (fin) { g.res[k] = r(d); if (odds != null) g.units[k] = d > 0 ? pay(odds) : d < 0 ? -1 : 0; } };
+  if (P.ml) put('su', P.ml.side === 'home' ? m : -m, P.ml.odds);
+  if (P.rl) put('rl', (P.rl.side === 'home' ? 1 : -1) * (m + P.rl.line), P.rl.odds);
+  if (P.tot) put('tot', (P.tot.side === 'over' ? 1 : -1) * (t - P.tot.line), P.tot.odds || -110);
+  g.leans = (g.rules || []).map(x => { const d = (x.market === 'total' ? t - x.line : m + (x.line || 0)) * (x.side === 'under' || x.side === 'away' ? -1 : 1);
+    return {rule: x.rule, txt: x.market === 'total' ? `${x.side === 'over' ? 'Over' : 'Under'} ${x.line}` : x.rule, d: live ? d : null, res: fin ? r(d) : ''}; });
+  return g;
+}
+function mlbText(F, L) {
+  const M = F.mlb || []; if (!M.length) return;
+  const fin = M.filter(g => g.state === 'post' && g.done), live = M.filter(g => g.state === 'in'), ppd = M.filter(g => g.state === 'post' && !g.done);
+  const rec = k => { const x = fin.filter(g => g.res[k]); const w = x.filter(g => g.res[k] === 'W').length, l = x.filter(g => g.res[k] === 'L').length, p = x.length - w - l;
+    const u = x.reduce((a, g) => a + (g.units[k] ?? 0), 0), priced = x.some(g => g.units[k] != null); return {w, l, p, n: x.length, txt: `${w}-${l}${p ? '-' + p : ''}` + (priced ? ` (${u >= 0 ? '+' : ''}${u.toFixed(2)} units at the listed prices)` : '')}; };
+  const su = rec('su'), rl = rec('rl'), tot = rec('tot');
+  L.push(`THE MLB MODEL (winner, run line and over/under pick on every game; these are model picks, not bets): ${fin.length} of ${M.length} games final${ppd.length ? `, ${ppd.length} postponed` : ''}; picked the winner in ${su.w} of ${su.n}${su.txt.includes('units') ? ' ' + su.txt.slice(su.txt.indexOf('(')) : ''}; run line ${rl.n ? rl.txt : 'no lines'}; totals ${tot.n ? tot.txt : 'no lines'}.`);
+  const leans = M.flatMap(g => g.leans.map(x => ({g, x})));
+  if (leans.length) L.push('- MLB leans (tracked, never staked): ' + leans.map(({g, x}) => `${x.txt} ${g.away}/${g.home} [${x.res ? {W: 'WON', L: 'LOST', P: 'PUSH'}[x.res] : x.d == null ? 'not started' : x.d > 0 ? 'ahead by ' + x.d : x.d < 0 ? 'behind by ' + -x.d : 'even'}]`).join('; '));
+  const miss = g => Math.abs((g.hs - g.as) - (g.ph - g.pa)) + Math.abs((g.hs + g.as) - (g.ph + g.pa));
+  const srt = fin.slice().sort((a, b) => miss(a) - miss(b));
+  if (srt.length) { const g = srt[0]; L.push(`- Closest MLB call: ${g.away} ${g.as}-${g.hs} ${g.home} (model had ${g.pa.toFixed(1)}-${g.ph.toFixed(1)}).`); }
+  if (srt.length > 1) { const g = srt[srt.length - 1]; L.push(`- Worst MLB miss: ${g.away} ${g.as}-${g.hs} ${g.home} (model had ${g.pa.toFixed(1)}-${g.ph.toFixed(1)}).`); }
+  if (live.length) L.push('- MLB live now: ' + live.slice(0, 12).map(g => `${g.away} ${g.as}-${g.hs} ${g.home} ${g.detail} (model ${g.pa.toFixed(1)}-${g.ph.toFixed(1)}${g.picks.ml ? ', pick ' + (g.picks.ml.side === 'home' ? g.home : g.away) : ''})`).join('; '));
+  const pre = M.filter(g => g.state === 'pre');
+  if (pre.length) L.push('- MLB still to start: ' + pre.slice(0, 15).map(g => { const P = g.picks; return `${g.away} @ ${g.home} ${ctTime(new Date(g.kick))}: ${P.ml ? (P.ml.side === 'home' ? g.home : g.away) + ' ' + Math.round(100 * P.ml.p) + '%' : ''}${P.rl ? ', ' + (P.rl.side === 'home' ? g.home : g.away) + ' ' + ((P.rl.side === 'home' ? P.rl.line : -P.rl.line) > 0 ? '+' : '') + (P.rl.side === 'home' ? P.rl.line : -P.rl.line) : ''}${P.tot ? ', ' + (P.tot.side === 'over' ? 'over ' : 'under ') + P.tot.line : ''}`; }).join('; '));
+  const S = F.mlbRec && F.mlbRec.model;
+  if (S) L.push(`- MLB model season to date (before today): winners ${S.su.W}-${S.su.L}, run line ${S.rl.W}-${S.rl.L} (${S.rl.u >= 0 ? '+' : ''}${S.rl.u} units), totals ${S.tot.W}-${S.tot.L}-${S.tot.P} (${S.tot.u >= 0 ? '+' : ''}${S.tot.u} units).`);
 }
 async function buildFacts(env, now) {
   const {json: R} = await ghGet(env, 'report.json'); if (!R) throw new Error('no report.json yet');
@@ -248,6 +296,10 @@ async function buildFacts(env, now) {
   const items = [...(R.mine || []), ...(R.ai_lox || [])].filter(b => soon.includes(b.date));
   const games = (R.games || []).filter(g => g.model && g.date === day);
   const need = new Set(); items.filter(b => b.date === day).forEach(b => need.add(b.league)); games.forEach(g => need.add(g.league));
+  let MJ = null;   // MLB: the daily model file on the data branch carries the picks (frozen at first pitch), so MLB needs no open page
+  if (mlbSeason(now)) { try { const r = await fetch(`https://raw.githubusercontent.com/${REPO}/${BRANCH}/mlb.json?t=${Date.now()}`); if (r.ok) MJ = await r.json(); } catch (e) {} }
+  const mlbG = ((MJ && MJ.games) || []).filter(g => g.date === day);
+  if (mlbG.length) need.add('MLB');
   const EV = {}; for (const lg of need) { EV[lg] = (await espnDay(lg, day)).concat(day !== ctDay(now) ? await espnDay(lg, ctDay(now)) : []); }
   const refresh = b => {
     const o = {...b};
@@ -257,7 +309,11 @@ async function buildFacts(env, now) {
     o.status = statusOf(o); return o; };
   const R2 = items.map(refresh);
   const G = games.map(g => { const e = findGame(EV, g.league, g); return e ? {...g, as: e.as, hs: e.hs, state: e.state, detail: e.detail} : g; });
-  return {R, day, now, items: R2, games: G};
+  const SH = {ANA: 'LAA', CHN: 'CHC', CHA: 'CWS', KCA: 'KC', LAN: 'LAD', NYN: 'NYM', NYA: 'NYY', SDN: 'SD', SFN: 'SF', SLN: 'STL', TBA: 'TB', WAS: 'WSH'}, sh = c => SH[c] || c;
+  const mlb = mlbG.map(g => { const e = (EV.MLB || []).find(x => x.id === String(g.espn)) || null, L = g.logged || {};
+    return mlbGrade({id: String(g.espn || g.pk), away: sh(g.away), home: sh(g.home), pa: g.pa, ph: g.ph, kick: g.kick, picks: L.picks || g.picks || {}, rules: L.rules || g.rules || [], line: L.line || g.line || null,
+                     as: e ? e.as : 0, hs: e ? e.hs : 0, state: e ? e.state : 'pre', done: e ? e.done : false, detail: e ? e.detail : ''}); });
+  return {R, day, now, items: R2, games: G, mlb, mlbRec: MJ && MJ.record ? MJ.record : null, mlbRules: (MJ && MJ.rule_stats) || {}};
 }
 function factsText(F) {
   const {day, items, games, now} = F, L = [];
@@ -294,6 +350,7 @@ function factsText(F) {
     const live = games.filter(g => g.state === 'in');
     if (live.length) L.push('- Live now: ' + live.slice(0, 10).map(g => `${g.away} ${g.as}-${g.hs} ${g.home} ${g.detail} (model ${g.model.away.toFixed(0)}-${g.model.home.toFixed(0)})`).join('; '));
   }
+  mlbText(F, L);
   const later = items.filter(b => b.date > day || (b.date === day && ['pending'].includes(b.status) && !(b.score && b.score.state === 'in')));
   if (later.length) { L.push('STILL TO COME:'); later.sort((a, b) => String(a.kick).localeCompare(String(b.kick))).slice(0, 14).forEach(b => L.push(`- ${b.who === 'mine' ? 'MY BET' : 'AI-LOX'}: ${b.bet} — ${b.game} — ${b.date}${b.score && b.score.detail ? ' ' + b.score.detail : ''} — $${b.stake.toFixed(2)} to win $${b.to_win.toFixed(2)}`)); }
   return L.join('\n');
@@ -332,8 +389,9 @@ const STYLES = [
   'a used-car salesman trying to sell Rich on tomorrow\'s picks',
   'a hostage negotiator talking Rich off the ledge',
 ];
-const SYS_REPORT = (style, kind) => `You write the game reports in Rich's Bet Tracker app. Rich is a grown man who bets college football and the NFL; he loves these reports funny, clever, mean and vulgar.
+const SYS_REPORT = (style, kind) => `You write the game reports in Rich's Bet Tracker app. Rich is a grown man who bets college football, the NFL and (in season) baseball; he loves these reports funny, clever, mean and vulgar.
 This report's style: written as ${style}. Commit to the bit all the way, but keep every fact readable.
+In baseball the units are runs, the spread is the run line (-1.5 / +1.5) and games start at first pitch; the MLB model's picks are tracked, not bet, unless the facts list one under MY BETS or AI-LOX.
 Tone rules: be as mean and vulgar as is funny. Swearing is welcome (fuck, shit, damn, ass, whatever lands). Roast Rich, his bets, the model (it is called AI-LOX for picks, "the model" for score predictions), the teams, the coaches and the fan bases.
 Hard limits: no slurs; nothing about race, religion, sex, sexuality, disability or anyone's family; no threats; no made-up quotes from real people; don't imitate a specific real person.
 Numbers: use ONLY the numbers in the facts. Never invent a score, line, dollar amount, record or player. Every dollar figure and record you state must match the facts exactly. If something is not in the facts, leave it out.
@@ -367,14 +425,15 @@ async function writeReport(env, F, kind, recent) {
 async function runReports(env, now, opts = {}) {
   const F = await buildFacts(env, now);
   const day = F.day, mineDay = F.items.filter(b => b.date === day);
-  if (!mineDay.length && F.games.length < (opts.force ? 1 : 4)) return {skip: 'nothing worth a report today'};
+  const MG = F.mlb || [];
+  if (!mineDay.length && F.games.length + MG.length < (opts.force ? 1 : 4)) return {skip: 'nothing worth a report today'};
   const settled = mineDay.filter(b => ['W', 'L', 'P'].includes(b.status)), live = mineDay.filter(b => ['winning', 'losing', 'even', 'live'].includes(b.status) || (b.score && b.score.state === 'in'));
-  const allBetsDone = mineDay.every(b => ['W', 'L', 'P'].includes(b.status)), allGamesDone = F.games.every(g => g.state === 'post');
-  const fp = settled.map(b => b.id + b.status).sort().join(',') + '|' + F.games.filter(g => g.state === 'post').length;
+  const allBetsDone = mineDay.every(b => ['W', 'L', 'P'].includes(b.status)), allGamesDone = F.games.every(g => g.state === 'post') && MG.every(g => g.state === 'post');
+  const fp = settled.map(b => b.id + b.status).sort().join(',') + '|' + (F.games.filter(g => g.state === 'post').length + MG.filter(g => g.state === 'post').length);
   const {json: RJ, sha} = await ghGet(env, 'reports.json');
   const RP = RJ || {}; RP.auto = RP.auto || {}; const A = RP.auto[day] || {n: 0};
   const lastT = A.last ? Date.parse(A.last) : 0, hrs = (now - lastT) / 36e5;
-  const anyStarted = mineDay.some(b => b.score && b.score.state !== 'pre') || F.games.some(g => g.state !== 'pre');
+  const anyStarted = mineDay.some(b => b.score && b.score.state !== 'pre') || F.games.some(g => g.state !== 'pre') || MG.some(g => g.state !== 'pre');
   let kind = opts.force === 'now' ? (!anyStarted ? 'preview' : allGamesDone && allBetsDone ? 'final' : 'update') : (opts.force || null);
   if (!kind) {
     if (A.n >= 7) return {skip: 'daily cap'};
@@ -387,7 +446,7 @@ async function runReports(env, now, opts = {}) {
   const recent = (RP.reports || []).filter(x => x.style).slice(0, 8);
   const rep = await writeReport(env, F, kind, recent);
   const iso = now.toISOString().replace(/\.\d+Z$/, 'Z');
-  const lg = [...new Set([...mineDay.map(b => b.league), ...F.games.map(g => g.league)])].join('+') || 'ALL';
+  const lg = [...new Set([...mineDay.map(b => b.league), ...F.games.map(g => g.league), ...(MG.length ? ['MLB'] : [])])].join('+') || 'ALL';
   const entry = {id: `${iso}-${lg}`, time: iso, league: lg, kind, title: rep.title, text: rep.text, style: rep.style};
   if (opts.dry) return {dry: true, entry, facts: factsText(F)};
   for (let i = 0; i < 3; i++) {
@@ -419,6 +478,9 @@ export default {
     if (!env.ACCESS_CODE || req.headers.get('X-Code') !== env.ACCESS_CODE) return reply({error: 'wrong or missing DFS AI code (Settings tab)'}, 401, origin);
     const url = new URL(req.url);
     if (url.pathname === '/salaries') return saveSalaries(req, env, url, origin);
+    if (url.pathname === '/mlbtick') {   // run the MLB game-day check now: ?dry=1 only reports what it would do; ?kick=1 forces a rebuild
+      try { return reply(await mlbGameDay(env, new Date(), {dry: url.searchParams.get('dry') === '1', kick: url.searchParams.get('kick') === '1'}), 200, origin); }
+      catch (e) { return reply({error: String(e.message || e)}, 502, origin); } }
     if (url.pathname === '/betslip') return readSlip(req, env, origin);
     if (url.pathname === '/dfsshot') return readDfsShot(req, env, origin);
     if (url.pathname === '/report') {   // run the report check now: ?dry=1 shows it without saving; ?force=preview|update|final
@@ -462,6 +524,7 @@ export default {
   async scheduled(event, env, ctx) {   // Cloudflare cron trigger (every 15 minutes)
     ctx.waitUntil(runReports(env, new Date(event.scheduledTime)).catch(e => console.log('report:', e.message)));
     ctx.waitUntil(dfsGameDay(env, new Date(event.scheduledTime)).catch(e => console.log('dfs:', e.message)));
+    ctx.waitUntil(mlbGameDay(env, new Date(event.scheduledTime)).catch(e => console.log('mlb:', e.message)));
   }
 };
 
@@ -503,4 +566,44 @@ async function dfsFetchMissing(env) {
     await fetch(api, {method: 'PUT', headers: {...gh, 'Content-Type': 'application/json'},
       body: JSON.stringify({message: `Salaries ${sl.sport} ${sl.dg} (relay)`, content: b64(text), branch: BRANCH})});
   }
+}
+
+// ---------- MLB game days (cron) ----------
+// In season, on any day with games: start the MLB build (picks + DFS lineups) ~90 and ~30 minutes before each first-pitch window, when
+// lineups, umpires and weather firm up (never more than once in 25 minutes), and save DraftKings' last pregame line for every game about to
+// start (mlb/lines.json: the build uses it as the closing line to measure each pick against). A build starts when mlb/_refresh.json is saved.
+async function ghData(env, path) {
+  const r = await fetch(`https://api.github.com/repos/${REPO}/contents/${path}?ref=${BRANCH}&t=${Date.now()}`, {headers: ghHead(env)});
+  if (!r.ok) return {json: null, sha: undefined};
+  const j = await r.json(); let json = null;
+  try { json = JSON.parse(new TextDecoder().decode(Uint8Array.from(atob(j.content.replace(/\n/g, '')), c => c.charCodeAt(0)))); } catch (e) {}
+  return {json, sha: j.sha};
+}
+const ghSave = (env, path, obj, sha, msg) => fetch(`https://api.github.com/repos/${REPO}/contents/${path}`, {method: 'PUT', headers: {...ghHead(env), 'Content-Type': 'application/json'},
+  body: JSON.stringify({message: msg, branch: BRANCH, content: b64(JSON.stringify(obj)), ...(sha ? {sha} : {})})});
+async function mlbGameDay(env, now, opts = {}) {
+  if (!mlbSeason(now) && !opts.kick) return {skip: 'out of season'};
+  const today = ctDay(now), t = now.getTime();
+  const EV = (await espnDay('MLB', today)).filter(e => e.date === today && e.kick);
+  if (!EV.length && !opts.kick) return {skip: 'no games today'};
+  const pre = EV.filter(e => e.state === 'pre'), lead = e => (Date.parse(e.kick) - t) / 6e4, out = {games: EV.length, pregame: pre.length};
+  // 1. rebuild before each first-pitch window
+  const win = pre.filter(e => { const m = lead(e); return (m > 75 && m <= 90) || (m > 20 && m <= 35); });
+  const p = ctParts(now), hh = +p.hour, mm = new Date(t).getUTCMinutes();
+  const why = opts.kick ? 'manual' : win.length ? `lineups for ${ctTime(new Date(Date.parse(win[0].kick)))} first pitch` : (hh === 9 && mm < 15 && pre.length) ? 'morning lines' : null;
+  if (why) {
+    const cur = await ghData(env, 'mlb/_refresh.json'), last = cur.json && cur.json.at ? Date.parse(cur.json.at) : 0;
+    if (opts.kick || t - last >= 25 * 6e4) { out.kick = why; if (!opts.dry) { const r = await ghSave(env, 'mlb/_refresh.json', {at: now.toISOString(), why}, cur.sha, `MLB refresh: ${why}`); out.kick_status = r.status; } }
+    else out.kick_skipped = 'built ' + Math.round((t - last) / 6e4) + ' min ago';
+  }
+  // 2. closing lines: games inside their last 16 minutes before first pitch
+  const closing = pre.filter(e => { const m = lead(e); return m > 0 && m <= 16 && e.odds; });
+  if (closing.length) {
+    const cur = await ghData(env, 'mlb/lines.json'), J = cur.json || {games: {}}; J.games = J.games || {};
+    closing.forEach(e => { J.games[e.id] = {...e.odds, at: now.toISOString().slice(0, 16) + 'Z', kick: e.kick}; });
+    Object.keys(J.games).forEach(k => { if (t - Date.parse(J.games[k].kick) > 4 * 864e5) delete J.games[k]; });
+    J.updated = now.toISOString(); out.closing = closing.map(e => `${e.away}@${e.home}`);
+    if (!opts.dry) { const r = await ghSave(env, 'mlb/lines.json', J, cur.sha, `MLB closing lines ${ctTime(now)}`); out.closing_status = r.status; }
+  }
+  return out;
 }
