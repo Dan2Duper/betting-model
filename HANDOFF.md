@@ -6,7 +6,7 @@ sync (state.json, report.json written by the page; reports.json written by the r
 Pushing to main/package/sync/data from a Claude session with git works.
 
 ## Working now
-- NFL DFS: Rich's Android phone (Tasker, every morning) pulls DK draftables -> relay /salaries -> data branch -> GitHub Action builds dfs_nfl.json -> DFS tab (cash/GPP, classic + showdown, write-ups, shuffle, "my read" AI box).
+- NFL DFS: Rich's Android phone (Tasker, 7am-9pm every 3h) pulls DK draftables -> relay /salaries -> data branch -> GitHub Action builds dfs_nfl.json -> DFS tab (cash/GPP, classic + showdown, write-ups, shuffle, "my read" AI box).
 - Relay = Cloudflare Worker "bet-tracker-relay" (code: dfs/worker.js; deploy by pasting into the dashboard editor in Rich's Chrome).
   Routes: / (DFS AI read), /salaries, /betslip (screenshot dump, any book or prediction market: reader returns book, kind bet|trade, bet_ref,
   status open|live|won|lost|push|void|sold|partially_sold, stake, payout, sold_for, sell_offer, legs + game_id picked from the page's ESPN
@@ -87,7 +87,7 @@ Pushing to main/package/sync/data from a Claude session with git works.
 - Game-day rebuilds are automatic in the relay cron (deployed f7065a59, Nov 22): on any CT day with NFL games (ESPN scoreboard) it saves
   salaries/_refresh.json at 9:00 am CT and ~75 min before each kickoff -> the salaries/** push trigger rebuilds (GH_TOKEN is Contents-only, so no
   workflow_dispatch). Hourly 6am-8pm it also tries missing DK salaries from Cloudflare, but GET /dkcheck showed DraftKings returns 403 to Cloudflare (Nov 22) -> the phone (Tasker) stays the salary source.
-  Verified: 9:00 refresh -> build 15:07 UTC with ESPN + Sleeper statuses and 12 forecasts. Tasker salary pull hasn't run since Thu Nov 19.
+  Verified: 9:00 refresh -> build 15:07 UTC with ESPN + Sleeper statuses and 12 forecasts. Tasker: the old profile had no task linked (never fired); replaced Nov 22 with 7:00 AM every 3h till 9:00 PM -> DFS salaries; test run saved all 13 slates.
 - Next: page chips for adj/why + wind on DFS player rows; PROE / pass-funnel and routes-per-dropback variables (need pbp/participation download);
   kicker wind.
 
