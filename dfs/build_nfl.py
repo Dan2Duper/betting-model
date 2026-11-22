@@ -177,7 +177,7 @@ def main():
             except Exception as e: print('could not read', f, e)
     else:
         import dk_slate
-        main_g, sds = dk_slate.pick_slates(dk_slate.draft_groups('NFL'))
+        main_g, sds, _extra = dk_slate.pick_slates(dk_slate.draft_groups('NFL'))
         if main_g: slates.append(dict(kind='classic', dg=main_g['dg'], label=f"Main slate {main_g.get('label', '')}", players=dk_slate.players(main_g['dg'])))
         for g in sds: slates.append(dict(kind='showdown', dg=g['dg'], label=g.get('label', ''), players=dk_slate.players(g['dg'])))
     # fresh statuses + kickoff forecasts + the tuning state carried from the last build

@@ -48,7 +48,11 @@ def pick_slates(groups, days=7):
     main = max(classic, key=lambda g: g['contests']) if classic else None
     sd = [g for g in groups if g['game_type'] == 'Showdown Captain Mode' and g.get('games') in (None, 1) and upcoming(g)]
     for g in sd: g['label'] = f"{(g.get('suffix') or '').strip(' ()')} {g.get('label', '')}".strip()
-    return main, sorted(sd, key=lambda g: g.get('start_est') or '')
+    # the other multi-game Classic slates (Afternoon, Turbo, Primetime, Sun-Mon ...), each with at least a handful of contests
+    extra = [g for g in groups if g['game_type'] == 'Classic' and (g.get('suffix') or '').strip() and g is not main and upcoming(g)
+             and (g.get('games') or 2) >= 2 and g['contests'] >= 5]
+    for g in extra: g['label'] = f"{(g.get('suffix') or '').strip(' ()')} {g.get('label', '')}".strip()
+    return main, sorted(sd, key=lambda g: g.get('start_est') or ''), sorted(extra, key=lambda g: g.get('start_est') or '')
 
 def draftables_url(dg):
     return f'https://api.draftkings.com/draftgroups/v1/draftgroups/{dg}/draftables'

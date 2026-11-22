@@ -8,11 +8,13 @@ todo = dict(built=dt.datetime.now(dt.timezone.utc).isoformat(), slates=[])
 for sport in ('NFL', 'MLB'):
     try:
         groups = dk_slate.draft_groups(sport)
-        main, sds = dk_slate.pick_slates(groups)
+        main, sds, extra = dk_slate.pick_slates(groups)
     except Exception as e: print(sport, 'lobby error', e); continue
     try: CON = dk_slate.lobby_contests(sport)
     except Exception as e: print(sport, 'contest list error', e); CON = {}
     if main: todo['slates'].append(dict(sport=sport, kind='classic', dg=main['dg'], label=f"Main slate {main.get('label', '')}".strip(), url=dk_slate.draftables_url(main['dg']), contests=CON.get(main['dg'], [])))
+    for g in extra:
+        todo['slates'].append(dict(sport=sport, kind='classic', dg=g['dg'], label=g['label'], url=dk_slate.draftables_url(g['dg']), contests=CON.get(g['dg'], [])))
     for g in sds: todo['slates'].append(dict(sport=sport, kind='showdown', dg=g['dg'], label=g.get('label', ''), url=dk_slate.draftables_url(g['dg']), contests=CON.get(g['dg'], [])))
 json.dump(todo, open(out, 'w'), indent=1)
 print(json.dumps(todo, indent=1))
