@@ -1,96 +1,1121 @@
 {
- "built": "2026-11-21T20:15:29.465724+00:00",
+ "built": "2026-11-22T16:13:56.415281+00:00",
  "slates": [
   {
    "sport": "NFL",
    "kind": "classic",
    "dg": 156561,
    "label": "Main slate Sun 1:00PM",
-   "url": "https://api.draftkings.com/draftgroups/v1/draftgroups/156561/draftables"
+   "url": "https://api.draftkings.com/draftgroups/v1/draftgroups/156561/draftables",
+   "contests": [
+    {
+     "id": 197882014,
+     "name": "NFL $2.5M Fantasy Football Millionaire [$1M to 1st]",
+     "fee": 20,
+     "prize": 2500000.0,
+     "size": 147058,
+     "per_user": 150,
+     "cash": false
+    },
+    {
+     "id": 197882015,
+     "name": "NFL $2.5M Fantasy Football Millionaire [$1M to 1st]",
+     "fee": 555,
+     "prize": 2500000.0,
+     "size": 5005,
+     "per_user": 150,
+     "cash": false
+    },
+    {
+     "id": 197882016,
+     "name": "NFL $801K Luxury Box [$200K to 1st]",
+     "fee": 3180,
+     "prize": 801000.0,
+     "size": 267,
+     "per_user": 8,
+     "cash": false
+    },
+    {
+     "id": 197882011,
+     "name": "NFL $500K Play-Action [20 Entry Max]",
+     "fee": 3,
+     "prize": 500000.0,
+     "size": 198176,
+     "per_user": 20,
+     "cash": false
+    },
+    {
+     "id": 197882013,
+     "name": "NFL $500K Flea Flicker [$100K to 1st]",
+     "fee": 5,
+     "prize": 500000.0,
+     "size": 118906,
+     "per_user": 150,
+     "cash": false
+    },
+    {
+     "id": 197882017,
+     "name": "NFL $500K Power Sweep [$100K to 1st, 5 Entry Max]",
+     "fee": 150,
+     "prize": 500000.0,
+     "size": 3703,
+     "per_user": 5,
+     "cash": false
+    },
+    {
+     "id": 197897063,
+     "name": "NFL GIANT $5 Double Up",
+     "fee": 5,
+     "prize": 30000.0,
+     "size": 6896,
+     "per_user": 150,
+     "cash": true
+    },
+    {
+     "id": 197897067,
+     "name": "NFL $2 Double Up",
+     "fee": 2,
+     "prize": 12000.0,
+     "size": 6896,
+     "per_user": 20,
+     "cash": true
+    },
+    {
+     "id": 197897064,
+     "name": "NFL Single Entry $5 Double Up",
+     "fee": 5,
+     "prize": 15000.0,
+     "size": 3448,
+     "per_user": 1,
+     "cash": true
+    }
+   ]
   },
   {
    "sport": "NFL",
    "kind": "showdown",
    "dg": 156786,
    "label": "NO @ CHI Sun 1:00PM",
-   "url": "https://api.draftkings.com/draftgroups/v1/draftgroups/156786/draftables"
+   "url": "https://api.draftkings.com/draftgroups/v1/draftgroups/156786/draftables",
+   "contests": [
+    {
+     "id": 197926748,
+     "name": "NFL Showdown $70K Showdown Special [$20K to 1st] (NO @ CHI)",
+     "fee": 18,
+     "prize": 70000.0,
+     "size": 4575,
+     "per_user": 137,
+     "cash": false
+    },
+    {
+     "id": 197927454,
+     "name": "NFL Showdown $10,600 3-Player (NO @ CHI)",
+     "fee": 10600,
+     "prize": 30000.0,
+     "size": 3,
+     "per_user": 1,
+     "cash": false
+    },
+    {
+     "id": 197927453,
+     "name": "NFL Showdown $10,600 3-Player (NO @ CHI)",
+     "fee": 10600,
+     "prize": 30000.0,
+     "size": 3,
+     "per_user": 1,
+     "cash": false
+    },
+    {
+     "id": 198076066,
+     "name": "NFL Showdown $10,600 3-Player (NO @ CHI)",
+     "fee": 10600,
+     "prize": 30000.0,
+     "size": 3,
+     "per_user": 1,
+     "cash": false
+    },
+    {
+     "id": 197927533,
+     "name": "NFL Showdown $20K Thunderdome [Must Fill] (NO @ CHI)",
+     "fee": 5300,
+     "prize": 20000.0,
+     "size": 4,
+     "per_user": 1,
+     "cash": false
+    },
+    {
+     "id": 197927457,
+     "name": "NFL Showdown $5,300 50-50 (NO @ CHI)",
+     "fee": 5300,
+     "prize": 20000.0,
+     "size": 4,
+     "per_user": 1,
+     "cash": false
+    },
+    {
+     "id": 197926761,
+     "name": "NFL Showdown Single Entry $5 Double Up (NO @ CHI)",
+     "fee": 5,
+     "prize": 400.0,
+     "size": 91,
+     "per_user": 1,
+     "cash": true
+    },
+    {
+     "id": 197926924,
+     "name": "NFL Showdown $1 Double Up (NO @ CHI)",
+     "fee": 1,
+     "prize": 54.0,
+     "size": 62,
+     "per_user": 1,
+     "cash": true
+    },
+    {
+     "id": 197926923,
+     "name": "NFL Showdown $3 Double Up (NO @ CHI)",
+     "fee": 3,
+     "prize": 102.0,
+     "size": 39,
+     "per_user": 1,
+     "cash": true
+    }
+   ]
   },
   {
    "sport": "NFL",
    "kind": "showdown",
    "dg": 156784,
    "label": "TEN @ DAL Sun 1:00PM",
-   "url": "https://api.draftkings.com/draftgroups/v1/draftgroups/156784/draftables"
+   "url": "https://api.draftkings.com/draftgroups/v1/draftgroups/156784/draftables",
+   "contests": [
+    {
+     "id": 197927253,
+     "name": "NFL Showdown $10,600 3-Player (TEN @ DAL)",
+     "fee": 10600,
+     "prize": 30000.0,
+     "size": 3,
+     "per_user": 1,
+     "cash": false
+    },
+    {
+     "id": 197927254,
+     "name": "NFL Showdown $10,600 3-Player (TEN @ DAL)",
+     "fee": 10600,
+     "prize": 30000.0,
+     "size": 3,
+     "per_user": 1,
+     "cash": false
+    },
+    {
+     "id": 197927333,
+     "name": "NFL Showdown $20K Thunderdome [Must Fill] (TEN @ DAL)",
+     "fee": 5300,
+     "prize": 20000.0,
+     "size": 4,
+     "per_user": 1,
+     "cash": false
+    },
+    {
+     "id": 197927257,
+     "name": "NFL Showdown $5,300 50-50 (TEN @ DAL)",
+     "fee": 5300,
+     "prize": 20000.0,
+     "size": 4,
+     "per_user": 1,
+     "cash": false
+    },
+    {
+     "id": 197927258,
+     "name": "NFL Showdown $5,300 50-50 (TEN @ DAL)",
+     "fee": 5300,
+     "prize": 20000.0,
+     "size": 4,
+     "per_user": 1,
+     "cash": false
+    },
+    {
+     "id": 197927255,
+     "name": "NFL Showdown $5,300 3-Player (TEN @ DAL)",
+     "fee": 5300,
+     "prize": 15000.0,
+     "size": 3,
+     "per_user": 1,
+     "cash": false
+    },
+    {
+     "id": 197926730,
+     "name": "NFL Showdown Single Entry $5 Double Up (TEN @ DAL)",
+     "fee": 5,
+     "prize": 200.0,
+     "size": 45,
+     "per_user": 1,
+     "cash": true
+    },
+    {
+     "id": 197926983,
+     "name": "NFL Showdown $5 Double Up (TEN @ DAL)",
+     "fee": 5,
+     "prize": 100.0,
+     "size": 23,
+     "per_user": 1,
+     "cash": true
+    },
+    {
+     "id": 198073292,
+     "name": "NFL Showdown $1 Double Up (TEN @ DAL)",
+     "fee": 1,
+     "prize": 20.0,
+     "size": 23,
+     "per_user": 1,
+     "cash": true
+    }
+   ]
   },
   {
    "sport": "NFL",
    "kind": "showdown",
    "dg": 156787,
    "label": "TB @ DET Sun 1:00PM",
-   "url": "https://api.draftkings.com/draftgroups/v1/draftgroups/156787/draftables"
+   "url": "https://api.draftkings.com/draftgroups/v1/draftgroups/156787/draftables",
+   "contests": [
+    {
+     "id": 197927553,
+     "name": "NFL Showdown $10,600 3-Player (TB @ DET)",
+     "fee": 10600,
+     "prize": 30000.0,
+     "size": 3,
+     "per_user": 1,
+     "cash": false
+    },
+    {
+     "id": 197927554,
+     "name": "NFL Showdown $10,600 3-Player (TB @ DET)",
+     "fee": 10600,
+     "prize": 30000.0,
+     "size": 3,
+     "per_user": 1,
+     "cash": false
+    },
+    {
+     "id": 197927633,
+     "name": "NFL Showdown $20K Thunderdome [Must Fill] (TB @ DET)",
+     "fee": 5300,
+     "prize": 20000.0,
+     "size": 4,
+     "per_user": 1,
+     "cash": false
+    },
+    {
+     "id": 197927557,
+     "name": "NFL Showdown $5,300 50-50 (TB @ DET)",
+     "fee": 5300,
+     "prize": 20000.0,
+     "size": 4,
+     "per_user": 1,
+     "cash": false
+    },
+    {
+     "id": 197927558,
+     "name": "NFL Showdown $5,300 50-50 (TB @ DET)",
+     "fee": 5300,
+     "prize": 20000.0,
+     "size": 4,
+     "per_user": 1,
+     "cash": false
+    },
+    {
+     "id": 197927555,
+     "name": "NFL Showdown $5,300 3-Player (TB @ DET)",
+     "fee": 5300,
+     "prize": 15000.0,
+     "size": 3,
+     "per_user": 1,
+     "cash": false
+    },
+    {
+     "id": 197926774,
+     "name": "NFL Showdown Single Entry $5 Double Up (TB @ DET)",
+     "fee": 5,
+     "prize": 200.0,
+     "size": 45,
+     "per_user": 1,
+     "cash": true
+    },
+    {
+     "id": 197927013,
+     "name": "NFL Showdown $5 Double Up (TB @ DET)",
+     "fee": 5,
+     "prize": 100.0,
+     "size": 23,
+     "per_user": 1,
+     "cash": true
+    },
+    {
+     "id": 198072879,
+     "name": "NFL Showdown $1 Double Up (TB @ DET)",
+     "fee": 1,
+     "prize": 20.0,
+     "size": 23,
+     "per_user": 1,
+     "cash": true
+    }
+   ]
   },
   {
    "sport": "NFL",
    "kind": "showdown",
    "dg": 156783,
    "label": "MIA @ BUF Sun 1:00PM",
-   "url": "https://api.draftkings.com/draftgroups/v1/draftgroups/156783/draftables"
-  },
-  {
-   "sport": "NFL",
-   "kind": "showdown",
-   "dg": 156785,
-   "label": "BAL @ CAR Sun 1:00PM",
-   "url": "https://api.draftkings.com/draftgroups/v1/draftgroups/156785/draftables"
+   "url": "https://api.draftkings.com/draftgroups/v1/draftgroups/156783/draftables",
+   "contests": [
+    {
+     "id": 197927153,
+     "name": "NFL Showdown $10,600 3-Player (MIA @ BUF)",
+     "fee": 10600,
+     "prize": 30000.0,
+     "size": 3,
+     "per_user": 1,
+     "cash": false
+    },
+    {
+     "id": 197927154,
+     "name": "NFL Showdown $10,600 3-Player (MIA @ BUF)",
+     "fee": 10600,
+     "prize": 30000.0,
+     "size": 3,
+     "per_user": 1,
+     "cash": false
+    },
+    {
+     "id": 197927233,
+     "name": "NFL Showdown $20K Thunderdome [Must Fill] (MIA @ BUF)",
+     "fee": 5300,
+     "prize": 20000.0,
+     "size": 4,
+     "per_user": 1,
+     "cash": false
+    },
+    {
+     "id": 197927157,
+     "name": "NFL Showdown $5,300 50-50 (MIA @ BUF)",
+     "fee": 5300,
+     "prize": 20000.0,
+     "size": 4,
+     "per_user": 1,
+     "cash": false
+    },
+    {
+     "id": 197927158,
+     "name": "NFL Showdown $5,300 50-50 (MIA @ BUF)",
+     "fee": 5300,
+     "prize": 20000.0,
+     "size": 4,
+     "per_user": 1,
+     "cash": false
+    },
+    {
+     "id": 197927155,
+     "name": "NFL Showdown $5,300 3-Player (MIA @ BUF)",
+     "fee": 5300,
+     "prize": 15000.0,
+     "size": 3,
+     "per_user": 1,
+     "cash": false
+    },
+    {
+     "id": 197926968,
+     "name": "NFL Showdown $5 Double Up (MIA @ BUF)",
+     "fee": 5,
+     "prize": 100.0,
+     "size": 23,
+     "per_user": 1,
+     "cash": true
+    },
+    {
+     "id": 198068866,
+     "name": "NFL Showdown $1 Double Up (MIA @ BUF)",
+     "fee": 1,
+     "prize": 20.0,
+     "size": 23,
+     "per_user": 1,
+     "cash": true
+    },
+    {
+     "id": 197926972,
+     "name": "NFL Showdown $1 Double Up (MIA @ BUF)",
+     "fee": 1,
+     "prize": 20.0,
+     "size": 23,
+     "per_user": 1,
+     "cash": true
+    }
+   ]
   },
   {
    "sport": "NFL",
    "kind": "showdown",
    "dg": 156788,
    "label": "PIT @ PHI Sun 1:00PM",
-   "url": "https://api.draftkings.com/draftgroups/v1/draftgroups/156788/draftables"
+   "url": "https://api.draftkings.com/draftgroups/v1/draftgroups/156788/draftables",
+   "contests": [
+    {
+     "id": 197927653,
+     "name": "NFL Showdown $10,600 3-Player (PIT @ PHI)",
+     "fee": 10600,
+     "prize": 30000.0,
+     "size": 3,
+     "per_user": 1,
+     "cash": false
+    },
+    {
+     "id": 197927654,
+     "name": "NFL Showdown $10,600 3-Player (PIT @ PHI)",
+     "fee": 10600,
+     "prize": 30000.0,
+     "size": 3,
+     "per_user": 1,
+     "cash": false
+    },
+    {
+     "id": 197927733,
+     "name": "NFL Showdown $20K Thunderdome [Must Fill] (PIT @ PHI)",
+     "fee": 5300,
+     "prize": 20000.0,
+     "size": 4,
+     "per_user": 1,
+     "cash": false
+    },
+    {
+     "id": 197927657,
+     "name": "NFL Showdown $5,300 50-50 (PIT @ PHI)",
+     "fee": 5300,
+     "prize": 20000.0,
+     "size": 4,
+     "per_user": 1,
+     "cash": false
+    },
+    {
+     "id": 197927658,
+     "name": "NFL Showdown $5,300 50-50 (PIT @ PHI)",
+     "fee": 5300,
+     "prize": 20000.0,
+     "size": 4,
+     "per_user": 1,
+     "cash": false
+    },
+    {
+     "id": 197927655,
+     "name": "NFL Showdown $5,300 3-Player (PIT @ PHI)",
+     "fee": 5300,
+     "prize": 15000.0,
+     "size": 3,
+     "per_user": 1,
+     "cash": false
+    },
+    {
+     "id": 197926787,
+     "name": "NFL Showdown Single Entry $5 Double Up (PIT @ PHI)",
+     "fee": 5,
+     "prize": 200.0,
+     "size": 45,
+     "per_user": 1,
+     "cash": true
+    },
+    {
+     "id": 197927028,
+     "name": "NFL Showdown $5 Double Up (PIT @ PHI)",
+     "fee": 5,
+     "prize": 100.0,
+     "size": 23,
+     "per_user": 1,
+     "cash": true
+    },
+    {
+     "id": 198083136,
+     "name": "NFL Showdown $1 Double Up (PIT @ PHI)",
+     "fee": 1,
+     "prize": 20.0,
+     "size": 23,
+     "per_user": 1,
+     "cash": true
+    }
+   ]
+  },
+  {
+   "sport": "NFL",
+   "kind": "showdown",
+   "dg": 156785,
+   "label": "BAL @ CAR Sun 1:00PM",
+   "url": "https://api.draftkings.com/draftgroups/v1/draftgroups/156785/draftables",
+   "contests": [
+    {
+     "id": 197927353,
+     "name": "NFL Showdown $10,600 3-Player (BAL @ CAR)",
+     "fee": 10600,
+     "prize": 30000.0,
+     "size": 3,
+     "per_user": 1,
+     "cash": false
+    },
+    {
+     "id": 197927354,
+     "name": "NFL Showdown $10,600 3-Player (BAL @ CAR)",
+     "fee": 10600,
+     "prize": 30000.0,
+     "size": 3,
+     "per_user": 1,
+     "cash": false
+    },
+    {
+     "id": 197927433,
+     "name": "NFL Showdown $20K Thunderdome [Must Fill] (BAL @ CAR)",
+     "fee": 5300,
+     "prize": 20000.0,
+     "size": 4,
+     "per_user": 1,
+     "cash": false
+    },
+    {
+     "id": 197927357,
+     "name": "NFL Showdown $5,300 50-50 (BAL @ CAR)",
+     "fee": 5300,
+     "prize": 20000.0,
+     "size": 4,
+     "per_user": 1,
+     "cash": false
+    },
+    {
+     "id": 197927358,
+     "name": "NFL Showdown $5,300 50-50 (BAL @ CAR)",
+     "fee": 5300,
+     "prize": 20000.0,
+     "size": 4,
+     "per_user": 1,
+     "cash": false
+    },
+    {
+     "id": 197927355,
+     "name": "NFL Showdown $5,300 3-Player (BAL @ CAR)",
+     "fee": 5300,
+     "prize": 15000.0,
+     "size": 3,
+     "per_user": 1,
+     "cash": false
+    },
+    {
+     "id": 197926743,
+     "name": "NFL Showdown Single Entry $5 Double Up (BAL @ CAR)",
+     "fee": 5,
+     "prize": 200.0,
+     "size": 45,
+     "per_user": 1,
+     "cash": true
+    },
+    {
+     "id": 197926998,
+     "name": "NFL Showdown $5 Double Up (BAL @ CAR)",
+     "fee": 5,
+     "prize": 100.0,
+     "size": 23,
+     "per_user": 1,
+     "cash": true
+    },
+    {
+     "id": 197926997,
+     "name": "NFL Showdown $1 Double Up (BAL @ CAR)",
+     "fee": 1,
+     "prize": 20.0,
+     "size": 23,
+     "per_user": 1,
+     "cash": true
+    }
+   ]
   },
   {
    "sport": "NFL",
    "kind": "showdown",
    "dg": 156782,
    "label": "ARI @ KC Sun 1:00PM",
-   "url": "https://api.draftkings.com/draftgroups/v1/draftgroups/156782/draftables"
+   "url": "https://api.draftkings.com/draftgroups/v1/draftgroups/156782/draftables",
+   "contests": [
+    {
+     "id": 197927053,
+     "name": "NFL Showdown $10,600 3-Player (ARI @ KC)",
+     "fee": 10600,
+     "prize": 30000.0,
+     "size": 3,
+     "per_user": 1,
+     "cash": false
+    },
+    {
+     "id": 197927054,
+     "name": "NFL Showdown $10,600 3-Player (ARI @ KC)",
+     "fee": 10600,
+     "prize": 30000.0,
+     "size": 3,
+     "per_user": 1,
+     "cash": false
+    },
+    {
+     "id": 197927133,
+     "name": "NFL Showdown $20K Thunderdome [Must Fill] (ARI @ KC)",
+     "fee": 5300,
+     "prize": 20000.0,
+     "size": 4,
+     "per_user": 1,
+     "cash": false
+    },
+    {
+     "id": 197927057,
+     "name": "NFL Showdown $5,300 50-50 (ARI @ KC)",
+     "fee": 5300,
+     "prize": 20000.0,
+     "size": 4,
+     "per_user": 1,
+     "cash": false
+    },
+    {
+     "id": 197927058,
+     "name": "NFL Showdown $5,300 50-50 (ARI @ KC)",
+     "fee": 5300,
+     "prize": 20000.0,
+     "size": 4,
+     "per_user": 1,
+     "cash": false
+    },
+    {
+     "id": 197927055,
+     "name": "NFL Showdown $5,300 3-Player (ARI @ KC)",
+     "fee": 5300,
+     "prize": 15000.0,
+     "size": 3,
+     "per_user": 1,
+     "cash": false
+    },
+    {
+     "id": 198076638,
+     "name": "NFL Showdown $5 Double Up (ARI @ KC)",
+     "fee": 5,
+     "prize": 100.0,
+     "size": 23,
+     "per_user": 1,
+     "cash": true
+    },
+    {
+     "id": 198069833,
+     "name": "NFL Showdown $1 Double Up (ARI @ KC)",
+     "fee": 1,
+     "prize": 20.0,
+     "size": 23,
+     "per_user": 1,
+     "cash": true
+    },
+    {
+     "id": 198077996,
+     "name": "NFL Showdown $1 Double Up (ARI @ KC)",
+     "fee": 1,
+     "prize": 20.0,
+     "size": 23,
+     "per_user": 1,
+     "cash": true
+    }
+   ]
   },
   {
    "sport": "NFL",
    "kind": "showdown",
    "dg": 156789,
    "label": "NYJ @ LAC Sun 4:05PM",
-   "url": "https://api.draftkings.com/draftgroups/v1/draftgroups/156789/draftables"
+   "url": "https://api.draftkings.com/draftgroups/v1/draftgroups/156789/draftables",
+   "contests": [
+    {
+     "id": 197953213,
+     "name": "NFL Showdown $10,600 3-Player (NYJ @ LAC)",
+     "fee": 10600,
+     "prize": 30000.0,
+     "size": 3,
+     "per_user": 1,
+     "cash": false
+    },
+    {
+     "id": 197953214,
+     "name": "NFL Showdown $10,600 3-Player (NYJ @ LAC)",
+     "fee": 10600,
+     "prize": 30000.0,
+     "size": 3,
+     "per_user": 1,
+     "cash": false
+    },
+    {
+     "id": 197953293,
+     "name": "NFL Showdown $20K Thunderdome [Must Fill] (NYJ @ LAC)",
+     "fee": 5300,
+     "prize": 20000.0,
+     "size": 4,
+     "per_user": 1,
+     "cash": false
+    },
+    {
+     "id": 197953217,
+     "name": "NFL Showdown $5,300 50-50 (NYJ @ LAC)",
+     "fee": 5300,
+     "prize": 20000.0,
+     "size": 4,
+     "per_user": 1,
+     "cash": false
+    },
+    {
+     "id": 197953218,
+     "name": "NFL Showdown $5,300 50-50 (NYJ @ LAC)",
+     "fee": 5300,
+     "prize": 20000.0,
+     "size": 4,
+     "per_user": 1,
+     "cash": false
+    },
+    {
+     "id": 197953215,
+     "name": "NFL Showdown $5,300 3-Player (NYJ @ LAC)",
+     "fee": 5300,
+     "prize": 15000.0,
+     "size": 3,
+     "per_user": 1,
+     "cash": false
+    },
+    {
+     "id": 197952647,
+     "name": "NFL Showdown Single Entry $5 Double Up (NYJ @ LAC)",
+     "fee": 5,
+     "prize": 150.0,
+     "size": 34,
+     "per_user": 1,
+     "cash": true
+    },
+    {
+     "id": 197953142,
+     "name": "NFL Showdown $5 Double Up (NYJ @ LAC)",
+     "fee": 5,
+     "prize": 100.0,
+     "size": 23,
+     "per_user": 1,
+     "cash": true
+    },
+    {
+     "id": 197953141,
+     "name": "NFL Showdown $1 Double Up (NYJ @ LAC)",
+     "fee": 1,
+     "prize": 20.0,
+     "size": 23,
+     "per_user": 1,
+     "cash": true
+    }
+   ]
   },
   {
    "sport": "NFL",
    "kind": "showdown",
    "dg": 156791,
    "label": "JAX @ NYG Sun 4:25PM",
-   "url": "https://api.draftkings.com/draftgroups/v1/draftgroups/156791/draftables"
+   "url": "https://api.draftkings.com/draftgroups/v1/draftgroups/156791/draftables",
+   "contests": [
+    {
+     "id": 197952668,
+     "name": "NFL Showdown $60K Showdown Special [$20K to 1st] (JAX @ NYG)",
+     "fee": 18,
+     "prize": 60000.0,
+     "size": 3921,
+     "per_user": 117,
+     "cash": false
+    },
+    {
+     "id": 197953613,
+     "name": "NFL Showdown $10,600 3-Player (JAX @ NYG)",
+     "fee": 10600,
+     "prize": 30000.0,
+     "size": 3,
+     "per_user": 1,
+     "cash": false
+    },
+    {
+     "id": 197953614,
+     "name": "NFL Showdown $10,600 3-Player (JAX @ NYG)",
+     "fee": 10600,
+     "prize": 30000.0,
+     "size": 3,
+     "per_user": 1,
+     "cash": false
+    },
+    {
+     "id": 197952669,
+     "name": "NFL Showdown $20K Flea Flicker [$5K to 1st] (JAX @ NYG)",
+     "fee": 5,
+     "prize": 20000.0,
+     "size": 4756,
+     "per_user": 142,
+     "cash": false
+    },
+    {
+     "id": 197953693,
+     "name": "NFL Showdown $20K Thunderdome [Must Fill] (JAX @ NYG)",
+     "fee": 5300,
+     "prize": 20000.0,
+     "size": 4,
+     "per_user": 1,
+     "cash": false
+    },
+    {
+     "id": 197953617,
+     "name": "NFL Showdown $5,300 50-50 (JAX @ NYG)",
+     "fee": 5300,
+     "prize": 20000.0,
+     "size": 4,
+     "per_user": 1,
+     "cash": false
+    },
+    {
+     "id": 197952679,
+     "name": "NFL Showdown Single Entry $5 Double Up (JAX @ NYG)",
+     "fee": 5,
+     "prize": 300.0,
+     "size": 68,
+     "per_user": 1,
+     "cash": true
+    },
+    {
+     "id": 197953109,
+     "name": "NFL Showdown $1 Double Up (JAX @ NYG)",
+     "fee": 1,
+     "prize": 54.0,
+     "size": 62,
+     "per_user": 1,
+     "cash": true
+    },
+    {
+     "id": 197953108,
+     "name": "NFL Showdown $5 Double Up (JAX @ NYG)",
+     "fee": 5,
+     "prize": 170.0,
+     "size": 39,
+     "per_user": 1,
+     "cash": true
+    }
+   ]
   },
   {
    "sport": "NFL",
    "kind": "showdown",
    "dg": 156790,
    "label": "LV @ DEN Sun 4:25PM",
-   "url": "https://api.draftkings.com/draftgroups/v1/draftgroups/156790/draftables"
+   "url": "https://api.draftkings.com/draftgroups/v1/draftgroups/156790/draftables",
+   "contests": [
+    {
+     "id": 197953513,
+     "name": "NFL Showdown $10,600 3-Player (LV @ DEN)",
+     "fee": 10600,
+     "prize": 30000.0,
+     "size": 3,
+     "per_user": 1,
+     "cash": false
+    },
+    {
+     "id": 197953514,
+     "name": "NFL Showdown $10,600 3-Player (LV @ DEN)",
+     "fee": 10600,
+     "prize": 30000.0,
+     "size": 3,
+     "per_user": 1,
+     "cash": false
+    },
+    {
+     "id": 197953593,
+     "name": "NFL Showdown $20K Thunderdome [Must Fill] (LV @ DEN)",
+     "fee": 5300,
+     "prize": 20000.0,
+     "size": 4,
+     "per_user": 1,
+     "cash": false
+    },
+    {
+     "id": 197953517,
+     "name": "NFL Showdown $5,300 50-50 (LV @ DEN)",
+     "fee": 5300,
+     "prize": 20000.0,
+     "size": 4,
+     "per_user": 1,
+     "cash": false
+    },
+    {
+     "id": 197953518,
+     "name": "NFL Showdown $5,300 50-50 (LV @ DEN)",
+     "fee": 5300,
+     "prize": 20000.0,
+     "size": 4,
+     "per_user": 1,
+     "cash": false
+    },
+    {
+     "id": 197953515,
+     "name": "NFL Showdown $5,300 3-Player (LV @ DEN)",
+     "fee": 5300,
+     "prize": 15000.0,
+     "size": 3,
+     "per_user": 1,
+     "cash": false
+    },
+    {
+     "id": 197952659,
+     "name": "NFL Showdown Single Entry $5 Double Up (LV @ DEN)",
+     "fee": 5,
+     "prize": 150.0,
+     "size": 34,
+     "per_user": 1,
+     "cash": true
+    },
+    {
+     "id": 197953187,
+     "name": "NFL Showdown $5 Double Up (LV @ DEN)",
+     "fee": 5,
+     "prize": 100.0,
+     "size": 23,
+     "per_user": 1,
+     "cash": true
+    },
+    {
+     "id": 198088217,
+     "name": "NFL Showdown $1 Double Up (LV @ DEN)",
+     "fee": 1,
+     "prize": 20.0,
+     "size": 23,
+     "per_user": 1,
+     "cash": true
+    }
+   ]
   },
   {
    "sport": "NFL",
    "kind": "showdown",
    "dg": 156792,
    "label": "MIN vs SF Sun 8:20PM",
-   "url": "https://api.draftkings.com/draftgroups/v1/draftgroups/156792/draftables"
+   "url": "https://api.draftkings.com/draftgroups/v1/draftgroups/156792/draftables",
+   "contests": [
+    {
+     "id": 198005399,
+     "name": "NFL Showdown $60K mini-MAX [150 Entry Max] (MIN vs SF)",
+     "fee": 0.5,
+     "prize": 60000.0,
+     "size": 142687,
+     "per_user": 150,
+     "cash": true
+    },
+    {
+     "id": 198005396,
+     "name": "NFL Showdown $200K Play-Action [20 Entry Max] (MIN vs SF)",
+     "fee": 3,
+     "prize": 200000.0,
+     "size": 79270,
+     "per_user": 20,
+     "cash": true
+    },
+    {
+     "id": 198005394,
+     "name": "NFL Showdown $1M Sunday Night Showdown [$250K to 1st] (MIN vs SF)",
+     "fee": 20,
+     "prize": 1000000.0,
+     "size": 58823,
+     "per_user": 150,
+     "cash": true
+    }
+   ]
   },
   {
    "sport": "NFL",
    "kind": "showdown",
    "dg": 156793,
    "label": "CIN @ WAS Mon 8:15PM",
-   "url": "https://api.draftkings.com/draftgroups/v1/draftgroups/156793/draftables"
+   "url": "https://api.draftkings.com/draftgroups/v1/draftgroups/156793/draftables",
+   "contests": [
+    {
+     "id": 198005475,
+     "name": "NFL Showdown $1.2M Monday Night Showdown [$300K to 1st] (CIN @ WAS)",
+     "fee": 20,
+     "prize": 1200000.0,
+     "size": 70588,
+     "per_user": 150,
+     "cash": false
+    },
+    {
+     "id": 198005473,
+     "name": "NFL Showdown $500K Field General [$100K to 1st] (CIN @ WAS)",
+     "fee": 444,
+     "prize": 500000.0,
+     "size": 1251,
+     "per_user": 37,
+     "cash": false
+    },
+    {
+     "id": 198005450,
+     "name": "NFL Showdown $402K Luxury Box [$100K to 1st] (CIN @ WAS)",
+     "fee": 3180,
+     "prize": 402000.0,
+     "size": 134,
+     "per_user": 4,
+     "cash": false
+    },
+    {
+     "id": 198005476,
+     "name": "NFL Showdown $300K Flea Flicker [$50K to 1st] (CIN @ WAS)",
+     "fee": 5,
+     "prize": 300000.0,
+     "size": 71343,
+     "per_user": 150,
+     "cash": false
+    },
+    {
+     "id": 198005451,
+     "name": "NFL Showdown $200K Play-Action [20 Entry Max] (CIN @ WAS)",
+     "fee": 3,
+     "prize": 200000.0,
+     "size": 79270,
+     "per_user": 20,
+     "cash": false
+    },
+    {
+     "id": 198005482,
+     "name": "NFL Showdown $175K Wildcat [5 Entry Max, $50K to 1st] (CIN @ WAS)",
+     "fee": 333,
+     "prize": 175000.0,
+     "size": 583,
+     "per_user": 5,
+     "cash": false
+    },
+    {
+     "id": 198005469,
+     "name": "NFL Showdown $2 Double Up (CIN @ WAS)",
+     "fee": 2,
+     "prize": 2000.0,
+     "size": 1149,
+     "per_user": 20,
+     "cash": true
+    },
+    {
+     "id": 198005500,
+     "name": "NFL Showdown Single Entry $5 Double Up (CIN @ WAS)",
+     "fee": 5,
+     "prize": 3000.0,
+     "size": 689,
+     "per_user": 1,
+     "cash": true
+    },
+    {
+     "id": 198005501,
+     "name": "NFL Showdown Single Entry $2 Double Up (CIN @ WAS)",
+     "fee": 2,
+     "prize": 1000.0,
+     "size": 574,
+     "per_user": 1,
+     "cash": true
+    }
+   ]
   }
  ]
 }
