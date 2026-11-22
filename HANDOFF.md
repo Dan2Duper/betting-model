@@ -178,7 +178,12 @@ already saved; "My DFS results" card: settled fees, won, net, ROI, cashed, split
   contest-only screens (Standings) attach to saved entries; $ button edits a fee. AUTO SCORING: page dfsScore() every 60 s scores entered NFL
   lineups from ESPN summaries with DK rules (CPT x1.5, DST incl. points allowed; kickers approximate) - matched official stats exactly on
   IND@HOU Nov 19; final totals saved (autoFinal). report.json carries dfs[]; relay factsText has a MY DFS block (relay 23715ff4, which
-  also carries the MLB-session report code; its tests/relay_mlb_test.mjs passed). Not yet: DFS rows in the Tracker/Stats tabs.
+  also carries the MLB-session report code; its tests/relay_mlb_test.mjs passed).
+  Site lineups graded (dfs/nfl_grade_lineups.py): each build snapshots every slate's top 3 cash + top 3 tournament lineups until lock
+  (dfs_nfl.json lineup_log); a later build grades them with nflverse stats + DST/K from team_rows, plus the hindsight best lineup from the
+  saved salaries (lineup_grades, last 200). Checked on IND@HOU Nov 19 (CPT x1.5 right; best possible 99.6). Tracker tab: "DFS" card (my
+  entries + site lineups, follows the period filter); Stats tab: DFS tables. Never mixed into betting totals (Rich: "its own line").
+  Page live DST scoring can run a few points low (ESPN box has no safeties/blocked kicks); official grading and result screenshots win.
 
 ## START HERE next session: spring-training dry run (late Feb 2027), then Opening Day
 Nothing below could be checked in November because the feeds are empty out of season. Do them on the first days with real games:
