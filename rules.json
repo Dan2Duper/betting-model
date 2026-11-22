@@ -265,22 +265,22 @@
     "live_n": 0
    },
    "mlb_total_gap_over": {
-    "p": 0.5404,
-    "n": 1682,
+    "p": 0.5447,
+    "n": 1700,
     "lean_only": true,
-    "src": "model total 0.75+ runs over the closing total, walk-forward: 506-449 (53.0%) 2013-20, 403-324 (55.4% vs 53.3% break-even at DraftKings closing juice) 2021-25. Not proven: lean only",
-    "p_bt": 0.5404,
-    "n_bt": 1682,
+    "src": "model total 0.75+ runs over the closing total, walk-forward: 526-447 (54.1%) 2013-20, 400-327 (55.0% vs 53.3% break-even at DraftKings closing juice) 2021-25. Not proven: lean only",
+    "p_bt": 0.5447,
+    "n_bt": 1700,
     "live_w": 0,
     "live_n": 0
    },
    "mlb_total_gap_under": {
-    "p": 0.5343,
-    "n": 2257,
+    "p": 0.5357,
+    "n": 2352,
     "lean_only": true,
-    "src": "model total 0.75+ runs under the closing total, walk-forward: 822-739 (52.7%) 2013-20, 384-312 (55.2% vs 53.0% break-even at DraftKings closing juice) 2021-25. Not proven: lean only",
-    "p_bt": 0.5343,
-    "n_bt": 2257,
+    "src": "model total 0.75+ runs under the closing total, walk-forward: 851-752 (53.1%) 2013-20, 409-340 (54.6% vs 52.9% break-even at DraftKings closing juice) 2021-25. Not proven: lean only",
+    "p_bt": 0.5357,
+    "n_bt": 2352,
     "live_w": 0,
     "live_n": 0
    },
@@ -304,6 +304,6 @@
   "total_gap_min": 0.75,
   "total_offset": 0.45,
   "wrigley_wind_out_mph": 10,
-  "_note": "Nov 2026 backtest, 52 candidate rules vs closing lines 2013-25: none proven. The model picks winners 57.9% vs the closing line's 58.1%; betting its moneyline edges loses about the vig (-2% to -4%). Three leans only. total_offset: the model total is a mean, a betting total is a median."
+  "_note": "Nov 22 2026 backtest vs closing lines 2013-25: 67 candidate rules (moneyline, total, run line at its real closing price) and 5 groups of new variables (wind by park, bullpen fatigue, umpire zone, lineup vs usual, travel/rest): none proven. The model picks winners 57.9% vs the closing line's 58.1%; its moneyline and run-line edges lose about the vig. Three leans only. total_offset: the model total is a mean, a betting total is a median."
  }
 }

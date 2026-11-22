@@ -2,6 +2,7 @@
 The model's numbers are walk-forward (preds.parquet). Each rule is judged twice: a discovery window (2013-2020) and a hold-out
 window (2021-2025, DraftKings closing prices incl. real over/under juice). A rule passes only if it wins in BOTH windows and the
 hold-out clears break-even by itself. Games whose "closing" line looks like a live in-game line or a late scratch are left out.
+Run lines (closing +/-1.5 at their real prices) are tested the same way; their discovery window starts in 2014.
 Usage: python3 mlb/backtest.py [DATA_DIR]  -> DATA_DIR/rules_bt.json + printed table"""
 import os, sys, json
 import numpy as np, pandas as pd
@@ -44,6 +45,11 @@ def grade_ml(d, side):
     o = np.where(side == 'home', d.ml_h, d.ml_a).astype(float); w = np.where(side == 'home', d.margin > 0, d.margin < 0)
     return np.where(w, pay(o), -1.0), o
 
+def grade_rl(d, side):
+    """Run line at its closing price. side: 'home' / 'away' takes that team at the listed line (d.rl is the HOME line, -1.5 or +1.5)."""
+    o = np.where(side == 'home', d.rl_h, d.rl_a).astype(float); m = (d.margin + d.rl).values * np.where(side == 'home', 1, -1)
+    return np.where(m > 0, pay(o), -1.0), o
+
 def summarize(pr, o):
     pr = np.asarray(pr, float); o = np.asarray(o, float); dec = pr != 0; n = int(dec.sum())
     if n == 0: return dict(n=0)
@@ -54,9 +60,9 @@ def summarize(pr, o):
 DISC, HOLD = (2013, 2020), (2021, 2025)
 def test(R, name, market, mask, side, note=''):
     d = R[mask & R.season.between(DISC[0], HOLD[1])].copy()
-    d = d[d.tot.notna() & ~d.tot_suspect] if market == 'total' else d[d.ml_h.notna() & ~d.ml_suspect]
+    d = d[d.tot.notna() & ~d.tot_suspect] if market == 'total' else d[d.rl.notna() & ~d.rl_suspect & ~d.ml_suspect] if market == 'rl' else d[d.ml_h.notna() & ~d.ml_suspect]
     sd = side[d.index] if isinstance(side, pd.Series) else np.full(len(d), side)
-    pr, o = (grade_total if market == 'total' else grade_ml)(d, np.asarray(sd))
+    pr, o = (grade_total if market == 'total' else grade_rl if market == 'rl' else grade_ml)(d, np.asarray(sd))
     d['pr'] = pr; d['o'] = o
     out = dict(rule=name, market=market, note=note)
     for k, (a, b) in (('disc', DISC), ('hold', HOLD), ('all', (DISC[0], HOLD[1]))):
@@ -113,6 +119,21 @@ def run(R):
           test(R, 'rookie_sp_fade', 'ml', (R.spexp_h < 4.6) ^ (R.spexp_a < 4.6), pd.Series(np.where(R.spexp_h < 4.6, 'away', 'home'), index=R.index), 'fade a starter with under ~100 career batters faced'),
           test(R, 'rookie_sp_back', 'ml', (R.spexp_h < 4.6) ^ (R.spexp_a < 4.6), pd.Series(np.where(R.spexp_h < 4.6, 'home', 'away'), index=R.index), 'back a starter with under ~100 career batters faced'),
           test(R, 'interleague_home', 'ml', R.home_lg != R.away_lg, 'home', 'interleague home teams')]
+    # ---- run line (closing +/-1.5 with prices, 2014-25) ----
+    S = lambda m: pd.Series(np.where(m, 'home', 'away'), index=R.index)
+    er = R.p_rl - R.rl_mkt; sr = S(er > 0); fav_home = R.rl == -1.5
+    takes_fav = ((sr == 'home') & fav_home) | ((sr == 'away') & ~fav_home)
+    for th in (0.03, 0.05, 0.07):
+        T.append(test(R, f'model_rl_edge_{int(th * 100)}', 'rl', er.abs() >= th, sr, f'model run-line cover prob {int(th * 100)}+ pts above the no-vig closing price'))
+    T += [test(R, 'model_rl_edge_4_fav', 'rl', (er.abs() >= 0.04) & takes_fav, sr, 'same at 4+ pts, laying -1.5 only'), test(R, 'model_rl_edge_4_dog', 'rl', (er.abs() >= 0.04) & ~takes_fav, sr, 'same at 4+ pts, taking +1.5 only'),
+          test(R, 'model_rl_and_ml_agree_3', 'rl', (er.abs() >= 0.03) & (np.sign(er) == np.sign(R.p_home - R.mkt_p)) & ((R.p_home - R.mkt_p).abs() >= 0.03), sr, 'model 3+ pts off the close on the run line AND the moneyline, same team'),
+          test(R, 'rl_road_fav_minus', 'rl', ~fav_home, 'away', 'every road favorite -1.5 (bats in all nine innings)'), test(R, 'rl_home_fav_minus', 'rl', fav_home, 'home', 'every home favorite -1.5'),
+          test(R, 'rl_home_dog_plus', 'rl', ~fav_home, 'home', 'every home underdog +1.5'), test(R, 'rl_road_dog_plus', 'rl', fav_home, 'away', 'every road underdog +1.5'),
+          test(R, 'rl_big_fav_minus', 'rl', (R.ml_h <= -200) | (R.ml_a <= -200), S(R.ml_h <= -200), 'favorites of -200 or shorter, -1.5'),
+          test(R, 'rl_high_total_fav', 'rl', R.tot >= 9.5, S(fav_home), 'closing total 9.5+: favorite -1.5 (fewer one-run games)'),
+          test(R, 'rl_low_total_dog', 'rl', R.tot <= 7.5, S(~fav_home), 'closing total 7.5 or lower: underdog +1.5 (more one-run games)'),
+          test(R, 'rl_model_total_high_fav', 'rl', (R.lam_h + R.lam_a - 0.45 - R.tot >= 0.75), S(fav_home), 'model total 0.75+ over the line: favorite -1.5'),
+          test(R, 'rl_model_total_low_dog', 'rl', (R.lam_h + R.lam_a - 0.45 - R.tot <= -0.75), S(~fav_home), 'model total 0.75+ under the line: underdog +1.5')]
     return T
 
 if __name__ == '__main__':

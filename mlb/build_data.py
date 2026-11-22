@@ -1,7 +1,8 @@
 """MLB history -> three tidy tables (games, pitcher lines, batter lines). Run once per season refresh.
 Sources (all free): Retrosheet game logs + event-file info records + rosters (github chadwickbureau/retrosheet),
 per-game player lines (chadwickbureau/retrosplits daybyday), closing odds 2010-21 (ethanbell528-cmd/fda-project-1, from
-SportsbookReviewsOnline) and 2021-25 per-book open/close (ArnavSaraogi/mlb-odds-scraper release dataset, from SportsBookReview).
+SportsbookReviewsOnline) and 2021-25 per-book open/close (ArnavSaraogi/mlb-odds-scraper release dataset, from SportsBookReview);
+closing run lines 2014-21 with prices (flancast90/sportsbookreview-scraper, same SportsbookReviewsOnline archive) and 2021-25 per book.
 Usage: python3 mlb/build_data.py [DATA_DIR]      DATA_DIR holds raw/ (see mlb/setup_data.sh); writes DATA_DIR/*.parquet"""
 import os, sys, csv, json, glob, statistics
 import numpy as np, pandas as pd
@@ -64,6 +65,34 @@ Ah = A[(A.score_for == A.hruns) & (A.score_against == A.aruns)].drop_duplicates(
 Aa = A[(A.score_for == A.aruns) & (A.score_against == A.hruns)].drop_duplicates('game_id').set_index('game_id')
 OA = pd.DataFrame(dict(ml_h=Ah.moneyline, ml_a=Aa.moneyline, tot=Ah.total_line, rl_h=Ah.line)).dropna(subset=['ml_h', 'ml_a'])
 OA['src'] = 'sbro'
+OA = OA.rename(columns={'rl_h': 'rl_fda'})
+
+# ---------------- run line 2014-21: closing +/-1.5 with both prices ----------------
+# TRAP: this copy of the archive pairs the wrong rows (each record = the home row of one game + the visitor row of the next), so the
+# "games" in it are nonsense. The per-team rows are intact: take them apart and match each one to its real game by team, date and runs.
+RLF = f'{D}/odds_c/data/mlb_archive_10Y.json'
+if os.path.exists(RLF):
+    J = pd.DataFrame(json.load(open(RLF)))
+    NICK = {'Angels': 'ANA', 'Astros': 'HOU', 'Athletics': 'OAK', 'Blue Jays': 'TOR', 'Braves': 'ATL', 'Brewers': 'MIL', 'CUB': 'CHN', 'Cardinals': 'SLN', 'Cubs': 'CHN', 'Diamondbacks': 'ARI', 'Dodgers': 'LAN',
+            'Indians': 'CLE', 'KAN': 'KCA', 'LOS': 'LAN', 'Mariners': 'SEA', 'Marlins': 'MIA', 'Mets': 'NYN', 'Nationals': 'WAS', 'Orioles': 'BAL', 'Phillies': 'PHI', 'Pirates': 'PIT', 'Rangers': 'TEX',
+            'Red Sox': 'BOS', 'Reds': 'CIN', 'Rockies': 'COL', 'SDG': 'SDN', 'SFO': 'SFN', 'TAM': 'TBA', 'Tigers': 'DET', 'Twins': 'MIN', 'White Sox': 'CHA', 'Yankees': 'NYA'}
+    num = lambda c: pd.to_numeric(J[c], errors='coerce')
+    R = pd.concat([pd.DataFrame(dict(team=J[s + '_team'].map(NICK), runs=num(s + '_final'), ml=num(s + '_close_ml'), rl=num(s + '_close_spread'), rlo=num(s + '_close_spread_odds'),
+                                     date=num('date'), key=[f'{k}{s}' for k in range(len(J))])) for s in ('away', 'home')]).dropna(subset=['date', 'team', 'runs'])
+    R['d'] = pd.to_datetime(R.date.astype(int).astype(str), errors='coerce'); R = R.dropna(subset=['d'])
+    Gs = G[G.season.between(2011, 2021)]
+    TT = pd.concat([pd.DataFrame(dict(gid=Gs.gid, team=Gs.home, d=Gs.date, runs=Gs.hruns, ha='h')), pd.DataFrame(dict(gid=Gs.gid, team=Gs.away, d=Gs.date, runs=Gs.aruns, ha='a'))])
+    M = pd.concat([R.assign(d=R.d + pd.Timedelta(days=sh), sh=abs(sh)).merge(TT, on=['team', 'd', 'runs']) for sh in (0, -1, 1)]).sort_values('sh')
+    M = M[~M.duplicated('key', keep=False) | (M.sh == 0)]; M = M[~M.duplicated('key', keep=False)]; M = M[~M.duplicated(['gid', 'ha'], keep=False)]   # one archive row <-> one team-game
+    hh = M[M.ha == 'h'].set_index('gid'); aa = M[M.ha == 'a'].set_index('gid')
+    RL = pd.DataFrame(dict(rl=hh.rl, rl_h=hh.rlo, rl_a=aa.rlo, rla=aa.rl, mlh=hh.ml, mla=aa.ml)).dropna(subset=['rl', 'rl_h', 'rl_a', 'rla'])
+    chk = RL.join(OA[['ml_h', 'ml_a']], how='inner')
+    print('run-line archive: team rows matched', len(M), '| moneyline equal to the other archive copy on', round(float(((chk.mlh == chk.ml_h) & (chk.mla == chk.ml_a)).mean()), 4), 'of', len(chk))
+    s_ = RL.rl_h.map(lambda o: -o / (-o + 100) if o < 0 else 100 / (o + 100)) + RL.rl_a.map(lambda o: -o / (-o + 100) if o < 0 else 100 / (o + 100))
+    RL = RL[(RL.rl == -RL.rla) & (RL.rl.abs() == 1.5) & (RL.rl_h.abs() >= 100) & (RL.rl_a.abs() >= 100) & s_.between(1.0, 1.10)]
+    OA = OA.join(RL[['rl', 'rl_h', 'rl_a']])
+    print('run lines 2014-21:', int(OA.rl.notna().sum()), 'games')
+else: print('no run-line archive (odds_c): run lines start in 2021')
 
 # ---------------- odds 2021-25: DraftKings close (fallback: median book), open, consensus ----------------
 T = {'CHC': 'CHN', 'CWS': 'CHA', 'CHW': 'CHA', 'KC': 'KCA', 'LAA': 'ANA', 'LAD': 'LAN', 'NYM': 'NYN', 'NYY': 'NYA', 'SD': 'SDN', 'SF': 'SFN', 'STL': 'SLN', 'TB': 'TBA', 'WSH': 'WAS', 'WSN': 'WAS', 'AZ': 'ARI'}
@@ -119,6 +148,9 @@ for day, games in J.items():
                  ml_suspect=M['suspect'], start_utc=v.get('startDate'), src='sbr')
         if Tt is not None:
             d.update(tot=Tt['x'], over=Tt['a'], under=Tt['b'], tot_book=Tt['book'], open_tot=Tt['open_x'], open_over=Tt['dk_open'][0], open_under=Tt['dk_open'][1], tot_suspect=Tt['suspect'])
+        Rl = pick([x for x in (o.get('pointspread') or []) if abs(((x.get('currentLine') or {}).get('homeSpread') or 0)) == 1.5], 'homeOdds', 'awayOdds', 'homeSpread')
+        if Rl is not None:   # the home team's line (-1.5 or +1.5) and both prices; a flip of the favorite since the open = live line or scratch
+            d.update(rl=Rl['x'], rl_h=Rl['a'], rl_a=Rl['b'], rl_book=Rl['book'], rl_p_h=Rl['p'], open_rl=Rl['open_x'], rl_suspect=bool(M['suspect']))
         ob[r.gid] = d
 OB = pd.DataFrame.from_dict(ob, orient='index').dropna(subset=['ml_h', 'ml_a'])
 print('2021-25 odds matched', len(OB), 'unmatched regular-season odds rows', miss)
@@ -132,15 +164,22 @@ same_tot = OA.loc[both].tot == OB.loc[both].tot
 for c in ('ml_h', 'ml_a', 'tot'): OB.loc[both, c] = OA.loc[both, c]
 OB.loc[both, 'cons_p_h'] = pa; OB.loc[both, 'ml_suspect'] = False; OB.loc[both, 'ml_book'] = 'sbro'; OB.loc[both, 'src'] = 'sbro+sbr'
 OB.loc[both[~same_tot.values], ['over', 'under']] = np.nan; OB.loc[both, 'tot_suspect'] = False
+if 'rl' in OA:   # 2021 run line: the archive close wins as well
+    for c in ('rl', 'rl_h', 'rl_a'): OB.loc[both, c] = OA.loc[both, c]
+    OB.loc[both, 'rl_suspect'] = False; OB.loc[both, 'rl_book'] = 'sbro'
 OB = OB[~((OB.src == 'sbr') & (OB.index.str[3:7] == '2021'))]          # 2021 games with no archive line: skip
 O = pd.concat([OA[~OA.index.isin(OB.index)], OB]).rename_axis('gid').reset_index()
-for c in ('ml_suspect', 'tot_suspect'): O[c] = O[c].fillna(False).astype(bool)
+for c in ('ml_suspect', 'tot_suspect', 'rl_suspect'): O[c] = O[c].fillna(False).astype(bool)
 # sanity: a handful of archive rows carry typos (totals of 100+, half-cent moneylines); live totals far from any real line are flagged
 bad = (O.tot > 20) | (O.tot < 5) | ((O.ml_h.abs() % 1) != 0)
 O.loc[(O.src == 'sbro') & bad, ['ml_h', 'ml_a', 'tot']] = np.nan
 O.loc[(O.src != 'sbro') & ((O.tot > 20) | (O.tot < 5.5)), 'tot_suspect'] = True
 O = O.dropna(subset=['ml_h', 'ml_a'])
 G = G.merge(O, on='gid', how='left')
-for c in ('ml_suspect', 'tot_suspect'): G[c] = G[c].fillna(False).astype(bool)
+for c in ('ml_suspect', 'tot_suspect', 'rl_suspect'): G[c] = G[c].fillna(False).astype(bool)
+# a run line that disagrees with the moneyline about who is favored by a wide margin is a live line too
+ih = G.ml_h.map(imp, na_action='ignore'); ia = G.ml_a.map(imp, na_action='ignore'); ph = ih / (ih + ia)
+irh = G.rl_h.map(imp, na_action='ignore'); ira = G.rl_a.map(imp, na_action='ignore'); prl = irh / (irh + ira)      # no-vig P(home covers its run line)
+G.loc[G.rl.notna() & (((G.rl == -1.5) & ((ph < 0.42) | (prl > ph - 0.05))) | ((G.rl == 1.5) & ((ph > 0.58) | (prl < ph + 0.05)))), 'rl_suspect'] = True
 G.to_parquet(f'{D}/games.parquet')
-print(G.groupby('season').agg(games=('gid', 'size'), ml=('ml_h', 'count'), tot=('tot', 'count'), ou_odds=('over', 'count'), temp=('temp', 'count'), ml_suspect=('ml_suspect', 'sum'), tot_suspect=('tot_suspect', 'sum')).to_string())
+print(G.groupby('season').agg(games=('gid', 'size'), ml=('ml_h', 'count'), tot=('tot', 'count'), ou_odds=('over', 'count'), run_line=('rl', 'count'), temp=('temp', 'count'), ml_suspect=('ml_suspect', 'sum'), tot_suspect=('tot_suspect', 'sum'), rl_suspect=('rl_suspect', 'sum')).to_string())

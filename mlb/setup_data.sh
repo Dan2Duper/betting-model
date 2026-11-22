@@ -15,5 +15,6 @@ for y in $(seq 2009 $LAST); do awk -F, -v y=$y '$1!="ALS" && $1!="NLS"{print y"/
 grep -h -E "^(id|info)," ev/*.EV? > info_all.txt
 [ -s mlb_odds_dataset.json ] || curl -sSL -f -o mlb_odds_dataset.json https://github.com/ArnavSaraogi/mlb-odds-scraper/releases/download/dataset/mlb_odds_dataset.json
 [ -d "$D/odds_a" ] || git clone --depth 1 https://github.com/ethanbell528-cmd/fda-project-1 "$D/odds_a"
+[ -d "$D/odds_c" ] || git clone --depth 1 https://github.com/flancast90/sportsbookreview-scraper "$D/odds_c"   # closing run lines 2014-21
 cd "$PKG"
 python3 mlb/build_data.py "$D" && python3 mlb/features.py "$D" > /dev/null && python3 mlb/model.py "$D" > /dev/null && python3 mlb/backtest.py "$D" && python3 mlb/model.py "$D" | tail -1

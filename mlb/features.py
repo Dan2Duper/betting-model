@@ -118,11 +118,17 @@ def build(G, pit, bat, hands):
     ug = pd.DataFrame(dict(ump=G.ump, day=G.day, ur=G.tot / (2 * L.rpg) / 1.0, ug=1.0)); ug = ug[(ug.ump != '') & ug.ur.notna()]
     UT = dec_table(ug, 'ump', ['ur', 'ug'], HU)
     a = asof(pd.DataFrame(dict(ump=F.ump, day=day(F.date))), UT, 'ump', ['ur', 'ug'], HU); F['ump_idx'] = (a.ur + 150) / (a.ug + 150)
+    # umpire strike zone: strikeouts and walks per batter in his earlier plate games vs the league (Nov 2026 walk-forward test: better in 9 of 12 seasons)
+    gs = pit.groupby('gid')[['P_SO', 'P_BB', 'P_TBF']].sum(); u = G[['gid', 'ump', 'day']].merge(gs, left_on='gid', right_index=True); u = u[u.ump != '']; u['lg'] = 'MLB'
+    ZC = ['P_SO', 'P_BB', 'P_TBF']; UZ = dec_table(u, 'ump', ZC, HU); LZ = dec_table(u, 'lg', ZC, 365.0)
+    q = pd.DataFrame(dict(ump=F.ump.values, lg='MLB', day=day(F.date).values), index=F.index); a = asof(q, UZ, 'ump', ZC, HU); l = asof(q, LZ, 'lg', ZC, 365.0)
+    lk = l.P_SO / l.P_TBF.clip(lower=1); lb = l.P_BB / l.P_TBF.clip(lower=1)
+    F['ump_k'] = ((a.P_SO + lk * 4000) / (a.P_TBF + 4000) / lk).fillna(1.0); F['ump_bb'] = ((a.P_BB + lb * 4000) / (a.P_TBF + 4000) / lb).fillna(1.0)
     return F
 
 FEATS = ['is_home', 'sp_k', 'sp_bb', 'sp_hr', 'sp_ra', 'sp_h', 'sp_gb', 'sp_ogs', 'sp_exp', 'sp_k_s', 'sp_bb_s', 'sp_ra_s', 'sp_rest', 'sp_left',
          'pen_k', 'pen_bb', 'pen_hr', 'pen_ra', 'pen_out1', 'pen_out3', 'opp_ra', 'off_rs', 'off_rs_s', 'lu_woba', 'lu_k', 'lu_iso', 'lu_plat', 'lu_exp',
-         'park', 'lg_rpg', 'lg_rpg_s', 'dome', 'temp', 'wind_out', 'wind_in', 'wind_x', 'dh', 'sched7', 'day_game', 'ump_idx']
+         'park', 'lg_rpg', 'lg_rpg_s', 'dome', 'temp', 'wind_out', 'wind_in', 'wind_x', 'dh', 'sched7', 'day_game', 'ump_idx', 'ump_k', 'ump_bb']
 if __name__ == '__main__':
     G = pd.read_parquet(f'{D}/games.parquet'); pit = pd.read_parquet(f'{D}/pit.parquet'); bat = pd.read_parquet(f'{D}/bat.parquet'); hands = pd.read_parquet(f'{D}/hands.parquet').drop_duplicates('pid')
     F = build(G, pit, bat, hands); F = F[F.season >= 2010]

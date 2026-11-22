@@ -1,6 +1,10 @@
 """MLB daily job: MLB Stats API -> the same tables the backtest uses -> features.build() -> model.json -> mlb.json for the page.
 History through the last Retrosheet season comes from mlb/hist/; every later game comes from the Stats API box scores (cached in
 CACHE so each game is downloaded once). The target day's games get features built only from earlier days, exactly as in the backtest.
+Game-day inputs (mlb/inputs.py): park forecast with wind relative to the field until the game-day weather is posted, the assigned
+plate umpire, posted lineups / probable pitchers, and the DraftKings moneyline, run line and total as ESPN lists them.
+Picks (mlb/picks.py): winner, run line and over/under for every game, rule leans, the season log (frozen at first pitch, graded
+from finals, closing-line value) and each rule's self-tuned hit rate. Log: <cache dir>/log_<season>.json (the relay's closing-line snapshots: <cache dir>/lines.json).
 Usage: python3 mlb/live.py --cache DIR --out mlb.json [--date YYYY-MM-DD] [--days 2] [--check]
   --date  first day to predict (default: today, US Central). A past date replays that day without using its results.
   --check also grades every Stats-API-season game played before --date (walk-forward) and prints / stores the record."""
@@ -8,6 +12,7 @@ import os, sys, json, time, argparse, datetime as dt, concurrent.futures as cf
 import numpy as np, pandas as pd, requests
 HERE = os.path.dirname(os.path.abspath(__file__)); sys.path.insert(0, HERE)
 from features import build, FEATS
+import inputs, picks
 API = 'https://statsapi.mlb.com/api/v1'
 TEAM = {108: 'ANA', 109: 'ARI', 110: 'BAL', 111: 'BOS', 112: 'CHN', 113: 'CIN', 114: 'CLE', 115: 'COL', 116: 'DET', 117: 'HOU', 118: 'KCA', 119: 'LAN', 120: 'WAS', 121: 'NYN',
         133: 'ATH', 134: 'PIT', 135: 'SDN', 136: 'SEA', 137: 'SFN', 138: 'SLN', 139: 'TBA', 140: 'TEX', 141: 'TOR', 142: 'MIN', 143: 'PHI', 144: 'ATL', 145: 'CHA', 146: 'MIA', 147: 'NYA', 158: 'MIL'}
@@ -77,7 +82,7 @@ def game_row(g, X):
     h, a = g['teams']['home'], g['teams']['away']
     return dict(gid=f"pk{g['gamePk']}", pk=int(g['gamePk']), season=int(g.get('season') or g['officialDate'][:4]), date=g['officialDate'], num=num_of(g), away=TEAM.get(a['team']['id'], str(a['team']['id'])), home=TEAM.get(h['team']['id'], str(h['team']['id'])),
                 park=X['venues'].get(str(g.get('venue', {}).get('id')), f"v{g.get('venue', {}).get('id')}"), venue=g.get('venue', {}).get('name', ''), dn='D' if g.get('dayNight') == 'day' else 'N', home_lg='', usedh='true',
-                start_utc=g.get('gameDate'), sched7=int(g.get('scheduledInnings', 9) or 9) < 9)
+                start_utc=g.get('gameDate'), sched7=int(g.get('scheduledInnings', 9) or 9) < 9, venue_id=g.get('venue', {}).get('id'))
 def box_rows(g, X):
     b = get(f"{API}/game/{g['gamePk']}/boxscore"); row = game_row(g, X)
     row['hruns'] = float(g['teams']['home']['score']); row['aruns'] = float(g['teams']['away']['score'])
@@ -139,9 +144,13 @@ def hands_for(X, ids, cache):
 def main():
     ap = argparse.ArgumentParser(); ap.add_argument('--cache', required=True); ap.add_argument('--out', required=True); ap.add_argument('--date'); ap.add_argument('--days', type=int, default=2)
     ap.add_argument('--check', action='store_true'); ap.add_argument('--max-new', type=int, default=4000)
-    ap.add_argument('--hist-last', type=int, help='parity test: pretend Retrosheet history ends with this season'); A = ap.parse_args()
+    ap.add_argument('--hist-last', type=int, help='parity test: pretend Retrosheet history ends with this season')
+    ap.add_argument('--log', help='season pick log to update (default: log_<season>.json in --cache)'); ap.add_argument('--lines', help="the relay's closing-line snapshots (default: lines.json in --cache)")
+    ap.add_argument('--no-log', action='store_true', help='build mlb.json only'); ap.add_argument('--now', help='pretend it is this UTC time (replays: default 6 am Central on --date)'); A = ap.parse_args()
     os.makedirs(A.cache, exist_ok=True)
     day0 = A.date or str((dt.datetime.now(dt.timezone.utc) - dt.timedelta(hours=6)).date()); d0 = dt.date.fromisoformat(day0)
+    NOW = dt.datetime.fromisoformat(A.now.replace('Z', '+00:00')) if A.now else (dt.datetime.fromisoformat(day0 + 'T12:00:00+00:00') if A.date else dt.datetime.now(dt.timezone.utc))
+    replay = bool(A.date) and (dt.datetime.now(dt.timezone.utc) - NOW).total_seconds() > 36 * 3600
     H = {n: pd.read_parquet(f'{HERE}/hist/{n}.parquet') for n in ('games', 'pit', 'bat', 'hands')}
     for n in ('games', 'pit', 'bat'): H[n]['date'] = pd.to_datetime(H[n].date).dt.strftime('%Y-%m-%d')
     if A.hist_last:
@@ -160,10 +169,13 @@ def main():
         for c in ('a_lineup', 'h_lineup'): LG[c] = [','.join(rp(i) for i in str(v).split(',')) for v in LG[c]]
         for n in ('pit', 'bat'): T[n] = T[n].assign(pid=T[n].pid.map(rp))
     # ---- the slate ----
-    slate = []
+    slate = []; sched_final = {}; sched_status = {}
     for g in schedule(startDate=day0, endDate=str(d0 + dt.timedelta(days=A.days - 1)), gameType='R', hydrate='probablePitcher,lineups,venue,weather,officials'):
-        if g.get('status', {}).get('detailedState') in ('Postponed', 'Cancelled'): continue
-        r = game_row(g, X); r['hruns'] = np.nan; r['aruns'] = np.nan; r['ump'] = ''
+        if g.get('status', {}).get('detailedState') in ('Postponed', 'Cancelled'): sched_status[str(g['gamePk'])] = 'ppd'; continue
+        if is_final(g): sched_final[str(g['gamePk'])] = (g['teams']['away']['score'], g['teams']['home']['score'])
+        r = game_row(g, X); r['hruns'] = np.nan; r['aruns'] = np.nan
+        hp = [o for o in g.get('officials') or [] if o.get('officialType') == 'Home Plate' and (o.get('official') or {}).get('id')]      # assigned a few hours before first pitch
+        r['ump'] = (X['umps'].get(str(hp[0]['official']['id']), f"m{hp[0]['official']['id']}") if hp else ''); r['ump_name'] = hp[0]['official'].get('fullName', '') if hp else ''
         wx = g.get('weather') or {}
         if wx.get('temp') and not A.hist_last:
             r['temp'], r['sky'], r['windspeed'], r['winddir'] = parse_weather(f"{wx.get('temp')} degrees, {wx.get('condition', '')}", wx.get('wind', '')); r['wx'] = 'posted'
@@ -184,6 +196,17 @@ def main():
                 else: r[pre + '_lineup'] = ','.join([''] * 9); r[pre + '_pos'] = ','.join([''] * 9)
                 r[pre + '_lineup_src'] = 'last game'
         slate.append(r)
+    # park forecast for every game whose game-day weather is not posted yet (wind turned into out / in / across for that field)
+    FX = {}
+    if slate and not A.hist_last and not replay:
+        try:
+            PK = inputs.parks(X); json.dump(X, open(f'{A.cache}/xwalk.json', 'w'))
+            FX = inputs.forecasts([dict(gid=r['gid'], venue_id=r.get('venue_id'), home=r['home'], start_utc=r['start_utc']) for r in slate if r['wx'] != 'posted'], PK)
+        except Exception as e: print('forecast step failed:', e)
+        for r in slate:
+            f = FX.get(r['gid'])
+            if f and r['wx'] != 'posted': r['temp'], r['sky'], r['windspeed'], r['winddir'] = f['temp'], f['sky'], f['windspeed'], f['winddir']; r['wx'] = f['src']; r['wx_more'] = {k: f[k] for k in ('rain', 'gust', 'humid', 'roof') if f.get(k) not in (None, '')}
+        print('weather:', {k: sum(1 for r in slate if r['wx'] == k) for k in sorted({r['wx'] for r in slate})})
     SL = pd.DataFrame(slate); print('slate', day0, len(SL), 'games; live-season games in cache', len(LG))
     # ---- one table, one feature build ----
     GC = list(H['games'].columns)
@@ -204,14 +227,50 @@ def main():
     out = dict(built=dt.datetime.now(dt.timezone.utc).isoformat(), date=day0, model=dict(trained=M['trained'], over=M['over'], win=M['win']), rules=RULES,
                wx={f: float(b / s) for f, b, s in zip(FEATS, beta, sd) if f in ('temp', 'wind_out', 'wind_in', 'wind_x', 'dome')},      # per-unit log-run weights (temp is vs 72F)
                games=[])
-    nm = {}
     for r in SL.itertuples():
         if r.gid not in P.index: continue
         p = P.loc[r.gid]; fa, fh = a.loc[r.gid], h.loc[r.gid]   # a-row = away batters vs the home pitcher
         out['games'].append(dict(id=r.gid, pk=int(r.pk), date=r.date, kick=r.start_utc, away=r.away, home=r.home, venue=r.venue, park=r.park, num=int(r.num), sched7=bool(r.sched7),
                                  sp_away=r.asp_name, sp_home=r.hsp_name, sp_away_known=bool(r.asp), sp_home_known=bool(r.hsp), lineup_away=r.a_lineup_src, lineup_home=r.h_lineup_src,
                                  pa=round(float(p.lam_a), 2), ph=round(float(p.lam_h), 2), p_home=round(float(p.p_home), 4), total=round(float(p.lam_a + p.lam_h), 2),
-                                 wx=r.wx, temp=round(float(fh.temp)), wind_out=round(float(fh.wind_out)), wind_in=round(float(fh.wind_in)), dome=bool(fh.dome), park_factor=round(float(fh.park), 3), sp_away_k=round(float(fh.sp_k), 2), sp_home_k=round(float(fa.sp_k), 2), lu_away=round(float(fa.lu_woba), 3), lu_home=round(float(fh.lu_woba), 3)))
+                                 wx=r.wx, temp=round(float(fh.temp)), wind_out=round(float(fh.wind_out)), wind_in=round(float(fh.wind_in)), wind_x=round(float(fh.wind_x)), dome=bool(fh.dome), park_factor=round(float(fh.park), 3), sp_away_k=round(float(fh.sp_k), 2), sp_home_k=round(float(fa.sp_k), 2), lu_away=round(float(fa.lu_woba), 3), lu_home=round(float(fh.lu_woba), 3),
+                                 ump=getattr(r, 'ump_name', '') or '', ump_k=round(float(fh.ump_k), 3), ump_bb=round(float(fh.ump_bb), 3), wx_more=(r.wx_more if isinstance(getattr(r, 'wx_more', None), dict) else {})))
+        if M.get('rl'): h2, a2 = picks.rl_probs(M, float(p.lam_h), float(p.lam_a)); out['games'][-1].update(p_h2=round(h2, 4), p_a2=round(a2, 4))
+    # ---- DraftKings lines (ESPN's scoreboard), the three model picks per game, rule leans ----
+    E = {}
+    for d in sorted({g['date'] for g in out['games']}):
+        try: E[d] = inputs.espn_lines(d)
+        except Exception as e: print('ESPN lines failed for', d, e); E[d] = []
+    nl = 0
+    for g in out['games']:
+        e = inputs.match_espn(E.get(g['date'], []), g['home'], g['away'], g['kick'])
+        if e: g['espn'] = e['espn']
+        if e and e.get('odds') and e.get('state') in ('pre', ''): g['line'] = dict(e['odds'], at=NOW.isoformat(timespec='minutes')); nl += 1
+        picks.game_picks(g, M, RULES)
+    print('lines:', nl, 'of', len(out['games']), 'games have a pregame DraftKings line')
+    out['model']['rl'] = M.get('rl'); out['inputs'] = dict(weather=sorted({g['wx'] for g in out['games']}), lines=nl, umpires=sum(1 for g in out['games'] if g.get('ump')))
+    # ---- season log: freeze at first pitch, grade from finals, closing-line value, self-tuned rule hit rates ----
+    BRULES = {k: v for k, v in json.load(open(f'{os.path.dirname(HERE)}/rules.json'))['betting']['rules'].items() if k.startswith('mlb_')}
+    if not BRULES: BRULES = {k: v for k, v in json.load(open(f'{os.path.dirname(HERE)}/rules_seed.json')).items() if k.startswith('mlb_')}
+    if not A.no_log and not A.hist_last:
+        lf = A.log or f'{A.cache}/log_{d0.year}.json'      # inside the cache folder, which the workflow already saves to the data branch
+        LOG = json.load(open(lf)) if os.path.exists(lf) else dict(season=d0.year, games={})
+        closes = {}
+        try:
+            cf = A.lines or f'{A.cache}/lines.json'
+            if os.path.exists(cf): closes = {str(k): v for k, v in (json.load(open(cf)).get('games') or {}).items()}
+        except Exception as e: print('closing-line file unreadable:', e)
+        finals = dict(sched_final)
+        if len(LG): finals.update({str(int(r.pk)): (r.aruns, r.hruns) for r in LG[LG.season == d0.year].itertuples() if r.hruns == r.hruns})
+        n = picks.update_log(LOG, out['games'], finals, closes, NOW, sched_status)
+        LOG['updated'] = NOW.isoformat(timespec='minutes'); LOG['rule_stats'] = picks.learn(LOG, BRULES); LOG['record'] = picks.record(LOG)
+        LOG['record_30'] = picks.record(LOG, since=str(d0 - dt.timedelta(days=30))); LOG['record_7'] = picks.record(LOG, since=str(d0 - dt.timedelta(days=7)))
+        json.dump(LOG, open(lf, 'w'), separators=(',', ':')); print('log:', lf, len(LOG['games']), 'games,', n, 'changed | season record', json.dumps(LOG['record']['model']))
+        out['rule_stats'] = LOG['rule_stats']; out['record'] = LOG['record']; out['record_30'] = LOG['record_30']; out['record_7'] = LOG['record_7']; out['log'] = 'mlb/' + os.path.basename(lf)
+        for g in out['games']:   # what the log holds for today's games (frozen picks, finals) rides along so the page needs one file for today
+            rec = LOG['games'].get(str(g['pk']))
+            if rec: g['logged'] = {k: rec[k] for k in ('line', 'picks', 'rules', 'final', 'res', 'units', 'close', 'clv', 'built', 'status') if k in rec}
+    else: out['rule_stats'] = picks.learn(dict(games={}), BRULES)
     if A.check and len(LG):
         C = LG.set_index('gid').join(P, how='inner'); C = C[C.lam_h.notna()]
         hw = (C.hruns > C.aruns).astype(int); ll = float(-(hw * np.log(C.p_home) + (1 - hw) * np.log(1 - C.p_home)).mean())
