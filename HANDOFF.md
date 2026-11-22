@@ -84,10 +84,12 @@ Pushing to main/package/sync/data from a Claude session with git works.
   the rest start at 0. Every build remembers base proj + vars (state lives in dfs_nfl.json "tune"); next week's build grades each variable
   (log: helped = MAE gain), refits decayed stats pulled to the long-run fit, moves weights 30% of the way. Players carry adj/why/wind in dfs_nfl.json.
 - Fixed: starting-QB pick used groupby max of season and week separately (matched nothing) -> fell back to highest salary.
-- Trigger: data-branch workflow "DFS lineups" (dfs-build.yml) has no Run button; re-run the last manual run (#17) - checkout pulls latest package + data.
-  The Tasker salary pull hasn't run since Thu Nov 19 (salaries don't change after that; statuses now come from ESPN/Sleeper at build time).
+- Game-day rebuilds are automatic in the relay cron (deployed f7065a59, Nov 22): on any CT day with NFL games (ESPN scoreboard) it saves
+  salaries/_refresh.json at 9:00 am CT and ~75 min before each kickoff -> the salaries/** push trigger rebuilds (GH_TOKEN is Contents-only, so no
+  workflow_dispatch). Hourly 6am-8pm it also tries to fetch missing DK salaries from Cloudflare (untested: DK may refuse; logs 'DraftKings refused').
+  Verified: 9:00 refresh -> build 15:07 UTC with ESPN + Sleeper statuses and 12 forecasts. Tasker salary pull hasn't run since Thu Nov 19.
 - Next: page chips for adj/why + wind on DFS player rows; PROE / pass-funnel and routes-per-dropback variables (need pbp/participation download);
-  kicker wind; a cron (relay or default-branch workflow) for game-day rebuilds ~10:45 CT and ~6:50 CT.
+  kicker wind.
 
 ## START HERE next session: MLB DFS lineups (steps 2-3)
 2. Lineups: dfs/optimizer.py (PuLP) gets an MLB classic builder: P,P,C,1B,2B,3B,SS,OF,OF,OF, $50,000, max 5 hitters from one team,
