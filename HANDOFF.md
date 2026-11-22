@@ -134,10 +134,10 @@ Phase 2 - MLB DFS (dfs/)
    wind out/in, umpire, bullpen fatigue, pitch mix vs batter (Statcast, check reachability from Actions) on 2021-26 projection residuals;
    start only what beats out-of-sample error; grade daily and nudge weights.
 
-Shared, still to build (Rich asked Nov 22): "I entered this lineup" button on DFS lineups (fee / entries / contest; new synced keys,
-e.g. dfsMine/dfsDel added to SYNCED), the screenshot reader learns DK contest-result screens (points, place, field, winnings), matched
-to entered lineups by player overlap, and a "My DFS results" card (fees, winnings, net, ROI, cash rate, cash vs GPP). Works for NFL now
-and MLB later.
+DFS entry tracking - BUILT Nov 22 (page eb99f21 on main, relay 1abeb538): "✅ I entered this lineup" under a lineup (type, fee, entries,
+contest) -> ST.dfsMine (synced); "📷 Add DFS screenshots" -> relay /dfsshot (DFS_SHOT prompt + dfs_screens tool; a lineup split over two
+screenshots is merged) -> matched to saved entries by player overlap (first initial + last name, need max(4, n-2)) -> new / result update /
+already saved; "My DFS results" card: settled fees, won, net, ROI, cashed, split cash vs tournament. MLB: works as soon as MLB lineups exist.
 
 Phase 3 - spring training dry run (late Feb 2027): run every piece on real spring games/slates, fix feed surprises, then go live.
 
