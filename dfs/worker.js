@@ -361,6 +361,12 @@ export default {
   async fetch(req, env) {
     const origin = req.headers.get('Origin') || '';
     if (req.method === 'OPTIONS') return new Response(null, {headers: cors(origin)});
+    if (req.method === 'GET' && new URL(req.url).pathname === '/dkcheck') {   // health check: can Cloudflare reach DraftKings salaries?
+      const dg = (new URL(req.url).searchParams.get('dg') || '156561').replace(/\D/g, '');
+      const r = await fetch(`https://api.draftkings.com/draftgroups/v1/draftgroups/${dg}/draftables`, {headers: {'User-Agent': 'Mozilla/5.0', Accept: 'application/json'}});
+      let n = null; try { n = (await r.json()).draftables?.length ?? null; } catch (e) {}
+      return reply({draftkings_status: r.status, players: n}, 200, origin);
+    }
     if (req.method !== 'POST') return reply({error: 'POST only'}, 405, origin);
     if (origin && !ALLOWED.includes(origin)) return reply({error: 'not allowed from this site'}, 403, origin);
     if (!env.ACCESS_CODE || req.headers.get('X-Code') !== env.ACCESS_CODE) return reply({error: 'wrong or missing DFS AI code (Settings tab)'}, 401, origin);
