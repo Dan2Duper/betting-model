@@ -27,6 +27,7 @@ if J.get('feeds_test'):   # self-test of the outside feeds (off-season safe): ve
             if o and n < 2: n += 1; print('ESPN', sport, ev.get('shortName'), (ev.get('status') or {}).get('type', {}).get('state'), 'RAW', json.dumps(o)[:1500]); print('  PARSED', inputs.parse_odds(o))
         print('ESPN', sport, len(j.get('events', [])), 'events,', n, 'with odds shown')
     sys.exit(0)
+if J.get('wx_check'): sys.exit(run([f'{HERE}/research/wx_check.py', '--cache', f'{DB}/mlb', '--season', str(int(J['wx_check']))]))
 T = J.get('test')
 if T:   # replay: work on a copy so the real cache and log are untouched
     subprocess.run(['cp', '-r', f'{DB}/mlb', '/tmp/mlbtest'], check=True)
