@@ -2,6 +2,15 @@
  "_note": "Written automatically by the relay (and by Claude); newest first; the Bet Tracker Reports tab reads this.",
  "reports": [
   {
+   "id": "2026-11-22T03:01:17Z-CFB",
+   "time": "2026-11-22T03:01:17Z",
+   "league": "CFB",
+   "kind": "update",
+   "title": "Case File: Who Murdered the 4-Leg Parlay? BYU Did, in 3OT, and Rich Is Still +$120.35",
+   "text": "**MY BETS:**\n\nWelcome back to the show. Tonight's case: a $19.97 parlay found dead in a Kansas ditch. Settled record is 4-2-0, +$120.35 on $191.46 staked. Rich is fine. The parlay is not.\n\n- Wisconsin -5.5 won +$8.31. Wisconsin 42-10 Purdue. That wasn't a cover, it was a hate crime against Purdue's defense. (Figure of speech. Sue me.)\n- BYU -5.5 lost -$9.54. BYU 31-29 Kansas in 3OT, short by 3.5. Three overtimes to still fuck you.\n- The 4-leg parlay lost -$19.97. Three legs cashed. BYU was the fourth, and it killed a $489.07 payout. Exhibit A.\n- Tennessee ML won +$62.83. LSU 13-27.\n- Washington ML won +$67.42. Indiana 24-27 in OT. Sweaty.\n- Michigan ML won +$11.30. UCLA 16-18 in 3OT. Nobody should watch that.\n\nStill breathing: Under 66.5 in Virginia Tech/Miami is winning at 20-21 with 8:41 left in the 4th. Pace is 48.\n\nThe bodies piling up:\n- SMU +16.5 & Over 57.5 is losing. SMU 3-24 Notre Dame. Both legs are cooked.\n- California ML is losing. Stanford 30-14 in the 3rd.\n- Utah -9.5 & Over 45.5 is losing. Utah 10-0 in the 1st. Plenty of time, but the Over is already gasping.\n\n**THE MODEL:**\n\n38 of 54 games final. It picked 24 winners, went 18-20 ATS and 19-18 on totals, with an average miss of 11.5 points. A coin flip with a spreadsheet.\n\n- Best: South Alabama 40-35 Southern Miss (model had 36-31).\n- Worst: Georgia Southern 45-7 Troy (model had 26-16).\n- Live disaster: Arkansas State 3-48 Louisiana Tech. The model said 19-35. Sure, pal.\n\n**STILL TO COME:**\n\n- Rich: Under 60.5, Oklahoma State @ Arizona State, $19.98 to win $17.08, 10:15 PM EST tonight.\n- AI-LOX: Arizona State +3, same game, $130.00 to win $120.37.\n- AI-LOX: Under 44.5 MIA @ BUF, $98.00 to win $93.33, Sunday 1:00 PM EST.\n- AI-LOX: Under 40.5 ARI @ KC, $32.00 to win $30.48, Sunday 1:00 PM EST.\n- AI-LOX: Under 54.5 CIN @ WAS, $130.00 to win $120.37, Monday 8:15 PM EST.\n\nFour Unders and a dog. Stay tuned.",
+   "style": "a true-crime podcast host walking through the evidence"
+  },
+  {
    "id": "2026-11-22T02:02:09Z-CFB",
    "time": "2026-11-22T02:02:09Z",
    "league": "CFB",
@@ -266,12 +275,13 @@
    ]
   },
   "2026-11-21": {
-   "n": 5,
-   "last": "2026-11-22T02:02:09Z",
-   "fp": "mine|CFB|401856754|ml|1795297781878|0W,mine|CFB|401856866+401858533+401856754+401858535|parlay|1795297334860|0L,mine|CFB|401856866|spread|1795296997882|0L,mine|CFB|401858528|ml|1795297783490|2W,mine|CFB|401858533|spread|1795296371564|1W,mine|CFB|401858535|ml|1795297782662|1W|36",
+   "n": 6,
+   "last": "2026-11-22T03:01:17Z",
+   "fp": "mine|CFB|401856754|ml|1795297781878|0W,mine|CFB|401856866+401858533+401856754+401858535|parlay|1795297334860|0L,mine|CFB|401856866|spread|1795296997882|0L,mine|CFB|401858528|ml|1795297783490|2W,mine|CFB|401858533|spread|1795296371564|1W,mine|CFB|401858535|ml|1795297782662|1W|38",
    "fpBets": "mine|CFB|401856754|ml|1795297781878|0W,mine|CFB|401856866+401858533+401856754+401858535|parlay|1795297334860|0L,mine|CFB|401856866|spread|1795296997882|0L,mine|CFB|401858528|ml|1795297783490|2W,mine|CFB|401858533|spread|1795296371564|1W,mine|CFB|401858535|ml|1795297782662|1W",
    "kinds": [
     "preview",
+    "update",
     "update",
     "update",
     "update",
