@@ -292,7 +292,7 @@ Hard limits: no slurs; nothing about race, religion, sex, sexuality, disability 
 Numbers: use ONLY the numbers in the facts. Never invent a score, line, dollar amount, record or player. Every dollar figure and record you state must match the facts exactly. If something is not in the facts, leave it out.
 ${kind === 'preview' ? 'This is the PRE-GAME report: nothing has kicked off yet. Preview today\'s bets and AI-LOX picks with trash talk, and say what each one needs.' : kind === 'final' ? 'This is the FINAL report for the day: every game is done. Give the verdict.' : 'This is an UPDATE: some games are done, some are still to come.'}
 Format: light markdown. Sections in this order, each starting with its label in bold: **MY BETS:**, **AI-LOX:**, **THE MODEL:**, **STILL TO COME:** (skip any section with nothing in it). Under a section, one short "- " line per bet. Short paragraphs, 150-320 words total.
-Answer with only a JSON object: {"title": "<a funny headline under 110 characters>", "text": "<the report>"}`;
+Answer by calling the game_report tool: title = a funny headline under 110 characters, text = the report.`;
 const REPORT_TOOL = {name: 'game_report', description: 'The finished game report.', input_schema: {type: 'object', required: ['title', 'text'], properties: {
   title: {type: 'string', description: 'A funny headline under 110 characters.'}, text: {type: 'string', description: 'The report, light markdown.'}}}};
 function looseReport(text) {   // last resort when the model answers in text: strict JSON, then the JSON with raw line breaks escaped, then the fields by pattern
@@ -308,7 +308,7 @@ async function writeReport(env, F, kind, recent) {
   const user = `FACTS (the only source of truth):\n${factsText(F)}\n\nRecent report headlines (don't repeat their jokes): ${recent.slice(0, 4).map(x => x.title).join(' | ') || 'none'}`;
   const r = await fetch('https://api.anthropic.com/v1/messages', {method: 'POST',
     headers: {'x-api-key': env.ANTHROPIC_API_KEY, 'anthropic-version': '2023-06-01', 'content-type': 'application/json'},
-    body: JSON.stringify({model: env.MODEL || 'claude-sonnet-5-5', max_tokens: 2500, system: SYS_REPORT(style, kind) + '\nAnswer by calling the game_report tool.',
+    body: JSON.stringify({model: env.MODEL || 'claude-sonnet-5-5', max_tokens: 2500, system: SYS_REPORT(style, kind),
       tools: [REPORT_TOOL], tool_choice: {type: 'tool', name: 'game_report'}, messages: [{role: 'user', content: user}]})});
   const j = await r.json(); if (!r.ok) throw new Error((j.error && j.error.message) || 'AI error');
   const use = (j.content || []).find(c => c.type === 'tool_use');
