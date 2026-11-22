@@ -39,5 +39,7 @@ def export(G, pit, bat, hands, F, day0, M, cache, games, names, out_path):
         for (d, pid), v in b.assign(dk=mlb_proj.dk_bat(b)).groupby([b.date.dt.strftime('%Y-%m-%d'), 'pid']).dk.sum().items(): actual.setdefault(d, {})[pid] = round(float(v), 2)
     if len(q):
         for (d, pid), v in q.assign(dk=mlb_proj.dk_pit(q)).groupby([q.date.dt.strftime('%Y-%m-%d'), 'pid']).dk.sum().items(): actual.setdefault(d, {})['P:' + pid] = round(float(v), 2)
+    nn = sum(1 for r in rows if not r['name'])
+    if nn: print('DFS: starters with no name on file (cannot be matched to DraftKings):', nn, [r['pid'] for r in rows if not r['name']][:8])
     json.dump(dict(day=day0, built=pd.Timestamp.now(tz='UTC').isoformat(), rows=rows, actual=actual), open(out_path, 'w'), separators=(',', ':'))
     return len(rows)

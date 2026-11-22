@@ -226,7 +226,7 @@ a{color:var(--series)}
     <button data-t="week" data-sport="fb" class="on">Week</button>
     <button data-t="mlb" data-sport="mlb" class="hide">MLB</button>
     <button data-t="live" data-sport="fb">Scores</button>
-    <button data-t="dfs" data-sport="fb">DFS</button>
+    <button data-t="dfs" data-sport="dfs">DFS</button>
     <button data-t="reports">Reports</button>
     <button data-t="track">Tracker</button>
     <button data-t="stats">Stats</button>
@@ -312,6 +312,7 @@ a{color:var(--series)}
       <div class="cardhead">
         <div><h2>DraftKings lineups</h2><div class="small" id="dfs-built">loading…</div></div>
         <div style="display:flex;gap:8px;flex-wrap:wrap">
+          <div class="seg hide" id="dfs-sport"><button data-s="NFL" class="on">NFL</button><button data-s="MLB">MLB</button></div>
           <select id="dfs-slate"></select>
           <div class="seg" id="dfs-mode"><button data-m="cash" class="on">Cash</button><button data-m="gpp">Tournament</button></div>
         </div>
@@ -340,7 +341,7 @@ a{color:var(--series)}
       <div style="display:flex;gap:8px;margin-top:8px;align-items:center;flex-wrap:wrap"><button class="btn primary" id="dfs-ai">Build my lineup</button><button class="btn" id="dfs-clear">Clear my read</button><span class="small" id="dfs-aimsg"></span></div>
       <div id="dfs-aiout" class="dfs-note"></div>
     </div>
-    <div class="card"><div class="small">Projections come from this site's own model (nflverse stats + Vegas lines). Ownership is an estimate. Cash lineups chase the safest high score; tournament lineups stack a QB with two pass catchers and a bring-back, lean toward upside and away from the most popular players, and differ from each other by at least three players.</div></div>
+    <div class="card"><div class="small" id="dfs-how-mlb" style="display:none">MLB projections come from this site's own model: each starter's skill and recent form, his spot in the batting order, the opposing starter and bullpen, park, weather, the plate umpire and the runs the model and DraftKings expect, built only from games already played. Lineups use the batting orders and probable pitchers MLB has posted; until a lineup is posted, a hitter from the last game's lineup is discounted by how often that spot really starts again. Cash lineups take the safest pitchers and the best bats; tournament lineups stack four hitters who bat in a row, lean toward upside and away from the most popular players, and never use a hitter against their own pitcher. Ownership is an estimate. A small set of adjustments (Vegas vs the model, umpire, bullpen, park by batter side) is graded against real results every day and re-weighted.</div><div class="small" id="dfs-how-nfl">Projections come from this site's own model (nflverse stats + Vegas lines). Ownership is an estimate. Cash lineups chase the safest high score; tournament lineups stack a QB with two pass catchers and a bring-back, lean toward upside and away from the most popular players, and differ from each other by at least three players.</div></div>
   </section>
   <section id="t-reports" class="hide">
     <div class="card">
@@ -2076,15 +2077,20 @@ document.addEventListener('visibilitychange', () => { if (document.visibilitySta
 
 
 // ---------------- DFS (DraftKings lineups) ----------------
-const DFS_URL = 'https://raw.githubusercontent.com/Dan2Duper/betting-model/data/dfs_nfl.json';
+const DFS_URLS = {NFL: 'https://raw.githubusercontent.com/Dan2Duper/betting-model/data/dfs_nfl.json', MLB: 'https://raw.githubusercontent.com/Dan2Duper/betting-model/data/dfs_mlb.json'};
+let dfsSport = 'NFL';   // which sport's lineups the DFS tab shows (set by season; a switch appears when both are being played)
 const DFS_AI_URL = 'https://bet-tracker-relay.simplewindowscreens.workers.dev';   // the AI relay (Cloudflare Worker)
 let DFS = null, dfsSlate = 0, dfsMode = 'cash', dfsIdx = 0, dfsAdj = null, dfsAiPick = null;
 async function dfsLoad(force) {
   if (DFS && !force) return dfsRender();
-  try { const r = await fetch(DFS_URL + '?t=' + Date.now()); if (!r.ok) throw new Error(r.status); DFS = await r.json(); }
-  catch (e) { $('#dfs-built').textContent = 'No DFS file yet. It appears after the next automatic refresh.'; return; }
+  const none = t => { DFS = null; $('#dfs-built').textContent = t; $('#dfs-slate').innerHTML = ''; $('#dfs-lineup').innerHTML = `<div class="small">${t}</div>`; $('#dfs-count').textContent = ''; };
+  $('#dfs-how-mlb').style.display = dfsSport === 'MLB' ? '' : 'none'; $('#dfs-how-nfl').style.display = dfsSport === 'MLB' ? 'none' : '';
+  try { const r = await fetch(DFS_URLS[dfsSport] + '?t=' + Date.now()); if (!r.ok) throw new Error(r.status); DFS = await r.json(); }
+  catch (e) { return none(dfsSport === 'MLB' ? 'No MLB lineups yet. They appear once today\'s DraftKings salaries are in and the MLB build has run.' : 'No DFS file yet. It appears after the next automatic refresh.'); }
+  if (!(DFS.slates || []).length) return none(dfsSport === 'MLB' ? 'No MLB lineups yet today. The model has its projections; it is waiting for DraftKings salaries from the phone.' : 'No lineups in the DFS file yet.');
+  dfsSlate = Math.min(dfsSlate, DFS.slates.length - 1);
   $('#dfs-slate').innerHTML = DFS.slates.map((s, i) => `<option value="${i}">${esc(s.kind === 'classic' ? 'Classic · ' : 'Showdown · ')}${esc(s.label)}</option>`).join('');
-  $('#dfs-built').textContent = `NFL week ${DFS.week} · built ${new Date(DFS.built).toLocaleString([], {weekday: 'short', hour: 'numeric', minute: '2-digit'})}`;
+  $('#dfs-built').textContent = `${DFS.sport === 'MLB' ? 'MLB ' + dayLbl(DFS.day) : 'NFL week ' + DFS.week} · built ${new Date(DFS.built).toLocaleString([], {weekday: 'short', hour: 'numeric', minute: '2-digit'})}`;
   dfsRender();
 }
 function dfsCur() { return DFS && DFS.slates[dfsSlate]; }
@@ -2323,18 +2329,20 @@ function dfsRender() {
   const pool = dfsPool(); const L = dfsAiPick || pool[dfsIdx % Math.max(pool.length, 1)];
   if (!L) { $('#dfs-lineup').innerHTML = '<div class="small">No lineups for this slate.</div>'; return; }
   const P = s.players; const rows = [];
-  if (L.players) {
+  if (L.players && L.slots) L.slots.forEach((sl, k) => rows.push([sl, P[L.players[k]], 1]));   // MLB: the build sends the roster order (P, P, C, 1B ... OF)
+  else if (L.players) {
     const slots = ['QB', 'RB', 'RB', 'WR', 'WR', 'WR', 'TE', 'FLEX', 'DST']; const left = [...L.players]; const take = pos => { const k = left.findIndex(i => P[i].pos === pos); return k < 0 ? null : left.splice(k, 1)[0]; };
     const filled = slots.map(sl => sl === 'FLEX' ? null : take(sl)); filled[7] = left[0];
     slots.forEach((sl, k) => rows.push([sl, P[filled[k]], 1]));
   } else { rows.push(['CPT', P[L.cpt], 1.5]); L.flex.forEach(i => rows.push(['FLEX', P[i], 1])); }
   const own = r => r[0] === 'CPT' ? r[1].cpt_own : r[1].own;
   DFS_SHOWN = {s, rows, L}; dfsMineRender();
-  $('#dfs-lineup').innerHTML = `<table class="dfs-lu">${rows.map(r => `<tr class="${r[0] === 'CPT' ? 'cpt' : ''}"><td class="pos">${r[0]}</td><td><b>${esc(r[1].name)}</b> <span class="small">${esc(r[1].pos)} · ${esc(r[1].team)} vs ${esc(r[1].opp)}${r[1].status && r[1].status !== 'None' ? ' · ' + esc(r[1].status) : ''}${r[1].wind >= 12 ? ' · wind ' + Math.round(r[1].wind) + ' mph' : ''}</span>${r[1].why ? `<div class="small">${esc(r[1].why)}</div>` : ''}</td><td class="num">$${((r[0] === 'CPT' ? r[1].cpt_salary : r[1].salary) || 0).toLocaleString()}</td><td class="num">${(r[2] * r[1].proj).toFixed(1)}</td><td class="num small">${own(r) != null ? '~' + own(r).toFixed(0) + '%' : ''}</td></tr>`).join('')}</table>
+  $('#dfs-lineup').innerHTML = `<table class="dfs-lu">${rows.map(r => `<tr class="${r[0] === 'CPT' ? 'cpt' : ''}"><td class="pos">${r[0]}</td><td><b>${esc(r[1].name)}</b> <span class="small">${esc(r[1].pos)} · ${esc(r[1].team)} vs ${esc(r[1].opp)}${r[1].status && r[1].status !== 'None' ? ' · ' + esc(r[1].status) : ''}${s.sport === 'MLB' ? (r[1].slot ? ' · bats ' + r[1].slot : '') + (r[1].conf === false && r[1].slot ? ' · lineup not posted' : '') + (r[1].rain_risk ? ' · rain risk' : '') + (Math.abs(r[1].wind) >= 10 ? ` · wind ${r[1].wind > 0 ? 'out' : 'in'} ${Math.abs(Math.round(r[1].wind))} mph` : '') : r[1].wind >= 12 ? ' · wind ' + Math.round(r[1].wind) + ' mph' : ''}</span>${r[1].why ? `<div class="small">${esc(r[1].why)}</div>` : ''}</td><td class="num">$${((r[0] === 'CPT' ? r[1].cpt_salary : r[1].salary) || 0).toLocaleString()}</td><td class="num">${(r[2] * r[1].proj).toFixed(1)}</td><td class="num small">${own(r) != null ? '~' + own(r).toFixed(0) + '%' : ''}</td></tr>`).join('')}</table>
     <div class="dfs-tot">Salary $${L.salary.toLocaleString()} <span>of $50,000</span> · Projected ${L.proj} <span>floor ${L.floor} · ceiling ${L.ceil}</span></div>
-    <div class="dfs-note">${esc(L.note)}</div>${DFS.live ? `<div class="small">Injury tags: ${esc((DFS.live.statuses || []).join(' + ') || 'DraftKings only')} · built ${new Date(DFS.built).toLocaleString('en-US', {weekday: 'short', hour: 'numeric', minute: '2-digit'})}</div>` : ''}`;
+    <div class="dfs-note">${esc(L.note)}</div>${DFS.live ? `<div class="small">${DFS.sport === 'MLB' ? `Lineups: MLB Stats API (${DFS.live.lineups_posted ?? 0} of ${DFS.live.starters ?? 0} starters from posted lineups)` : 'Injury tags: ' + esc((DFS.live.statuses || []).join(' + ') || 'DraftKings only')} · built ${new Date(DFS.built).toLocaleString('en-US', {weekday: 'short', hour: 'numeric', minute: '2-digit'})}</div>` : ''}`;
   $('#dfs-count').textContent = dfsAiPick ? 'Built from your read' : `Lineup ${(dfsIdx % pool.length) + 1} of ${pool.length}`;
 }
+$$('#dfs-sport button').forEach(b => b.onclick = () => { if (dfsSport === b.dataset.s) return; dfsSport = b.dataset.s; $$('#dfs-sport button').forEach(x => x.classList.toggle('on', x === b)); dfsSlate = 0; dfsIdx = 0; dfsAdj = null; dfsAiPick = null; $('#dfs-aiout').innerHTML = ''; dfsLoad(true); });
 $('#dfs-slate').onchange = e => { dfsSlate = +e.target.value; dfsIdx = 0; dfsAiPick = dfsAdj ? dfsPickAi() : null; dfsRender(); };
 $$('#dfs-mode button').forEach(b => b.onclick = () => { dfsMode = b.dataset.m; dfsIdx = 0; dfsAiPick = null; $$('#dfs-mode button').forEach(x => x.classList.toggle('on', x === b)); dfsRender(); });
 $('#dfs-shuffle').onclick = () => { dfsAiPick = null; dfsIdx++; dfsRender(); };
@@ -2366,7 +2374,9 @@ function asofDate() { return ASOF ? new Date(ASOF + 'T12:00:00') : new Date(); }
 const SEASONS = {MLB: [318, 1105], CFB: [820, 125], NFL: [901, 215]};   // first and last day shown, as month*100 + day
 function inSeason(lg, d) { d = d || asofDate(); const k = (d.getMonth() + 1) * 100 + d.getDate(), [a, b] = SEASONS[lg]; return a <= b ? k >= a && k <= b : k >= a || k <= b; }
 function applySeasons() {
-  const fb = {CFB: inSeason('CFB'), NFL: inSeason('NFL')}, on = {fb: fb.CFB || fb.NFL, mlb: inSeason('MLB')};
+  const fb = {CFB: inSeason('CFB'), NFL: inSeason('NFL')}, on = {fb: fb.CFB || fb.NFL, mlb: inSeason('MLB')}; on.dfs = on.fb || on.mlb;
+  { const both = fb.NFL && on.mlb, want = both ? dfsSport : on.mlb && !fb.NFL ? 'MLB' : 'NFL';   // DFS: NFL in football season, MLB in baseball season, a switch when both are on
+    $('#dfs-sport').classList.toggle('hide', !both); if (want !== dfsSport) { dfsSport = want; DFS = null; dfsSlate = 0; dfsIdx = 0; } $$('#dfs-sport button').forEach(x => x.classList.toggle('on', x.dataset.s === dfsSport)); }
   $$('#tabs button').forEach(b => { if (b.dataset.sport) b.classList.toggle('hide', !on[b.dataset.sport]); });
   $('#status')?.classList.toggle('hide', !on.fb);   // score / line / QB status chips are football's
   ['lg', 'sb-lg'].forEach(id => $$('#' + id + ' button').forEach(b => b.classList.toggle('hide', !fb[b.dataset.l])));

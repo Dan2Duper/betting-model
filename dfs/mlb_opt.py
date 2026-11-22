@@ -3,7 +3,8 @@ Roster: P, P, C, 1B, 2B, 3B, SS, OF, OF, OF under $50,000; at most 5 hitters fro
 never a hitter against one of your own pitchers. A hitter listed at two positions (2B/SS, 1B/OF) can fill either.
 Cash: hitters ranked on the projection (a hitter's bad game is a zero, so his floor says nothing), pitchers on projection nudged
 toward the floor. Tournament: upside-weighted points minus an ownership penalty, built around a stack of 4 hitters who bat in a
-row for one team (5 when it fits), each lineup different from every earlier one by `min_diff` players.
+row for one team (from a POSTED batting order whenever any team has one), each lineup different from every earlier one by
+`min_diff` players.
 Showdown (captain 1.5x + 5 utility) uses dfs/optimizer.showdown as is."""
 import numpy as np, pulp
 SLOTS = {'P': 2, 'C': 1, '1B': 1, '2B': 1, '3B': 1, 'SS': 1, 'OF': 3}
@@ -53,8 +54,9 @@ def classic(df, mode='gpp', n=1, seed=0, lock=(), ban=(), min_diff=None, stack=N
                 if df.opp[j] == t and th: p += pulp.lpSum(x[i] for i in th) <= 8 * (1 - x[j])
         for g in games: p += pulp.lpSum(x[i] for i in x if df.game[i] == g) <= 9          # at least two games
         if mode == 'gpp' and stack:
-            z = []
+            z = []; posted = set(df.team[[i for i in hit if bool(df.conf[i])]]) if 'conf' in df else set()
             for t in teams:
+                if posted and t not in posted: continue                                    # a batting order that is not posted yet is a guess: stack only real ones when any exist
                 order = {slot[i]: i for i in hit if df.team[i] == t and 1 <= slot[i] <= 9}
                 if len(order) < stack: continue
                 for a in range(1, 10):

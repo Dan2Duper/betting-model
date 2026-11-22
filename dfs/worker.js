@@ -14,6 +14,10 @@ Translate that read into adjustments to the player projections you are given. Th
 - Usage and opportunity matter more than names; injuries move volume to backups.
 - Correlation: a QB's big game comes with his pass catchers'. In showdown, the captain should match the script.
 - Cash games want safe, high-floor players; tournaments want upside and lower-owned players.
+- Baseball (positions P, C, 1B, 2B, 3B, SS, OF): a team expected to score lifts its whole batting order, most of all the top five spots; hitters from
+  one team score together, so a stack follows the read. A dominant starter (strikeouts, a win) is worth boosting and the hitters facing him fading.
+  Wind blowing out, heat and hitter-friendly parks lift both lineups; wind in, cold and pitcher's parks lift the starters. An early exit by the
+  starter brings the bullpen: that helps the hitters facing a bad bullpen.
 Only adjust what the read supports. Keep boosts between -60 and +60 percent. Use exact player names and team abbreviations from the list.
 Answer only by calling the lineup_adjustments tool, in this shape:
 {"summary": "<two plain sentences on how you applied the read>", "boost": {"<player name>": <percent>}, "team_boost": {"<TEAM>": <percent>}, "lock": ["<player who must be in>"], "ban": ["<player to leave out>"], "captain": "<showdown captain name or null>"}`;
