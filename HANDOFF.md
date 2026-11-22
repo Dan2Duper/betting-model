@@ -13,7 +13,7 @@ Pushing to main/package/sync/data from a Claude session with git works.
   list, legs_expected/cut_off, ignore for non-bet screens; page shotPlan() reconciles each read vs saved bets by leg signature + bet_ref:
   new / dup (incl. mid-game) / up (trade position upped: stake+odds updated, ups[] history) / down / partial (sold piece split off) / sell;
   a sold bet carries `sold` = proceeds and profit = sold - stake in the Tracker, report.json (pl), relay money() and grade.py;
-  reader model claude-opus-5-5 (env SLIP_MODEL); deployed Nov 21 2026 as ca1f840d; game reports now answer through a forced game_report tool + looseReport() fallback, relay 2ce7a0fb), /report (?force=now|preview|update|final, ?dry=1).
+  reader model claude-opus-5-5 (env SLIP_MODEL); deployed Nov 21 2026 as ca1f840d; game reports answer through the game_report tool (tool_choice auto: the model refuses a forced tool) + looseReport() text fallback, relay c4e8c5ba), /report (?force=now|preview|update|final, ?dry=1).
   Cron every 15 min -> runReports(): reads report.json, refreshes scores from ESPN, computes records/$ in code, Claude writes the
   report in a random comic style (mean/vulgar allowed, numbers exact) -> reports.json. "🔥 Roast me now" button on the Reports tab.
   Secrets: ANTHROPIC_API_KEY, ACCESS_CODE (also saved in the phone app as "DFS AI code"), GH_TOKEN. Model claude-sonnet-5-5.
