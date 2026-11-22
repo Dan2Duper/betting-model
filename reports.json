@@ -2,6 +2,15 @@
  "_note": "Written automatically by the relay (and by Claude); newest first; the Bet Tracker Reports tab reads this.",
  "reports": [
   {
+   "id": "2026-11-22T11:05:03Z-CFB",
+   "time": "2026-11-22T11:05:03Z",
+   "league": "CFB",
+   "kind": "final",
+   "title": "Session Notes: Rich Is +$158.37 and Still Weeping Over a Parlay That Died With Three Legs Alive",
+   "text": "**MY BETS:**\n\nRich, sit. Breathe. You went 7-4-0, staked $191.46 and netted +$158.37. How does that make you feel? Rich? Why are you looking at the BYU box score?\n\n- Wisconsin -5.5: WON +$8.31. Wisconsin 42-10 Purdue. Purdue showed up the way a cat shows up to a bath.\n- BYU -5.5: LOST -$9.54. BYU 31-29 Kansas in 3OT. Won the game and missed the number by 3.5. Let's sit with that.\n- 4-leg parlay: LOST -$19.97 to win $489.07. Wisconsin, Tennessee and Washington all hit. BYU shit the bed. Three legs of glory, one leg of trauma.\n- Tennessee ML: WON +$62.83. LSU 13-27.\n- Washington ML: WON +$67.42. Indiana 24-27 in OT. Your heart rate is not a bankroll, Rich.\n- Michigan ML: WON +$11.30. UCLA 16-18 in 3OT, because nothing in your life can be easy.\n- Under 66.5 Virginia Tech/Miami: WON +$18.52. Final 20-28. Cleared by 18.5.\n- SMU +16.5 & Over 57.5: LOST -$9.81. SMU 3-24 Notre Dame. That total missed by 30.5. That isn't a bad beat, that's a cry for help.\n- California ML: LOST -$9.88. Stanford 44-28. Cal got run over by a team you didn't even consider.\n- Utah -9.5 & Over 45.5: WON +$22.11. Utah 38-17 TCU.\n- Under 60.5 Oklahoma State/Arizona State: WON +$17.08. OT, 30-27, under by 3.5. Barely, but we take it.\n\n**THE MODEL:**\n\nThe model picked 39 of 54 winners, then went 23-30 against the spread and 26-27 on totals. Average miss was 11.4 points. It's the friend who's right about everything except the part where you pay.\n\n- Closest call: South Alabama 40-35 Southern Miss (model had 36-31).\n- Worst miss: Arkansas State 3-48 Louisiana Tech (model had 19-35). Not a miss. A hate crime against math.\n\n**STILL TO COME:**\n\nTomorrow's homework, and please don't skip it:\n\n- AI-LOX: UNDER 44.5 MIA @ BUF, $83.00 to win $79.05.\n- AI-LOX: UNDER 40.5 ARI @ KC, $47.00 to win $43.12.\n\nVerdict: you're up, so stop whining about BYU. Our time is up.",
+   "style": "a therapist gently (then not gently) unpacking the day"
+  },
+  {
    "id": "2026-11-22T05:53:22Z-CFB",
    "time": "2026-11-22T05:53:22Z",
    "league": "CFB",
@@ -302,10 +311,10 @@
    ]
   },
   "2026-11-21": {
-   "n": 9,
-   "last": "2026-11-22T05:53:22Z",
-   "fp": "mine|CFB|401856754|ml|1795297781878|0W,mine|CFB|401856866+401858533+401856754+401858535|parlay|1795297334860|0L,mine|CFB|401856866|spread|1795296997882|0L,mine|CFB|401858302|total|1795308233824|0W,mine|CFB|401858307+401858307|parlay|1795308109429|0L,mine|CFB|401858308|ml|1795308111909|1L,mine|CFB|401858528|ml|1795297783490|2W,mine|CFB|401858533|spread|1795296371564|1W,mine|CFB|401858535|ml|1795297782662|1W|49",
-   "fpBets": "mine|CFB|401856754|ml|1795297781878|0W,mine|CFB|401856866+401858533+401856754+401858535|parlay|1795297334860|0L,mine|CFB|401856866|spread|1795296997882|0L,mine|CFB|401858302|total|1795308233824|0W,mine|CFB|401858307+401858307|parlay|1795308109429|0L,mine|CFB|401858308|ml|1795308111909|1L,mine|CFB|401858528|ml|1795297783490|2W,mine|CFB|401858533|spread|1795296371564|1W,mine|CFB|401858535|ml|1795297782662|1W",
+   "n": 10,
+   "last": "2026-11-22T11:05:03Z",
+   "fp": "mine|CFB|401856754|ml|1795297781878|0W,mine|CFB|401856866+401858533+401856754+401858535|parlay|1795297334860|0L,mine|CFB|401856866|spread|1795296997882|0L,mine|CFB|401856870|total|1795313518951|0W,mine|CFB|401856872+401856872|parlay|1795313444700|0W,mine|CFB|401858302|total|1795308233824|0W,mine|CFB|401858307+401858307|parlay|1795308109429|0L,mine|CFB|401858308|ml|1795308111909|1L,mine|CFB|401858528|ml|1795297783490|2W,mine|CFB|401858533|spread|1795296371564|1W,mine|CFB|401858535|ml|1795297782662|1W|54",
+   "fpBets": "mine|CFB|401856754|ml|1795297781878|0W,mine|CFB|401856866+401858533+401856754+401858535|parlay|1795297334860|0L,mine|CFB|401856866|spread|1795296997882|0L,mine|CFB|401856870|total|1795313518951|0W,mine|CFB|401856872+401856872|parlay|1795313444700|0W,mine|CFB|401858302|total|1795308233824|0W,mine|CFB|401858307+401858307|parlay|1795308109429|0L,mine|CFB|401858308|ml|1795308111909|1L,mine|CFB|401858528|ml|1795297783490|2W,mine|CFB|401858533|spread|1795296371564|1W,mine|CFB|401858535|ml|1795297782662|1W",
    "kinds": [
     "preview",
     "update",
@@ -315,7 +324,8 @@
     "update",
     "update",
     "update",
-    "update"
+    "update",
+    "final"
    ]
   }
  }
