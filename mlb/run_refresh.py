@@ -10,6 +10,23 @@ print('refresh request:', json.dumps(J)[:300])
 def run(args): print('+', ' '.join(args), flush=True); return subprocess.run([sys.executable] + args).returncode
 if J.get('parity'):
     y = int(J['parity']); sys.exit(run([f'{HERE}/live.py', '--cache', '/tmp/par', '--out', '/tmp/par.json', '--date', f'{y}-11-15', '--days', '1', '--check', '--hist-last', str(y - 1)]))
+if J.get('feeds_test'):   # self-test of the outside feeds (off-season safe): venue records, a forecast at every park, ESPN's odds shape
+    sys.path.insert(0, HERE); import inputs, datetime as dt
+    X = {}; P = inputs.parks(X); print('parks:', len(P)); import requests
+    teams = {t['id']: t for t in requests.get(inputs.API + '/teams?sportId=1&hydrate=venue', timeout=30).json().get('teams', [])}
+    sys.path.insert(0, HERE); from live import TEAM
+    t0 = (dt.datetime.now(dt.timezone.utc) + dt.timedelta(days=1)).replace(hour=23, minute=5, second=0, microsecond=0)
+    G = [dict(gid=TEAM[i], venue_id=t['venue']['id'], home=TEAM[i], start_utc=t0.strftime('%Y-%m-%dT%H:%M:%SZ')) for i, t in teams.items() if i in TEAM]
+    for g in G: print('PARK', g['home'], g['venue_id'], P.get(str(g['venue_id'])), '| fallback', inputs.PARKS.get(g['home']), '| used', inputs.park_of(P, g['venue_id'], g['home']))
+    F = inputs.forecasts(G, P)
+    for k, v in sorted(F.items()): print('FORECAST', k, json.dumps(v))
+    for sport in ('football/nfl', 'basketball/nba', 'baseball/mlb'):
+        j = requests.get(f'https://site.api.espn.com/apis/site/v2/sports/{sport}/scoreboard', timeout=30).json(); n = 0
+        for ev in j.get('events', []):
+            c = ev['competitions'][0]; o = (c.get('odds') or [None])[0]
+            if o and n < 2: n += 1; print('ESPN', sport, ev.get('shortName'), (ev.get('status') or {}).get('type', {}).get('state'), 'RAW', json.dumps(o)[:1500]); print('  PARSED', inputs.parse_odds(o))
+        print('ESPN', sport, len(j.get('events', [])), 'events,', n, 'with odds shown')
+    sys.exit(0)
 T = J.get('test')
 if T:   # replay: work on a copy so the real cache and log are untouched
     subprocess.run(['cp', '-r', f'{DB}/mlb', '/tmp/mlbtest'], check=True)

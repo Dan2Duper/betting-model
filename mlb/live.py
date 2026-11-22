@@ -62,6 +62,7 @@ def load_xwalk(cache, hist_games):
     X.setdefault('hands', {})
     json.dump(X, open(f, 'w')); return X
 def pid(X, m): return X['players'].get(str(m), f'm{m}')
+def is_am(i): i = str(i); return i[:1] == 'm' and i[1:].isdigit()      # 'm660271' = an MLBAM id with no Retrosheet id yet ('machm001' is a Retrosheet id)
 
 # ---------------- box score -> rows ----------------
 WDIR = {'out to cf': 'tocf', 'out to lf': 'tolf', 'out to rf': 'torf', 'in from cf': 'fromcf', 'in from lf': 'fromlf', 'in from rf': 'fromrf', 'l to r': 'ltor', 'r to l': 'rtol'}
@@ -133,7 +134,7 @@ def update_cache(cache, X, seasons, before, max_new=4000):
 
 def hands_for(X, ids, cache):
     """Bats/throws for players the Retrosheet rosters don't know (this season's rookies), from the people endpoint."""
-    need = [i for i in ids if i.startswith('m') and i not in X['hands']]
+    need = [i for i in ids if is_am(i) and i not in X['hands']]
     for k in range(0, len(need), 100):
         try:
             for p in get(f"{API}/people?personIds={','.join(i[1:] for i in need[k:k + 100])}").get('people', []):
@@ -161,10 +162,10 @@ def main():
     T = update_cache(A.cache, X, seasons, day0, A.max_new)
     LG = T['games'][T['games'].date < day0] if len(T['games']) else T['games']
     # ids learned after a game was cached (a rookie gets his Retrosheet id, a park or umpire gets mapped) are applied to the cached rows
-    rp = lambda i: X['players'].get(str(i)[1:], i) if str(i).startswith('m') else i
+    rp = lambda i: X['players'].get(str(i)[1:], i) if is_am(i) else i
     if len(LG):
         LG = LG.copy(); LG['park'] = [X['venues'].get(str(p)[1:], p) if str(p).startswith('v') else p for p in LG.park]
-        LG['ump'] = [X['umps'].get(str(u)[1:], u) if str(u).startswith('m') else u for u in LG.ump]
+        LG['ump'] = [X['umps'].get(str(u)[1:], u) if is_am(u) else u for u in LG.ump]
         for c in ('asp', 'hsp'): LG[c] = LG[c].map(rp)
         for c in ('a_lineup', 'h_lineup'): LG[c] = [','.join(rp(i) for i in str(v).split(',')) for v in LG[c]]
         for n in ('pit', 'bat'): T[n] = T[n].assign(pid=T[n].pid.map(rp))
@@ -276,8 +277,8 @@ def main():
         hw = (C.hruns > C.aruns).astype(int); ll = float(-(hw * np.log(C.p_home) + (1 - hw) * np.log(1 - C.p_home)).mean())
         out['check'] = dict(games=int(len(C)), model_winner=round(float(((C.p_home > 0.5) == (hw == 1)).mean()), 4), logloss=round(ll, 4), home_win=round(float(hw.mean()), 4),
                             model_total=round(float((C.lam_h + C.lam_a).mean()), 2), actual_total=round(float((C.hruns + C.aruns).mean()), 2), total_mae=round(float((C.lam_h + C.lam_a - C.hruns - C.aruns).abs().mean()), 2),
-                            unknown_players=round(float(np.mean([i.startswith('m') for s in LG.h_lineup for i in str(s).split(',') if i])), 4), unknown_parks=int(LG.park.astype(str).str.startswith('v').sum()),
-                            unknown_umps=int(LG.ump.astype(str).str.startswith('m').sum()), weather_missing=int(LG.temp.isna().sum()))
+                            unknown_players=round(float(np.mean([is_am(i) for s in LG.h_lineup for i in str(s).split(',') if i])), 4), unknown_parks=int(LG.park.astype(str).str.startswith('v').sum()),
+                            unknown_umps=int(sum(is_am(u) for u in LG.ump)), weather_missing=int(LG.temp.isna().sum()))
         print('WALK-FORWARD CHECK', json.dumps(out['check']))
     json.dump(out, open(A.out, 'w')); print('wrote', A.out, len(out['games']), 'games')
     for g in out['games'][:6]: print(' ', g['away'], g['pa'], '@', g['home'], g['ph'], 'p_home', g['p_home'], g['sp_away'], 'vs', g['sp_home'], g['lineup_home'])
