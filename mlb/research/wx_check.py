@@ -59,6 +59,18 @@ out['vs_posted'] = dict(outdoor_games=int(len(od)), temp_mae=round(float((od.f_t
 rt = ok[ok.home.map(lambda t: (FC.get(t, (None,))[0] or [0, 0, 0, 'O'])[3] == 'R')]
 out['roof'] = dict(retractable_games=int(len(rt)), posted_closed=round(float((rt.sky == 'dome').mean()), 3), rule_closed=round(float((rt.f_sky == 'dome').mean()), 3), rule_right=round(float(((rt.sky == 'dome') == (rt.f_sky == 'dome')).mean()), 3))
 print('FORECAST VS POSTED', json.dumps(out['vs_posted'])); print('ROOF RULE', json.dumps(out['roof']))
+# what each retractable roof actually did, by the outdoor forecast (raw forecast temperature / rain, before any roof rule)
+raw = []
+for r in LG.itertuples():
+    p, T = FC.get(r.home, (None, None))
+    if p is None or p[3] != 'R' or T is None or not isinstance(r.start_utc, str): continue
+    t0 = dt.datetime.fromisoformat(r.start_utc.replace('Z', '+00:00')).replace(minute=0, second=0, microsecond=0); w = T.reindex([(t0 + dt.timedelta(hours=k)).strftime('%Y-%m-%dT%H:00') for k in range(3)]).dropna(subset=['temperature_2m'])
+    if len(w): raw.append(dict(home=r.home, temp=float(w.temperature_2m.mean()), rain=float(np.nanmax(w.precipitation_probability.fillna(0).values)), closed=int(r.sky == 'dome')))
+RW = pd.DataFrame(raw)
+if len(RW):
+    RW['band'] = pd.cut(RW.temp, [0, 55, 60, 65, 70, 75, 80, 85, 90, 130]).astype(str); RW['wet'] = np.where(RW.rain >= 40, 'rain40+', 'dry')
+    tab = RW.groupby(['home', 'wet', 'band']).closed.agg(['mean', 'size']).round(2); print('ROOF TABLE (share closed, games)'); print(tab.to_string())
+    out['roof_table'] = {f'{h}|{w}|{b}': [float(m), int(n)] for (h, w, b), (m, n) in zip(tab.index, tab.values)}
 # ---- the model three ways ----
 GC = list(H['games'].columns); res = {}
 def run(name, G1):
@@ -81,6 +93,12 @@ Rn = run('neutral (72F, calm)', n); Rf = run('park forecast', f); Rp = run('post
 sub = ok[(ok.sky != 'dome') & ((ok.windspeed >= 10) | (ok.temp <= 55) | (ok.temp >= 88))].gid
 for nm, R in (('neutral', Rn), ('forecast', Rf), ('posted', Rp)):
     r = R[R.index.isin(sub)]; res[nm + ' | windy, cold or hot games'] = dict(games=int(len(r)), total_mae=round(float((r.lh + r.la - r.hr - r.ar).abs().mean()), 4), bias=round(float((r.lh + r.la - r.hr - r.ar).mean()), 3)); print(nm, 'extreme-weather games', json.dumps(res[nm + ' | windy, cold or hot games']))
-out['model'] = res; out['verdict'] = 'use the forecast' if res['park forecast']['deviance'] <= res['neutral (72F, calm)']['deviance'] and res['park forecast']['total_mae'] <= res['neutral (72F, calm)']['total_mae'] else 'forecast does not beat neutral weather: keep neutral until the game-day weather is posted'
+# Deviance is the test: it is the run model's own (proper) score. Total MAE is reported but not decisive - a model that runs low looks
+# good on MAE because run totals are skewed (neutral weather under-predicts by ~0.4 runs a game).
+bias = lambda k: round(res[k]['mean_total'] - res[k]['actual_total'], 3)
+out['model'] = res; out['bias'] = {k: bias(k) for k in ('neutral (72F, calm)', 'park forecast', 'posted at game time')}
+gain = res['neutral (72F, calm)']['deviance'] - res['park forecast']['deviance']; best = res['neutral (72F, calm)']['deviance'] - res['posted at game time']['deviance']
+out['share_of_posted_gain'] = round(gain / best, 3) if best > 0 else None
+out['verdict'] = 'use the forecast' if gain > 0 else 'forecast does not beat neutral weather: keep neutral until the game-day weather is posted'
 print('VERDICT:', out['verdict']); print('WXJSON', json.dumps(out))
 if A.out: json.dump(out, open(A.out, 'w'), indent=1)
