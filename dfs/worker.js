@@ -125,12 +125,14 @@ async function readSlip(req, env, origin) {
 const DFS_SHOT = `You read daily fantasy sports screenshots (DraftKings mostly; FanDuel, Underdog etc. possible), NFL or MLB, classic or showdown.
 Return one item per distinct lineup/entry:
 - kind "lineup": a lineup being built or already entered but not finished (lineup editor, "Edit lineup", upcoming/live entry view).
+- A contest screen with no lineup on it (GameCenter STANDINGS or DETAILS) still counts: kind "result" with contest, entry_fee, entries, and place,
+  points, winnings if shown; players empty.
 - kind "result": a contest entry with a score: live or completed (My Contests > Live/Completed, an entry detail with fantasy points,
   a results card with place and winnings).
 - kind "ignore": nothing about a lineup or contest (ads, promos, the player pool list with no lineup, account screens); give ignore_reason.
 For each lineup/result give every player you can see: name exactly as printed (often "M. Wilson" style), slot (QB, RB, WR, TE, FLEX, DST,
 CPT, UTIL, P, C, 1B, 2B, 3B, SS, OF...), team if shown, salary if shown, fantasy points if shown, captain true for a CPT/MVP slot.
-Also: contest name, entry_fee (one entry), entries (how many entries of this lineup, e.g. "x3" or "3 entries"), status upcoming|live|completed,
+Also: contest name, entry_fee (one entry; on DraftKings the lineup editor's green "Submit | $20" button IS the entry fee, contest cards and the GameCenter DETAILS tab show "Entry", "Entry Fee" or "Fee"), entries (how many entries of this lineup, e.g. "x3" or "3 entries"; in a GameCenter STANDINGS list the user's own rows are highlighted with the same username: count them), status upcoming|live|completed,
 total_points, place (rank number), field (number of entries in the contest), winnings (money won for this entry or set of entries; 0 if
 nothing), total_salary, date as printed, game_type classic|showdown, sport NFL|MLB, site.
 SPLIT LINEUPS: a lineup often needs two screenshots (top half then bottom half, sometimes one row repeated). When consecutive screenshots
@@ -313,7 +315,8 @@ async function buildFacts(env, now) {
   const mlb = mlbG.map(g => { const e = (EV.MLB || []).find(x => x.id === String(g.espn)) || null, L = g.logged || {};
     return mlbGrade({id: String(g.espn || g.pk), away: sh(g.away), home: sh(g.home), pa: g.pa, ph: g.ph, kick: g.kick, picks: L.picks || g.picks || {}, rules: L.rules || g.rules || [], line: L.line || g.line || null,
                      as: e ? e.as : 0, hs: e ? e.hs : 0, state: e ? e.state : 'pre', done: e ? e.done : false, detail: e ? e.detail : ''}); });
-  return {R, day, now, items: R2, games: G, mlb, mlbRec: MJ && MJ.record ? MJ.record : null, mlbRules: (MJ && MJ.rule_stats) || {}};
+  const dfs = (R.dfs || []).filter(e => e.day === day || e.day === addDays(day, -1) && !e.points_final);
+  return {R, day, now, items: R2, games: G, dfs, mlb, mlbRec: MJ && MJ.record ? MJ.record : null, mlbRules: (MJ && MJ.rule_stats) || {}};
 }
 function factsText(F) {
   const {day, items, games, now} = F, L = [];
@@ -333,6 +336,15 @@ function factsText(F) {
   };
   L.push(`REPORT DAY: ${day}. Scores as of ${ctTime(now)} Central (pulled live from ESPN just now).`);
   block('MY BETS (Rich\'s real money)', items.filter(b => b.who === 'mine'));
+  const D = F.dfs || [];
+  const m$ = v => '$' + (+v || 0).toFixed(2);
+  if (D.length) {   // DraftKings DFS contests Rich entered (real money): fees, live/final points, place and winnings when known
+    const fees = D.reduce((t, e) => t + (+e.fee || 0) * (e.entries || 1), 0), won = D.filter(e => e.won != null).reduce((t, e) => t + (+e.won || 0), 0), known = D.filter(e => e.won != null);
+    L.push(`MY DFS (DraftKings fantasy contests, real money): ${D.length} lineup${D.length > 1 ? 's' : ''}, ${m$(fees)} in entry fees` + (known.length ? `; winnings known for ${known.length}: ${m$(won)} won, net ${fmt$(won - known.reduce((t, e) => t + (+e.fee || 0) * (e.entries || 1), 0))} on those` : '; winnings not in yet') + '.');
+    D.forEach(e => L.push(`- ${e.contest || 'Lineup'} (${e.mode === 'cash' ? 'cash game' : 'tournament'}, ${e.kind || ''}) — ${e.fee != null ? m$(e.fee) : '$?'}${(e.entries || 1) > 1 ? ' x ' + e.entries : ''} — ` +
+      (e.points != null ? `${e.points} DK points ${e.points_final ? 'final' : 'live'}` : 'not started') + (e.proj ? ` (projected ${e.proj})` : '') +
+      (e.place ? ` — place ${e.place}${e.field ? ' of ' + e.field : ''}` : '') + (e.won != null ? ` — won ${m$(e.won)}` : '') + ` — players: ${(e.players || []).join(', ')}`));
+  }
   const both = items.filter(b => b.who === 'mine' && b.ai_lox && b.date === day);
   if (both.length) L.push(`Of Rich's bets today, ${both.length} matched an AI-LOX pick.`);
   block('AI-LOX (the model\'s picks at suggested stakes, bet or not)', items.filter(b => b.who === 'ai-lox'), 'paper money unless Rich bet them');
@@ -426,7 +438,7 @@ async function runReports(env, now, opts = {}) {
   const F = await buildFacts(env, now);
   const day = F.day, mineDay = F.items.filter(b => b.date === day);
   const MG = F.mlb || [];
-  if (!mineDay.length && F.games.length + MG.length < (opts.force ? 1 : 4)) return {skip: 'nothing worth a report today'};
+  if (!mineDay.length && !(F.dfs || []).length && F.games.length + MG.length < (opts.force ? 1 : 4)) return {skip: 'nothing worth a report today'};
   const settled = mineDay.filter(b => ['W', 'L', 'P'].includes(b.status)), live = mineDay.filter(b => ['winning', 'losing', 'even', 'live'].includes(b.status) || (b.score && b.score.state === 'in'));
   const allBetsDone = mineDay.every(b => ['W', 'L', 'P'].includes(b.status)), allGamesDone = F.games.every(g => g.state === 'post') && MG.every(g => g.state === 'post');
   const fp = settled.map(b => b.id + b.status).sort().join(',') + '|' + (F.games.filter(g => g.state === 'post').length + MG.filter(g => g.state === 'post').length);

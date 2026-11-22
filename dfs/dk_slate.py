@@ -18,6 +18,22 @@ def draft_groups(sport='NFL'):
         if g: g.update(games=x.get('GameCount'), tag=x.get('DraftGroupTag', ''), suffix=x.get('ContestStartTimeSuffix') or '', start_est=x.get('StartDateEst', ''))
     return sorted(types.values(), key=lambda g: -g['prize'])
 
+def lobby_contests(sport='NFL', top_gpp=6, top_cash=3):
+    """Contest choices per draft group for the page's "I entered this lineup" picker: the biggest prize pools plus the
+    biggest cash games (50/50, Double Up, head-to-head), each with its entry fee."""
+    L = _get(f'https://www.draftkings.com/lobby/getcontests?sport={sport}')
+    by = {}
+    for c in L.get('Contests', []):
+        name = c.get('n', '') or ''
+        cash = bool(re.search(r'50/50|double up|triple up|head.?to.?head|h2h|\bvs\.? ', name, re.I))
+        by.setdefault(c['dg'], []).append(dict(id=c.get('id'), name=name, fee=c.get('a'), prize=c.get('po'), size=c.get('m'), per_user=c.get('mec'), cash=cash))
+    out = {}
+    for dg, cs in by.items():
+        g = sorted([c for c in cs if not c['cash']], key=lambda c: -(c['prize'] or 0))[:top_gpp]
+        k = sorted([c for c in cs if c['cash'] and (c['size'] or 0) > 2], key=lambda c: -(c['size'] or 0))[:top_cash]
+        out[dg] = g + k
+    return out
+
 def pick_slates(groups, days=7):
     """Main Classic slate (the plain 'Classic' group with the most contests) and every single-game Showdown
     that hasn't started yet, within the next `days` days. Lobby times are US Eastern."""

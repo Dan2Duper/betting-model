@@ -10,7 +10,9 @@ for sport in ('NFL', 'MLB'):
         groups = dk_slate.draft_groups(sport)
         main, sds = dk_slate.pick_slates(groups)
     except Exception as e: print(sport, 'lobby error', e); continue
-    if main: todo['slates'].append(dict(sport=sport, kind='classic', dg=main['dg'], label=f"Main slate {main.get('label', '')}".strip(), url=dk_slate.draftables_url(main['dg'])))
-    for g in sds: todo['slates'].append(dict(sport=sport, kind='showdown', dg=g['dg'], label=g.get('label', ''), url=dk_slate.draftables_url(g['dg'])))
+    try: CON = dk_slate.lobby_contests(sport)
+    except Exception as e: print(sport, 'contest list error', e); CON = {}
+    if main: todo['slates'].append(dict(sport=sport, kind='classic', dg=main['dg'], label=f"Main slate {main.get('label', '')}".strip(), url=dk_slate.draftables_url(main['dg']), contests=CON.get(main['dg'], [])))
+    for g in sds: todo['slates'].append(dict(sport=sport, kind='showdown', dg=g['dg'], label=g.get('label', ''), url=dk_slate.draftables_url(g['dg']), contests=CON.get(g['dg'], [])))
 json.dump(todo, open(out, 'w'), indent=1)
 print(json.dumps(todo, indent=1))

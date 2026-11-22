@@ -320,6 +320,7 @@ a{color:var(--series)}
       <div style="display:flex;gap:8px;margin-top:10px;flex-wrap:wrap"><button class="btn" id="dfs-prev">◀ Back</button><button class="btn primary" id="dfs-shuffle">Shuffle ▶</button><span class="small" id="dfs-count" style="align-self:center"></span></div>
       <div style="margin-top:10px"><button class="btn" id="dfs-enter">✅ I entered this lineup</button>
         <div id="dfs-enter-form" class="hide"><div style="display:flex;gap:8px;flex-wrap:wrap;align-items:flex-end;margin-top:8px">
+          <div id="dfs-e-picks" style="width:100%;display:flex;gap:6px;flex-wrap:wrap"></div>
           <label class="small">Type<br><select id="dfs-e-mode"><option value="cash">Cash</option><option value="gpp">Tournament</option></select></label>
           <label class="small">Entry fee $<br><input id="dfs-e-fee" inputmode="decimal" style="width:70px"></label>
           <label class="small">Entries<br><input id="dfs-e-n" inputmode="numeric" value="1" style="width:50px"></label>
@@ -1537,7 +1538,10 @@ function reportBuild() {
       line_spread: x.L.spread ?? null, line_total: x.L.total ?? null, flags: x.F.map(f => f.rule)}; }
     games.push(o); }); });
   games.sort((a, b) => a.kick.localeCompare(b.kick));
-  return {mine, ai_lox: lox, games};
+  const dfs = dfsEntries().filter(e => e.day >= cut).map(e => ({day: e.day, sport: e.sport || 'NFL', contest: e.contest || e.slate || '', mode: e.mode, kind: e.kind, fee: e.fee, entries: e.entries || 1,
+    status: e.status, points: e.points ?? (DFS_LIVE[e.id] ? DFS_LIVE[e.id].pts : null), points_final: !!(e.autoFinal || e.status === 'done' || (DFS_LIVE[e.id] || {}).final), proj: e.proj ?? null,
+    place: e.place ?? null, field: e.field ?? null, won: e.won ?? null, players: (e.players || []).map((p, i) => (p.cpt ? 'CPT ' : '') + p.n + (p.pts != null ? ` ${p.pts}` : DFS_LIVE[e.id] && DFS_LIVE[e.id].per[i] != null ? ` ${DFS_LIVE[e.id].per[i]}` : ''))}));
+  return {mine, ai_lox: lox, games, dfs};
 }
 async function reportPush() {
   if (!ST.gh || repBusy) return; repBusy = true;
@@ -2113,7 +2117,22 @@ function dfsPickAi() {
 // ---------------- MY DFS ENTRIES ----------------
 // Entered lineups live in ST.dfsMine (synced). "I entered this lineup" saves the lineup on screen; DFS screenshots (lineups, My Contests,
 // results) go to the relay's /dfsshot reader and are matched to saved entries by player overlap (first initial + last name).
-let DFS_SHOWN = null, DFSSHOT = [];
+let DFS_SHOWN = null, DFSSHOT = [], DFS_CON = null;
+async function dfsContests() {   // DraftKings contest choices per slate (name, entry fee, prize pool), listed each morning by the slate job
+  if (DFS_CON) return DFS_CON;
+  try { const t = await (await fetch('https://raw.githubusercontent.com/Dan2Duper/betting-model/data/dfs_todo.json?t=' + Date.now())).json();
+    DFS_CON = Object.fromEntries((t.slates || []).map(s => [s.dg, s.contests || []])); } catch (e) { DFS_CON = {}; }
+  return DFS_CON; }
+const dfsMoney = v => v >= 1e6 ? '$' + (v / 1e6).toFixed(v % 1e6 ? 1 : 0) + 'M' : v >= 1e3 ? '$' + Math.round(v / 1e3) + 'K' : '$' + v;
+const dfsShort = n => String(n || '').replace(/^(NFL|MLB)\s+/i, '').replace(/\s*\[.*?\]\s*/g, ' ').trim();
+async function dfsPicks() {
+  const box = $('#dfs-e-picks'); if (!box || !DFS_SHOWN) return;
+  const C = (await dfsContests())[DFS_SHOWN.s.dg] || [];
+  box.innerHTML = C.length ? C.map((c, i) => `<button class="btn small" data-dfspick="${i}">${esc(dfsShort(c.name))} · ${fmt$(+c.fee)}${c.prize ? ' · ' + dfsMoney(+c.prize) : ''}</button>`).join('') : '<span class="small">Contest list not loaded for this slate; type it below.</span>';
+  $$('[data-dfspick]').forEach(el => el.onclick = () => { const c = C[+el.dataset.dfspick];
+    $('#dfs-e-contest').value = c.name; $('#dfs-e-fee').value = c.fee; $('#dfs-e-mode').value = c.cash ? 'cash' : 'gpp';
+    $$('[data-dfspick]').forEach(b => b.classList.toggle('primary', b === el)); });
+}
 const dfsNum = v => { if (typeof v === 'number') return isFinite(v) ? v : null; const m = String(v ?? '').replace(/,/g, '').match(/-?\d+(\.\d+)?/); return m ? +m[0] : null; };
 const dfsKey = n => { const w = String(n || '').toLowerCase().replace(/\b(jr|sr|ii|iii|iv|v)\b\.?/g, ' ').replace(/[^a-z .'-]/g, ' ').replace(/[.'-]/g, ' ').trim().split(/\s+/).filter(Boolean);
   return w.length ? (w.length > 1 ? w[0][0] + ' ' + w[w.length - 1] : w[0]) : ''; };
@@ -2128,10 +2147,77 @@ function dfsSaveShown() {
   const id = dfsId(); ST.dfsMine = ST.dfsMine || {};
   ST.dfsMine[id] = {id, created: Date.now(), day: today(), sport: s.sport || 'NFL', slate: s.label, kind: s.kind || (rows.length <= 6 ? 'showdown' : 'classic'), mode: $('#dfs-e-mode').value,
     contest: $('#dfs-e-contest').value.trim(), fee, entries: n, src: 'app', status: 'open', proj: L.proj, salary: L.salary,
-    players: rows.map(r => ({n: r[1].name, pos: r[0], t: r[1].team, cpt: r[0] === 'CPT', proj: +(r[2] * r[1].proj).toFixed(1)}))};
+    players: rows.map(r => ({n: r[1].name, pos: r[0], rp: r[1].pos, t: r[1].team, cpt: r[0] === 'CPT', proj: +(r[2] * r[1].proj).toFixed(1)}))};
   usave(); $('#dfs-e-msg').textContent = 'Saved to My DFS results.'; $('#dfs-enter-form').classList.add('hide'); dfsMineRender();
 }
-function dfsMineRender() {
+// ---------------- DFS AUTO SCORING ----------------
+// Live DraftKings points for every entered NFL lineup, from ESPN box scores (DK classic/showdown scoring; CPT x1.5). When every
+// player's game is final the total is saved on the entry (autoFinal). Place and winnings still come from a results screenshot.
+const DFS_LIVE = {}, DFS_BOX = {}, DFS_SB = {}; let dfsScoreAt = 0, dfsScoreBusy = false;
+const ESPN_NV = {LAR: 'LA', WSH: 'WAS', JAC: 'JAX', LVR: 'LV'};
+const dkPA = pa => pa === 0 ? 10 : pa <= 6 ? 7 : pa <= 13 ? 4 : pa <= 20 ? 1 : pa <= 27 ? 0 : pa <= 34 ? -1 : -4;
+function dfsBoxPoints(S) {
+  const comp = ((S.header || {}).competitions || [])[0] || {}, state = ((comp.status || {}).type || {}).state || 'pre';
+  const score = {}, opp = {}; (comp.competitors || []).forEach(c => { score[ESPN_NV[c.team.abbreviation] || c.team.abbreviation] = +c.score || 0; });
+  const ab = Object.keys(score); if (ab.length === 2) { opp[ab[0]] = ab[1]; opp[ab[1]] = ab[0]; }
+  const P = {}, T = {}; ab.forEach(t => T[t] = {sacks: 0, int: 0, td: 0, fr: 0, lost: 0});
+  ((S.boxscore || {}).players || []).forEach(tb => { const t = ESPN_NV[tb.team.abbreviation] || tb.team.abbreviation; T[t] = T[t] || {sacks: 0, int: 0, td: 0, fr: 0, lost: 0};
+    (tb.statistics || []).forEach(cat => { const lab = cat.labels || cat.keys || [];
+      (cat.athletes || []).forEach(a => { const v = k => { const i = lab.indexOf(k); return i < 0 ? 0 : parseFloat(String(a.stats[i]).split('/')[0]) || 0; };
+        const nm = (a.athlete || {}).displayName || '', key = dfsKey(nm) + '|' + t, p = P[key] = P[key] || {n: nm, t, pts: 0};
+        if (cat.name === 'passing') { const y = v('YDS'); p.pts += 0.04 * y + 4 * v('TD') - v('INT') + (y >= 300 ? 3 : 0); }
+        else if (cat.name === 'rushing') { const y = v('YDS'); p.pts += 0.1 * y + 6 * v('TD') + (y >= 100 ? 3 : 0); }
+        else if (cat.name === 'receiving') { const y = v('YDS'); p.pts += v('REC') + 0.1 * y + 6 * v('TD') + (y >= 100 ? 3 : 0); }
+        else if (cat.name === 'fumbles') { p.pts -= v('LOST'); T[t].lost += v('LOST'); }
+        else if (cat.name === 'kickReturns' || cat.name === 'puntReturns') { p.pts += 6 * v('TD'); T[t].td += v('TD'); }
+        else if (cat.name === 'interceptions') { T[t].int += v('INT'); T[t].td += v('TD'); }
+        else if (cat.name === 'defensive') { T[t].sacks += v('SACKS'); T[t].td += v('TD'); }
+        else if (cat.name === 'kicking') { const lg = v('LONG'); p.pts += 3 * v('FG') + v('XP') + (v('FG') ? (lg >= 50 ? 2 : lg >= 40 ? 1 : 0) : 0); } }); }); });
+  const D = {}; ab.forEach(t => { const o = opp[t]; D[t] = T[t].sacks + 2 * T[t].int + 2 * ((T[o] || {}).lost || 0) + 6 * T[t].td + dkPA(score[o] || 0); });
+  return {P, D, state, teams: ab};
+}
+async function dfsScore(force) {
+  if (dfsScoreBusy || (!force && Date.now() - dfsScoreAt < 60000)) return; dfsScoreBusy = true; dfsScoreAt = Date.now();
+  try {
+    const E = dfsEntries().filter(e => (e.sport || 'NFL') === 'NFL' && !e.autoFinal && e.day && Math.abs(Date.parse(e.day) - Date.parse(today())) <= 3 * 864e5 && (e.players || []).length);
+    if (!E.length) return;
+    let changed = false;
+    for (const day of [...new Set(E.map(e => e.day))]) {
+      const ds = [day, ctDate(new Date(Date.parse(day) + 864e5).toISOString())];   // Sunday entries can include Monday night
+      const evs = [];
+      for (const d of ds) { if (!DFS_SB[d] || Date.now() - DFS_SB[d].at > 60000) { try { const j = await (await fetch(`https://site.api.espn.com/apis/site/v2/sports/football/nfl/scoreboard?dates=${d.replace(/-/g, '')}`)).json(); DFS_SB[d] = {at: Date.now(), ev: j.events || []}; } catch (e) { DFS_SB[d] = DFS_SB[d] || {at: 0, ev: []}; } } evs.push(...DFS_SB[d].ev); }
+      const byTeam = {}, byName = {}, dst = {}, tstate = {};
+      for (const ev of evs) {
+        const st = (((ev.status || {}).type) || {}).state || 'pre';
+        const tm = ((ev.competitions || [])[0] || {}).competitors || []; tm.forEach(c => { tstate[ESPN_NV[c.team.abbreviation] || c.team.abbreviation] = st; });
+        if (st === 'pre') continue;
+        const c = DFS_BOX[ev.id]; let B = c && (c.final || Date.now() - c.at < 60000) ? c.B : null;
+        if (!B) { try { B = dfsBoxPoints(await (await fetch(`https://site.api.espn.com/apis/site/v2/sports/football/nfl/summary?event=${ev.id}`)).json()); DFS_BOX[ev.id] = {at: Date.now(), final: B.state === 'post', B}; } catch (e) { continue; } }
+        Object.entries(B.P).forEach(([k, p]) => { byTeam[k] = p; const nk = dfsKey(p.n); byName[nk] = byName[nk] === undefined ? p : null; });
+        Object.assign(dst, B.D);
+      }
+      for (const e of E.filter(x => x.day === day)) {
+        let tot = 0, final = true, any = false;
+        const per = e.players.map(p => { const t0 = p.t || '', isD = /^(DST|D\/ST|DEF)$/i.test(p.rp || p.pos || '');
+          let pts = null, tt = t0;
+          if (isD) pts = dst[t0] ?? null;
+          else { const r = byTeam[dfsKey(p.n) + '|' + t0] || byName[dfsKey(p.n)]; if (r) { pts = r.pts; tt = r.t; } else if (t0 && tstate[t0] && tstate[t0] !== 'pre') pts = 0; }
+          if (tt ? (tstate[tt] || 'pre') !== 'post' : evs.some(v => (((v.status || {}).type) || {}).state !== 'post')) final = false;
+          if (pts != null) { any = true; tot += (p.cpt ? 1.5 : 1) * pts; }
+          return pts == null ? null : +((p.cpt ? 1.5 : 1) * pts).toFixed(2); });
+        if (!any) continue;
+        DFS_LIVE[e.id] = {pts: +tot.toFixed(2), final, per};
+        if (final) { const s = ST.dfsMine[e.id]; if (s) { s.autoPts = +tot.toFixed(2); s.autoFinal = true; if (s.points == null) s.points = s.autoPts;
+          s.players.forEach((p, i) => { if (per[i] != null) p.pts = per[i]; }); changed = true; } }
+      }
+    }
+    if (changed) usave();
+    dfsMineRender(true);
+  } catch (e) {} finally { dfsScoreBusy = false; }
+}
+setInterval(() => { if (TAB === 'dfs' || (typeof ST !== 'undefined' && ST.gh)) dfsScore(); }, 60000);
+function dfsMineRender(fromScore) {
+  if (!fromScore) setTimeout(() => dfsScore(), 0);
   const box = $('#dfs-mine'); if (!box) return;
   const E = dfsEntries();
   if (!E.length) { box.innerHTML = '<div class="small">Nothing yet. Tap "I entered this lineup" under a lineup, or add DraftKings screenshots.</div>'; return; }
@@ -2144,10 +2230,11 @@ function dfsMineRender() {
     (open.length ? `<div class="small">${open.length} not settled yet (${fmt$(openFees)} in entry fees).</div>` : '') +
     E.map(e => `<div class="card" style="margin:6px 0;padding:10px">
       <div style="display:flex;justify-content:space-between;gap:8px;align-items:flex-start"><div><b>${esc(e.contest || e.slate || 'Lineup')}</b>
-        <div class="small">${esc(e.day || '')} · ${e.sport || 'NFL'} ${esc(e.kind || '')}${e.src === 'screenshot' ? ' · from screenshot' : ''} · ${e.fee != null ? fmt$(e.fee) : '$?'}${(e.entries || 1) > 1 ? ' × ' + e.entries : ''} · ${ST_LAB[e.status] || e.status}${e.points != null ? ` · <b>${e.points} pts</b>` : e.proj ? ` · proj ${e.proj}` : ''}${e.place ? ` · ${(+e.place).toLocaleString()}${e.field ? ' of ' + (+e.field).toLocaleString() : ''}` : ''}${e.won != null ? ` · won <b>${fmt$(+e.won)}</b>` : ''}</div></div>
-        <div style="display:flex;gap:6px;align-items:center"><select data-dfsmode="${e.id}" class="small"><option value="cash"${e.mode === 'cash' ? ' selected' : ''}>Cash</option><option value="gpp"${e.mode !== 'cash' ? ' selected' : ''}>Tournament</option></select><button class="btn small" data-dfsdel="${e.id}">✕</button></div></div>
-      <details><summary class="small">Players</summary><div class="small">${(e.players || []).map(p => `${p.cpt ? '<b>CPT</b> ' : esc(p.pos || '') + ' '}${esc(p.n)}${p.t ? ' (' + esc(p.t) + ')' : ''}${p.pts != null ? ' ' + p.pts : ''}`).join(' · ')}</div></details></div>`).join('');
+        <div class="small">${esc(e.day || '')} · ${e.sport || 'NFL'} ${esc(e.kind || '')}${e.src === 'screenshot' ? ' · from screenshot' : ''} · ${e.fee != null ? fmt$(e.fee) : '$?'}${(e.entries || 1) > 1 ? ' × ' + e.entries : ''} · ${ST_LAB[e.status] || e.status}${e.points != null ? ` · <b>${e.points} pts</b>${e.autoFinal && e.won == null ? ' final' : ''}` : DFS_LIVE[e.id] ? ` · <b>${DFS_LIVE[e.id].pts} pts</b> ${DFS_LIVE[e.id].final ? 'final' : 'live'}` : e.proj ? ` · proj ${e.proj}` : ''}${e.place ? ` · ${(+e.place).toLocaleString()}${e.field ? ' of ' + (+e.field).toLocaleString() : ''}` : ''}${e.won != null ? ` · won <b>${fmt$(+e.won)}</b>` : ''}</div></div>
+        <div style="display:flex;gap:6px;align-items:center"><button class="btn small" data-dfsfee2="${e.id}">$</button><select data-dfsmode="${e.id}" class="small"><option value="cash"${e.mode === 'cash' ? ' selected' : ''}>Cash</option><option value="gpp"${e.mode !== 'cash' ? ' selected' : ''}>Tournament</option></select><button class="btn small" data-dfsdel="${e.id}">✕</button></div></div>
+      <details><summary class="small">Players</summary><div class="small">${(e.players || []).map(p => `${p.cpt ? '<b>CPT</b> ' : esc(p.pos || '') + ' '}${esc(p.n)}${p.t ? ' (' + esc(p.t) + ')' : ''}${p.pts != null ? ' ' + p.pts : DFS_LIVE[e.id] && DFS_LIVE[e.id].per[(e.players || []).indexOf(p)] != null ? ' ' + DFS_LIVE[e.id].per[(e.players || []).indexOf(p)] : ''}`).join(' · ')}</div></details></div>`).join('');
   $$('[data-dfsmode]').forEach(el => el.onchange = () => { ST.dfsMine[el.dataset.dfsmode].mode = el.value; usave(); dfsMineRender(); });
+  $$('[data-dfsfee2]').forEach(el => el.onclick = () => { const e = ST.dfsMine[el.dataset.dfsfee2], v = prompt('Entry fee for one entry ($):', e.fee != null ? e.fee : ''); if (v === null) return; const n = dfsNum(v); if (n == null) return; e.fee = n; usave(); dfsMineRender(); });
   $$('[data-dfsdel]').forEach(el => el.onclick = () => { if (!confirm('Remove this entry from My DFS results?')) return; delete ST.dfsMine[el.dataset.dfsdel]; usave(); dfsMineRender(); });
 }
 async function dfsShotRead(files) {
@@ -2160,31 +2247,50 @@ async function dfsShotRead(files) {
     const images = await Promise.all(files.map(shotImage));
     const r = await fetch(DFS_AI_URL + '/dfsshot', {method: 'POST', headers: {'Content-Type': 'application/json', 'X-Code': code}, body: JSON.stringify({images, today: today()})});
     const j = await r.json(); if (!r.ok) throw new Error(j.error || r.status);
-    const E = dfsEntries();
+    const E = dfsEntries(), CON = await dfsContests();
     DFSSHOT = (j.items || []).map(it => {
       if (it.kind === 'ignore' || !(it.players || []).length && it.kind !== 'result') return {it, act: 'skip', why: it.ignore_reason || 'no lineup on it'};
+      if (!(it.players || []).length) {   // a contest screen with no lineup (Standings / Details): attach to saved entries in that contest
+        const near = e => Math.abs(Date.parse(e.day) - Date.parse(today())) <= 2 * 864e5;
+        let cs = E.filter(e => near(e) && e.contest && it.contest && shotNorm(e.contest) === shotNorm(it.contest));
+        if (!cs.length) cs = E.filter(e => near(e) && !e.contest && e.status !== 'done');
+        const lob = it.contest ? Object.values(CON).flat().find(c => shotNorm(c.name) === shotNorm(it.contest)) : null;
+        const fee = dfsNum(it.entry_fee) ?? (cs.find(e => e.fee != null) || {}).fee ?? (lob ? +lob.fee : null);
+        return {it, pl: [], cs, fee, feeHow: dfsNum(it.entry_fee) != null ? 'read' : (cs.find(e => e.fee != null) ? 'saved' : lob ? 'DraftKings lobby' : ''), act: cs.length ? 'contest' : 'new'};
+      }
       const pl = (it.players || []).map(p => ({n: p.name, pos: p.slot || '', t: p.team || '', cpt: !!p.captain || /^(cpt|captain|mvp)$/i.test(p.slot || ''), pts: dfsNum(p.points)}));
       let best = null, bo = 0; E.forEach(e => { const o = dfsOverlap(pl, e.players || []); if (o > bo) { bo = o; best = e; } });
       const need = Math.max(4, pl.length - 2), m = pl.length >= 4 && bo >= need ? best : null;
-      return {it, pl, m, act: it.kind === 'result' ? (m ? 'update' : 'new') : (m ? 'dup' : 'new')};
+      let fee = dfsNum(it.entry_fee), feeHow = fee != null ? 'read' : '';
+      if (fee == null && m && m.fee != null) { fee = m.fee; feeHow = 'saved'; }
+      if (fee == null && it.contest) { const same = E.find(e => e.fee != null && e.contest && shotNorm(e.contest) === shotNorm(it.contest)); if (same) { fee = same.fee; feeHow = 'same contest'; } }
+      if (fee == null && it.contest) { const lob = Object.values(CON).flat().find(c => shotNorm(c.name) === shotNorm(it.contest)); if (lob) { fee = +lob.fee; feeHow = 'DraftKings lobby'; } }
+      if (fee == null) { const last = E.find(e => e.fee != null); if (last) { fee = last.fee; feeHow = 'guess'; } }
+      return {it, pl, m, fee, feeHow, act: it.kind === 'result' ? (m ? 'update' : 'new') : (m ? 'dup' : 'new')};
     });
     dfsShotShow();
   } catch (e) { box.innerHTML = `<div class="note">Could not read that: ${esc(e.message || e)}</div>`; }
 }
 function dfsShotApply(i) {
   const x = DFSSHOT[i]; if (!x || x.done || x.act === 'skip') return;
+  const fi = $(`[data-dfsfee="${i}"]`); if (fi) x.fee = dfsNum(fi.value);
   const it = x.it, st = it.status === 'completed' ? 'done' : it.status === 'live' ? 'live' : null;
   const res = {}; [['points', 'total_points'], ['place', 'place'], ['field', 'field'], ['won', 'winnings']].forEach(([k, f]) => { const v = dfsNum(it[f]); if (v != null) res[k] = v; });
   ST.dfsMine = ST.dfsMine || {};
+  if (x.act === 'contest') {
+    x.cs.forEach(c => { const e = ST.dfsMine[c.id]; if (!e) return; if (!e.contest && it.contest) e.contest = it.contest; if (x.fee != null) e.fee = x.fee;
+      if (st) e.status = st; if (x.cs.length === 1) { Object.assign(e, res); if (dfsNum(it.entries)) e.entries = dfsNum(it.entries); } });
+    x.done = true; usave(); return;
+  }
   if (x.m) {
     const e = ST.dfsMine[x.m.id]; if (!e) return;
     Object.assign(e, res); if (st) e.status = st;
-    if (e.fee == null && dfsNum(it.entry_fee) != null) e.fee = dfsNum(it.entry_fee);
+    if (x.fee != null && (e.fee == null || x.feeHow === 'read' || fi)) e.fee = x.fee;
     if (dfsNum(it.entries)) e.entries = dfsNum(it.entries);
     if (!e.contest && it.contest) e.contest = it.contest;
     if (x.pl.some(p => p.pts != null)) { const pts = Object.fromEntries(x.pl.map(p => [dfsKey(p.n), p.pts])); e.players.forEach(p => { const v = pts[dfsKey(p.n)]; if (v != null) p.pts = v; }); }
   } else {
-    const id = dfsId(), fee = dfsNum(it.entry_fee);
+    const id = dfsId(), fee = x.fee;
     ST.dfsMine[id] = Object.assign({id, created: Date.now(), day: today(), sport: (it.sport || 'NFL').toUpperCase(), slate: it.date || '', kind: it.game_type || (x.pl.length <= 6 ? 'showdown' : 'classic'),
       mode: dfsGuessMode(it.contest), contest: it.contest || '', fee, entries: Math.max(1, Math.round(dfsNum(it.entries) || 1)), src: 'screenshot',
       status: st || 'open', salary: dfsNum(it.total_salary), players: x.pl}, res);
@@ -2192,21 +2298,24 @@ function dfsShotApply(i) {
   x.done = true; usave();
 }
 function dfsShotShow() {
-  const box = $('#dfs-shot-box'), LAB = {new: 'New entry', update: 'Result for a saved entry', dup: 'Already saved', skip: 'Skipped'};
+  const box = $('#dfs-shot-box'), LAB = {new: 'New entry', update: 'Result for a saved entry', dup: 'Already saved', skip: 'Skipped', contest: 'Contest info for saved entries'};
+  const HOW = {read: 'read from the screenshot', saved: 'from the saved entry', 'same contest': 'same contest as before', guess: 'your last fee, check it', typed: 'typed', 'DraftKings lobby': 'from the DraftKings lobby'};
   const todo = DFSSHOT.filter(x => !x.done && x.act !== 'skip').length;
   box.innerHTML = DFSSHOT.map((x, i) => { const it = x.it;
     return `<div class="card" style="margin:6px 0;padding:10px"><span class="pill ${x.act === 'skip' || x.act === 'dup' ? 'P' : 'O'}" style="margin-right:6px">${x.done ? 'Saved' : LAB[x.act]}</span>
-      <b>${esc(it.contest || (it.kind === 'result' ? 'Contest result' : 'Lineup'))}</b>${x.m ? ` <span class="small">→ matches ${esc(x.m.contest || x.m.slate || 'a saved lineup')} (${x.m.day})</span>` : ''}
+      <b>${esc(it.contest || (it.kind === 'result' ? 'Contest result' : 'Lineup'))}</b>${x.m ? ` <span class="small">→ matches ${esc(x.m.contest || x.m.slate || 'a saved lineup')} (${x.m.day})</span>` : ''}${x.cs && x.cs.length ? ` <span class="small">→ ${x.cs.length} saved entr${x.cs.length > 1 ? 'ies' : 'y'}</span>` : ''}
+      ${x.act !== 'skip' && x.act !== 'dup' && !x.done ? `<div><label class="small">Entry fee $ <input data-dfsfee="${i}" inputmode="decimal" style="width:64px" value="${x.fee != null ? x.fee : ''}"></label> <span class="small">${HOW[x.feeHow] || 'not shown, type it (the DETAILS tab shows it)'}</span></div>` : ''}
       <div class="small">${x.act === 'skip' ? esc(x.why) : `${(x.pl || []).length} players${dfsNum(it.entry_fee) != null ? ' · fee ' + fmt$(dfsNum(it.entry_fee)) : ''}${dfsNum(it.entries) > 1 ? ' × ' + dfsNum(it.entries) : ''}${it.status ? ' · ' + esc(it.status) : ''}${dfsNum(it.total_points) != null ? ' · ' + dfsNum(it.total_points) + ' pts' : ''}${dfsNum(it.place) ? ' · ' + dfsNum(it.place).toLocaleString() + (dfsNum(it.field) ? ' of ' + dfsNum(it.field).toLocaleString() : '') : ''}${dfsNum(it.winnings) != null ? ' · won ' + fmt$(dfsNum(it.winnings)) : ''}`}</div>
       ${it.cut_off ? `<div class="small" style="color:var(--bad,#b00)">Looks cut off${it.note ? ': ' + esc(it.note) : ''}. Add the other screenshot with it if you have one.</div>` : ''}
       ${x.pl && x.pl.length ? `<div class="small">${x.pl.map(p => (p.cpt ? 'CPT ' : '') + esc(p.n) + (p.pts != null ? ' ' + p.pts : '')).join(' · ')}</div>` : ''}
       ${!x.done && x.act !== 'skip' && x.act !== 'dup' ? `<button class="btn small primary" data-dfsapply="${i}" style="margin-top:6px">Save</button>` : ''}</div>`; }).join('') +
     `<div style="display:flex;gap:8px;margin-top:6px">${todo > 1 ? `<button class="btn primary small" id="dfs-shot-all">Save all ${todo}</button>` : ''}<button class="btn small" id="dfs-shot-close">Close</button></div>`;
   $$('[data-dfsapply]').forEach(el => el.onclick = () => { dfsShotApply(+el.dataset.dfsapply); dfsShotShow(); dfsMineRender(); });
+  $$('[data-dfsfee]').forEach(el => el.onchange = () => { const x = DFSSHOT[+el.dataset.dfsfee]; x.fee = dfsNum(el.value); x.feeHow = 'typed'; });
   if ($('#dfs-shot-all')) $('#dfs-shot-all').onclick = () => { DFSSHOT.forEach((x, i) => { if (x.act !== 'dup') dfsShotApply(i); }); dfsShotShow(); dfsMineRender(); };
   $('#dfs-shot-close').onclick = () => { box.classList.add('hide'); box.innerHTML = ''; };
 }
-$('#dfs-enter').onclick = () => { $('#dfs-enter-form').classList.toggle('hide'); $('#dfs-e-mode').value = dfsMode === 'cash' ? 'cash' : 'gpp'; $('#dfs-e-msg').textContent = ''; };
+$('#dfs-enter').onclick = () => { $('#dfs-enter-form').classList.toggle('hide'); $('#dfs-e-mode').value = dfsMode === 'cash' ? 'cash' : 'gpp'; $('#dfs-e-msg').textContent = ''; dfsPicks(); };
 $('#dfs-e-save').onclick = dfsSaveShown;
 $('#dfs-shot').onchange = e => { if (e.target.files.length) dfsShotRead(e.target.files); e.target.value = ''; };
 function dfsRender() {
