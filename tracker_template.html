@@ -2092,9 +2092,9 @@ function dfsRender() {
     slots.forEach((sl, k) => rows.push([sl, P[filled[k]], 1]));
   } else { rows.push(['CPT', P[L.cpt], 1.5]); L.flex.forEach(i => rows.push(['FLEX', P[i], 1])); }
   const own = r => r[0] === 'CPT' ? r[1].cpt_own : r[1].own;
-  $('#dfs-lineup').innerHTML = `<table class="dfs-lu">${rows.map(r => `<tr class="${r[0] === 'CPT' ? 'cpt' : ''}"><td class="pos">${r[0]}</td><td><b>${esc(r[1].name)}</b> <span class="small">${esc(r[1].pos)} · ${esc(r[1].team)} vs ${esc(r[1].opp)}${r[1].status && r[1].status !== 'None' ? ' · ' + esc(r[1].status) : ''}</span></td><td class="num">$${((r[0] === 'CPT' ? r[1].cpt_salary : r[1].salary) || 0).toLocaleString()}</td><td class="num">${(r[2] * r[1].proj).toFixed(1)}</td><td class="num small">${own(r) != null ? '~' + own(r).toFixed(0) + '%' : ''}</td></tr>`).join('')}</table>
+  $('#dfs-lineup').innerHTML = `<table class="dfs-lu">${rows.map(r => `<tr class="${r[0] === 'CPT' ? 'cpt' : ''}"><td class="pos">${r[0]}</td><td><b>${esc(r[1].name)}</b> <span class="small">${esc(r[1].pos)} · ${esc(r[1].team)} vs ${esc(r[1].opp)}${r[1].status && r[1].status !== 'None' ? ' · ' + esc(r[1].status) : ''}${r[1].wind >= 12 ? ' · wind ' + Math.round(r[1].wind) + ' mph' : ''}</span>${r[1].why ? `<div class="small">${esc(r[1].why)}</div>` : ''}</td><td class="num">$${((r[0] === 'CPT' ? r[1].cpt_salary : r[1].salary) || 0).toLocaleString()}</td><td class="num">${(r[2] * r[1].proj).toFixed(1)}</td><td class="num small">${own(r) != null ? '~' + own(r).toFixed(0) + '%' : ''}</td></tr>`).join('')}</table>
     <div class="dfs-tot">Salary $${L.salary.toLocaleString()} <span>of $50,000</span> · Projected ${L.proj} <span>floor ${L.floor} · ceiling ${L.ceil}</span></div>
-    <div class="dfs-note">${esc(L.note)}</div>`;
+    <div class="dfs-note">${esc(L.note)}</div>${DFS.live ? `<div class="small">Injury tags: ${esc((DFS.live.statuses || []).join(' + ') || 'DraftKings only')} · built ${new Date(DFS.built).toLocaleString('en-US', {weekday: 'short', hour: 'numeric', minute: '2-digit'})}</div>` : ''}`;
   $('#dfs-count').textContent = dfsAiPick ? 'Built from your read' : `Lineup ${(dfsIdx % pool.length) + 1} of ${pool.length}`;
 }
 $('#dfs-slate').onchange = e => { dfsSlate = +e.target.value; dfsIdx = 0; dfsAiPick = dfsAdj ? dfsPickAi() : null; dfsRender(); };
