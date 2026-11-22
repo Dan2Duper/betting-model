@@ -91,6 +91,15 @@ Pushing to main/package/sync/data from a Claude session with git works.
 - Next: page chips for adj/why + wind on DFS player rows; PROE / pass-funnel and routes-per-dropback variables (need pbp/participation download);
   kicker wind.
 
+## MLB DFS overhaul (Rich asked Nov 22 2026) - same treatment as NFL, before Opening Day 2027
+- Fresh inputs at build time (GitHub Actions can reach these): confirmed batting orders + probable pitchers + scratches (MLB StatsAPI, free);
+  home-plate umpire (StatsAPI); weather at first pitch with wind direction vs park orientation (out to CF / in), temp, humidity, rain/postponement risk, roof.
+- Backtest each candidate variable walk-forward 2021-2025 (like dfs/research): batting-order slot (PA count), platoon splits, park factor by handedness,
+  wind out/in, umpire zone, bullpen fatigue, pitcher pitch mix vs batter (Statcast, check reachability). Switch on only what beats out-of-sample error.
+- Self-tuning layer like nfl_tune.py (weights per position, graded daily/weekly against actual DK points, decayed + pulled to long-run fit).
+- Relay game-day rebuilds: MLB has many slate locks a day -> rebuild ~60-90 min before each lock and again when lineups are confirmed.
+- Tasker already pulls MLB slates too if they're in dfs_todo.json; check the slate-list workflow includes MLB in season.
+
 ## START HERE next session: MLB DFS lineups (steps 2-3)
 2. Lineups: dfs/optimizer.py (PuLP) gets an MLB classic builder: P,P,C,1B,2B,3B,SS,OF,OF,OF, $50,000, max 5 hitters from one team,
    players from 2+ games; GPP stacks of 4-5 hitters from one lineup (consecutive slots), no hitters against your own pitcher.
