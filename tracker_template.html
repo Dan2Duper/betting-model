@@ -128,7 +128,7 @@ tr.struck td.keep{text-decoration:none;opacity:1}
 .editgrid{display:flex;flex-wrap:wrap;gap:12px;align-items:end}
 .hide{display:none!important}
 .mg{border-top:1px solid var(--border);padding:11px 0}.mg:first-child{border-top:0}.mg .top{display:flex;justify-content:space-between;gap:8px;flex-wrap:wrap;font-weight:700;font-size:17px}
-.mg .row{display:flex;gap:6px 18px;flex-wrap:wrap;margin-top:4px}.mg .row b{font-weight:700}.mg .k{color:var(--ink-2);font-size:13px;display:block}.mg .lean{background:#d29a00;color:#1b1400}
+.mg .row{display:flex;gap:6px 18px;flex-wrap:wrap;margin-top:4px}.mg .row b{font-weight:700}.mg .k{color:var(--ink-2);font-size:13px;display:block}.mg .lean{background:#d29a00;color:#1b1400}.mg .mp{flex-basis:100%}.mg .mp .k{display:inline-block;min-width:66px}.mg .mp .pill{margin-right:5px}.mg .lean .pill{margin-right:5px}.chip.okc{background:transparent;border:1px solid var(--border);color:var(--ink-2);font-weight:500}
 .ftoggle{display:none}
 .rtext p{margin:6px 0 10px;color:var(--ink-2)}
 .sb{display:grid;grid-template-columns:repeat(auto-fill,minmax(260px,1fr));gap:10px}
@@ -247,10 +247,10 @@ a{color:var(--series)}
       <div id="shot-box" class="hide" style="margin:8px 0 12px"></div>
       <div class="addform" id="m-form">
         <div class="editgrid">
-          <label class="f">League<select id="m-lg"><option value="CFB">College</option><option value="NFL">NFL</option></select></label>
+          <label class="f">League<select id="m-lg"><option value="CFB">College</option><option value="NFL">NFL</option><option value="MLB">MLB</option></select></label>
           <label class="f">Date<input type="date" id="m-date"></label>
           <label class="f" style="flex-basis:100%">Game<select id="m-game"><option value="">loading games…</option></select></label>
-          <label class="f">Bet<select id="m-mkt"><option value="spread">Spread</option><option value="total">Total</option><option value="ml">Moneyline</option></select></label>
+          <label class="f">Bet<select id="m-mkt"><option value="spread">Spread / run line</option><option value="total">Total</option><option value="ml">Moneyline</option></select></label>
           <label class="f">Pick<select id="m-side"></select></label>
           <label class="f" id="m-linewrap">Line<input id="m-line" inputmode="decimal" placeholder="-3.5"></label>
           <label class="f">Odds<input id="m-odds" inputmode="numeric" value="-110"></label>
@@ -300,8 +300,10 @@ a{color:var(--series)}
         <div><h2>MLB: model vs DraftKings</h2><div class="small" id="mlb-built">loading…</div></div>
         <div style="display:flex;gap:8px;flex-wrap:wrap"><div class="seg" id="mlb-day"></div><button class="btn small" id="mlb-refresh">Refresh</button></div>
       </div>
+      <div id="mlb-record" style="margin:8px 0 2px"></div>
       <div id="mlb-games"></div>
     </div>
+    <div id="mlb-mine-slot"></div>
     <div class="card"><div class="small" id="mlb-note"></div></div>
   </section>
 
@@ -349,7 +351,7 @@ a{color:var(--series)}
 
   <section id="t-track" class="hide">
     <div class="tk-bar">
-      <div class="seg" id="tk-lg"><button data-v="" class="on">Both</button><button data-v="CFB">College</button><button data-v="NFL">NFL</button></div>
+      <div class="seg" id="tk-lg"><button data-v="" class="on">Both</button><button data-v="CFB">College</button><button data-v="NFL">NFL</button><button data-v="MLB" class="hide">MLB</button></div>
       <div class="seg" id="tk-per"><button data-v="7">7 days</button><button data-v="30">30 days</button><button data-v="all" class="on">Season</button></div>
     </div>
     <div class="card" id="scorecard"></div>
@@ -402,6 +404,7 @@ a{color:var(--series)}
         <p>A game gets flagged when it matches a rule that beat the closing line in past seasons. A flag becomes a bet only when that rule's backtest hit rate is at least <b>55% for college</b> or <b>53.5% for NFL</b> (52.4% breaks even at -110).</p>
         <p>At most <b>5 bets a day</b>, best hit rates first, one per game. Each day's budget is split by edge (fractional Kelly on a shrunk hit rate, $5 minimum), so the more proven rules get bigger stakes.</p>
         <p><b>Current bet rules</b> (backtested against closing lines, Oct 2026 review): NFL wind unders, NFL 2-team underdog teasers (+1.5/+2.5 teased to +7.5/+8.5 when the total is 49 or less, paired automatically at DraftKings' −120), CFB east team flying west, CFB wind unders, CFB totals of 68+ under, CFB road team off a 28+ point loss, SEC/Big Ten road teams off a 21+ loss or 3-game skid (half stakes), and CFB letdown fades (half stakes). Leans are tracked but not bet.</p>
+        <p><b>MLB:</b> the daily model makes a winner, run line and over/under pick on every game and logs each one at first pitch. They are model picks, not bets: in the 2013-25 backtest nothing (moneyline edges, run-line edges, 67 rules, 5 groups of extra variables) beat the closing line in both test windows, so MLB has no AI-LOX and no stars. Three leans are tracked. A lean becomes an AI-LOX only after 50 live picks at 55% or better, and the MLB tab shows closing-line value so a real edge is visible early.</p>
         <p><b>Kill switch:</b> after 50 live bets a rule is retired if it falls below 52.4% (teaser legs below 73.9%); a lean is promoted after 50 live picks at 55% or better. Records are on the <b>Stats</b> tab.</p>
       </div>
     </div>
@@ -520,7 +523,7 @@ const NFL_FULL = {'Arizona Cardinals': 'ARI', 'Atlanta Falcons': 'ATL', 'Baltimo
   'Philadelphia Eagles': 'PHI', 'Pittsburgh Steelers': 'PIT', 'San Francisco 49ers': 'SF', 'Seattle Seahawks': 'SEA', 'Tampa Bay Buccaneers': 'TB', 'Tennessee Titans': 'TEN',
   'Washington Commanders': 'WAS'};
 const ESPN_NFL = {WSH: 'WAS', LAR: 'LA', JAC: 'JAX'};
-const nflAbbr = a => ESPN_NFL[a] || a;
+const nflAbbr = a => ESPN_NFL[a] || a, ESPN_NFL_ABBR = nflAbbr;
 
 // ---------------- fetchers ----------------
 let STATUS = {};
@@ -530,8 +533,8 @@ const ymd = d => d.replace(/-/g, '');
 const ESPN_CONF = {1: 'ACC', 4: 'Big 12', 5: 'Big Ten', 8: 'SEC', 9: 'Pac-12', 12: 'Conference USA', 15: 'MAC', 17: 'Mountain West', 18: 'FBS Independents', 37: 'Sun Belt', 151: 'American'};
 async function espnDay(lg, d) {
   const base = lg === 'CFB' ? 'https://site.api.espn.com/apis/site/v2/sports/football/college-football/scoreboard?groups=80&limit=400&dates='
-                            : 'https://site.api.espn.com/apis/site/v2/sports/football/nfl/scoreboard?dates=';
-  const j = await getJSON(base + ymd(d));
+             : lg === 'MLB' ? 'https://site.api.espn.com/apis/site/v2/sports/baseball/mlb/scoreboard?dates=' : 'https://site.api.espn.com/apis/site/v2/sports/football/nfl/scoreboard?dates=';
+  const j = await getJSON(base + ymd(d)), nflAbbr = lg === 'MLB' ? (a => a) : ESPN_NFL_ABBR;   // MLB keeps ESPN's own abbreviations (NYY, CHW, WSH)
   for (const ev of j.events || []) {
     const c = ev.competitions?.[0]; if (!c) continue;
     const H = c.competitors.find(x => x.homeAway === 'home'), A = c.competitors.find(x => x.homeAway === 'away');
@@ -552,14 +555,15 @@ async function espnDay(lg, d) {
 }
 function finalFor(lg, gameId, date, away, home) {
   if (lg === 'CFB') return ST.finals['CFB:' + gameId];
+  if (lg === 'MLB') return ST.finals['MLB:' + gameId];
   const g = SNAP.nfl.games.find(x => x.id === gameId);
   if (g && g.espn && ST.finals['NFL:' + g.espn]) return ST.finals['NFL:' + g.espn];
   if (ST.finals['NFL:' + gameId]) return ST.finals['NFL:' + gameId];
   return Object.values(ST.finals).find(f => f.lg === 'NFL' && f.aabbr === away && f.habbr === home && Math.abs(new Date(f.date) - new Date(date)) < 3 * 864e5);
 }
 async function refreshFinals() {
-  const t = today(), need = {CFB: new Set(), NFL: new Set()};
-  const add = (lg, d) => { if (d && d <= t) need[lg].add(d); };
+  const t = today(), need = {CFB: new Set(), NFL: new Set(), MLB: new Set()};
+  const add = (lg, d) => { if (d && d <= t && need[lg]) need[lg].add(d); };
   [...DATA.bets, ...DATA.picks].forEach(r => { if (!r.result && !finalFor(r.league, r.game_id, r.date, r.away, r.home)) add(r.league, r.date); });
   Object.values(ST.frozen).concat(Object.values(ST.frozenPicks)).forEach(r => { if (!finalFor(r.league, r.game_id, r.date, r.away, r.home)) add(r.league, r.date); });
   DATA.predlog.forEach(r => { if (!finalFor(r.league, r.id, r.date, r.away, r.home)) add(r.league, r.date); });
@@ -569,7 +573,7 @@ async function refreshFinals() {
   SNAP.nfl.games.forEach(g => need.NFL.add(new Date(g.kick).toLocaleDateString('en-CA', {timeZone: 'America/New_York'})));
   let n = 0, fail = 0;
   const jobs = [];
-  for (const lg of ['CFB', 'NFL']) for (const d of need[lg]) jobs.push(espnDay(lg, d).then(() => n++, () => fail++));
+  for (const lg of ['CFB', 'NFL', 'MLB']) for (const d of need[lg]) jobs.push(espnDay(lg, d).then(() => n++, () => fail++));
   await Promise.all(jobs);
   save(); setStatus('scores', fail && !n ? '<b>Scores:</b> ESPN unreachable right now' : `<b>Scores:</b> ESPN (${n} day${n === 1 ? '' : 's'} checked)`);
 }
@@ -919,6 +923,12 @@ function buildBets() {
     const price = f.market === 'total' ? (f.side === 'over' ? L.prices.overPrice : L.prices.underPrice) : (f.side === 'home' ? L.prices.homePrice : L.prices.awayPrice);
     cands.push(Object.assign(base, {hit_rate: r.p, n: r.n, odds: price || BR.default_odds}));
   }
+  if (MLB && inSeason('MLB')) for (const g of MLB.games) for (const x of ((g.logged || g).rules || [])) {   // an MLB rule becomes an AI-LOX only after it is promoted (50 live picks at 55%+)
+    const r = BR.rules[x.rule]; if (!r || r.lean_only !== false || r.p < (BR.mlb_min_hit ?? 0.535)) continue;
+    const base = {date: g.date, kick: g.kick, league: 'MLB', week: '', game_id: String(g.espn || g.pk), game: `${mlbT(g.away)} @ ${mlbT(g.home)}`, away: mlbT(g.away), home: mlbT(g.home), away_conf: '', home_conf: '', kick_hour: ctHour(g.kick),
+      wind: '', line_spread: '', line_total: (g.line || {}).total ?? '', model_total: (g.total - ((MLB.rules || {}).total_offset ?? 0.45)).toFixed(2), model_home_spread: '', rule: x.rule, market: x.market, side: x.side, line: x.line, src: 'model', result: ''};
+    base.id = base.date + '|' + base.game_id + '|' + base.rule; cands.push(Object.assign(base, {hit_rate: r.p, n: r.n, odds: x.odds || BR.default_odds}));
+  }
   const tr = BR.rules.nfl_teaser_dog, legs = picks.filter(p => p.rule === 'nfl_teaser_leg' && !started(p.kick)).sort((a, b) => a.kick.localeCompare(b.kick));
   if (tr && !tr.lean_only) { const byDay = {}; legs.forEach(l => (byDay[l.date] = byDay[l.date] || []).push(l));
     for (const [d, L2] of Object.entries(byDay)) for (let i = 0; i + 1 < L2.length; i += 2) { const a = L2[i], b = L2[i + 1];
@@ -961,6 +971,7 @@ function buildBets() {
   const pk = {};
   DATA.picks.forEach(p => { const id = p.date + '|' + p.game_id + '|' + p.rule; pk[id] = Object.assign({}, p, {id}); });
   Object.values(ST.frozenPicks).forEach(p => { if (!pk[p.id]) pk[p.id] = p; });
+  MLBROWS.forEach(p => { if (!pk[p.id]) pk[p.id] = Object.assign({}, p); });   // MLB leans come graded from the season log
   picks.forEach(p => { if (!pk[p.id]) pk[p.id] = p; else if (!started(p.kick)) pk[p.id].line = p.line;
     if (started(p.kick) && !ST.frozenPicks[p.id] && !DATA.picks.some(q => q.date + '|' + q.game_id + '|' + q.rule === p.id)) ST.frozenPicks[p.id] = p; });
   PICKS = Object.values(pk).map(p => { if (!p.result) { const f = finalFor(p.league, p.game_id, p.date, p.away, p.home); if (f) p.result = grade(p, f); } return p; });
@@ -1095,7 +1106,7 @@ function enrich(r, isBet) {
   const line = +r.line;
   if (r.market === 'parlay') { o.type = 'Parlay'; o.size = 'Parlay'; o.gap = 'n/a'; }
   else if (r.market === 'ml') { o.type = o.odds < 0 ? 'Favorite' : 'Underdog'; o.size = 'Moneyline'; o.gap = 'n/a'; }
-  else if (r.market === 'total') { o.type = r.side === 'over' ? 'Over' : 'Under'; o.size = line < 42 ? 'Total under 42' : line < 50 ? 'Total 42-49.5' : line < 58 ? 'Total 50-57.5' : 'Total 58+';
+  else if (r.market === 'total') { o.type = r.side === 'over' ? 'Over' : 'Under'; o.size = r.league === 'MLB' ? (line < 8 ? 'Total under 8' : line < 9 ? 'Total 8-8.5' : 'Total 9+') : line < 42 ? 'Total under 42' : line < 50 ? 'Total 42-49.5' : line < 58 ? 'Total 50-57.5' : 'Total 58+';
     const g = Math.abs(+r.model_total - (r.line_total === '' || r.line_total == null ? line : +r.line_total)); o.gap = isNaN(g) ? 'n/a' : g < 3 ? 'Model gap under 3' : g < 5 ? 'Model gap 3-5' : g < 7 ? 'Model gap 5-7' : 'Model gap 7+'; }
   else { const sl = r.side === 'home' ? line : -line; o.type = sl < 0 ? 'Favorite' : sl > 0 ? 'Underdog' : "Pick 'em"; const a = Math.abs(line);
     o.size = a <= 3 ? 'Spread 0-3' : a <= 7 ? 'Spread 3.5-7' : a <= 14 ? 'Spread 7.5-14' : 'Spread 14+';
@@ -1172,7 +1183,7 @@ function betGap(r) {   // model vs line gap for a bet/pick row, in points
   if (r.market === 'total') { const lt = r.line_total === '' || r.line_total == null ? +r.line : +r.line_total; return r.model_total === '' || r.model_total == null ? null : Math.abs(+r.model_total - lt); }
   if (r.market === 'spread') { const ls = r.line_spread === '' || r.line_spread == null ? +r.line : +r.line_spread; return r.model_home_spread === '' || r.model_home_spread == null ? null : Math.abs(+r.model_home_spread - ls); }
   return null; }
-function betStars(r) { return r.market === 'spread' || r.market === 'total' ? starsOf(r.league, r.market, betGap(r)) : 0; }
+function betStars(r) { return r.league === 'MLB' ? 0 : r.market === 'spread' || r.market === 'total' ? starsOf(r.league, r.market, betGap(r)) : 0; }   // MLB: no stars until something beats the closing line
 let STARF = 0;   // tracker list filter by star tier (0 = any)
 function catOf(r) { return r.market === 'parlay' || r.market === 'teaser' ? 'parlay' : r.market === 'ml' ? 'su' : r.market === 'total' ? (r.side === 'over' ? 'over' : 'under') : 'ats'; }
 // every modeled game, graded three ways (winner, spread pick, total pick) against the pregame line
@@ -1193,6 +1204,7 @@ function modelGames() {
       if (side) { o.pick[k] = (side > 0 ? 'Take the OVER ' : 'Take the UNDER ') + ln.total; if (f) { const r = f.hs + f.as - ln.total; o.res[k] = r === 0 ? 'P' : Math.sign(r) === side ? 'W' : 'L'; } } }
     out.push(o);
   });
+  mlbModelGames().forEach(o => out.push(o));
   const F = tkFrom();
   return out.filter(g => (!TK.lg || g.league === TK.lg) && (!F || g.date >= F));
 }
@@ -1216,7 +1228,7 @@ function renderScorecard(MG, B, M) {
   const by = (list, c) => c === 'all' ? list : list.filter(r => catOf(r) === c);
   const row = (c, name, sub, cls) => `<tr class="${cls || ''}"><td>${name}${sub ? `<span class="small">${sub}</span>` : ''}</td>` +
     scCell('model', c, c === 'parlay' ? null : c === 'all' ? modelRec(MG, 'all') : modelRec(MG, c)) + scCell('bets', c, stats(by(B, c))) + scCell('mine', c, stats(by(M, c))) + '</tr>';
-  const per = TK.per === 'all' ? 'this season' : `the last ${TK.per} days`, lg = TK.lg === 'CFB' ? 'College' : TK.lg === 'NFL' ? 'NFL' : 'College + NFL';
+  const per = TK.per === 'all' ? 'this season' : `the last ${TK.per} days`, lg = TK.lg === 'CFB' ? 'College' : TK.lg === 'NFL' ? 'NFL' : TK.lg === 'MLB' ? 'MLB' : MLBLOG ? 'All leagues' : 'College + NFL';
   const matched = stats(filtered('minelox'));
   const ml = matched.n ? `You bet ${matched.n} of the AI-LOX: ${matched.W}-${matched.L}${matched.P ? '-' + matched.P : ''}${matched.W + matched.L + matched.P ? `, <span class="${matched.profit > 0 ? 'pos' : matched.profit < 0 ? 'neg' : ''}">${fmt$(matched.profit)}</span>` : ''}${matched.open ? ` (${matched.open} open)` : ''}.` : 'You haven’t bet any of the AI-LOX in this period.';
   $('#scorecard').innerHTML = `<h2>Scorecard</h2><div class="small" style="margin-bottom:8px">${lg} · ${per} · record, win rate and money</div>
@@ -1225,6 +1237,7 @@ function renderScorecard(MG, B, M) {
     <div class="sclegend small"><div>${ml}</div>
       <div><b>Model</b>: its predicted score for every game, checked against the final and the pregame line. Green means it beat the 52.4% needed to make money (50% for picking winners).</div>
       <div><b>AI-LOX</b>: the bets the model picks, at its suggested stakes, whether you bet them or not. <b>My bets</b>: what you actually bet.</div>
+      ${MG.some(g => g.league === 'MLB') ? '<div><b>MLB</b>: ATS is the run line (-1.5 / +1.5) at its listed price, which is rarely -110, so judge run-line picks by the units on the MLB tab, not by 52.4%. No MLB pick is an AI-LOX until a rule beats the closing line.</div>' : ''}
       <div>Tap any number to see the games behind it.</div></div>`;
   $$('#scorecard button.scc').forEach(b => b.onclick = () => { MODE = b.dataset.who; CAT = b.dataset.cat; STARF = 0; LISTN = 25; renderTracker(); document.getElementById('list').closest('.card').scrollIntoView({behavior: 'smooth', block: 'start'}); });
 }
@@ -1323,7 +1336,7 @@ function drawModelList(G) {
   const okk = (g, k) => g.pick[k] && (!STARF || g.star[k] === STARF);
   const rows = G.filter(g => ks.some(k => okk(g, k))).sort((a, b) => b.date.localeCompare(a.date) || String(a.kick).localeCompare(String(b.kick)));
   $('#list').innerHTML = !rows.length ? '<div class="empty">No model games in this period yet.</div>' : '<div class="bl">' +
-    rows.slice(0, LISTN).map(g => `<div class="bi"><div><div class="t">${esc(g.game)}</div><div class="d">${dayLbl(g.date)} · ${g.league} · model ${Math.round(g.pa)}-${Math.round(g.ph)}</div>
+    rows.slice(0, LISTN).map(g => `<div class="bi"><div><div class="t">${esc(g.game)}</div><div class="d">${dayLbl(g.date)} · ${g.league} · model ${g.dec ? g.pa.toFixed(1) : Math.round(g.pa)}-${g.dec ? g.ph.toFixed(1) : Math.round(g.ph)}</div>
       <div class="picks">${ks.filter(k => okk(g, k)).map(k => `<span>${pill(g.res[k])}${lab[k]}: ${esc(g.pick[k])} ${k !== 'su' ? starHtml(g.star[k], g.gap[k]) : ''}</span>`).join('')}</div></div>
       <div class="rt">${g.f ? `<div class="small">Final</div><div class="amt">${g.f.as}-${g.f.hs}</div>` : '<div class="small">not final</div>'}</div></div>`).join('') + '</div>' + moreBtn(rows.length);
   wireMore();
@@ -1517,7 +1530,7 @@ function reportBuild() {
   const lox = BETS.filter(b => b.date >= cut && !ST.struck[b.id]).map(b => Object.assign(one(b, 'ai-lox'), {hit_rate: b.hit_rate, you_bet: !!mineFor(b)}));
   const BIX = {}; BOARD.forEach(x => BIX[x.lg + ':' + (x.lg === 'NFL' ? x.g.espn : x.g.id)] = x);
   const games = [];
-  Object.entries(ST.slate).forEach(([k, day]) => { const lg = k.split(':')[0]; Object.values(day).forEach(g => { if (ctDate(g.kick) < cut) return;
+  Object.entries(ST.slate).forEach(([k, day]) => { const lg = k.split(':')[0]; if (lg === 'MLB') return; Object.values(day).forEach(g => { if (ctDate(g.kick) < cut) return;
     const o = {league: lg, id: g.id, date: ctDate(g.kick), kick: g.kick, away: g.away, home: g.home, ar: g.ar || '', hr: g.hr || '', ac: g.ac || '', hc: g.hc || '', state: g.state || (g.done ? 'post' : 'pre'), as: g.as, hs: g.hs, detail: g.detail || ''};
     const x = BIX[lg + ':' + g.id];
     if (x) { const LS = likelyScore(lg, x.P.pa, x.P.ph); o.model = {away: +x.P.pa.toFixed(1), home: +x.P.ph.toFixed(1), likely: LS || null, total: +x.P.total.toFixed(1), home_spread: +x.P.hs.toFixed(1),
@@ -1574,7 +1587,7 @@ function renderMine() {
 const mGames = () => Object.values(ST.slate[$('#m-lg').value + ':' + $('#m-date').value] || {}).sort((a, b) => a.kick < b.kick ? -1 : a.kick > b.kick ? 1 : a.away.localeCompare(b.away));
 function mFillGames() {
   const G = mGames(), sel = $('#m-game'), cur = sel.value;
-  sel.innerHTML = G.length ? '<option value="">Choose the game</option>' + G.map(g => `<option value="${esc(g.id)}">${esc(g.away)} @ ${esc(g.home)} · ${ctTime(g.kick)}${g.done ? ' (final)' : ''}</option>`).join('') : '<option value="">No games found for that day</option>';
+  sel.innerHTML = G.length ? '<option value="">Choose the game</option>' + G.map(g => `<option value="${esc(g.id)}">${esc(g.lg === 'MLB' ? g.aabbr + ' ' + g.anick : g.away)} @ ${esc(g.lg === 'MLB' ? g.habbr + ' ' + g.hnick : g.home)} · ${ctTime(g.kick)}${g.done ? ' (final)' : ''}</option>`).join('') : '<option value="">No games found for that day</option>';
   sel.value = G.some(g => g.id === cur) ? cur : ''; mFillSide();
 }
 async function mLoadDay() { const k = $('#m-lg').value + ':' + $('#m-date').value;
@@ -1583,7 +1596,7 @@ async function mLoadDay() { const k = $('#m-lg').value + ':' + $('#m-date').valu
 function mFillSide() {
   const g = mGames().find(x => x.id === $('#m-game').value), m = $('#m-mkt').value, sel = $('#m-side');
   sel.innerHTML = m === 'total' ? '<option value="over">Over</option><option value="under">Under</option>'
-    : g ? `<option value="away">${esc(g.away)}</option><option value="home">${esc(g.home)}</option>` : '<option value="">pick a game first</option>';
+    : g ? `<option value="away">${esc(g.lg === 'MLB' ? g.aabbr : g.away)}</option><option value="home">${esc(g.lg === 'MLB' ? g.habbr : g.home)}</option>` : '<option value="">pick a game first</option>';
   $('#m-linewrap').classList.toggle('hide', m === 'ml'); mPrefill();
 }
 function mPrefill() {
@@ -1608,7 +1621,7 @@ $('#m-save').onclick = () => {
   const sg = lg === 'CFB' ? SNAP.cfb.games.find(x => x.id === g.id) : SNAP.nfl.games.find(x => x.espn === g.id);
   const kh = ctHour(g.kick);
   const b = {id: `mine|${lg}|${g.id}|${m}|${side}|${Date.now()}`, src: 'mine', rule: 'mine', date: ctDate(g.kick), kick: g.kick, league: lg, week: sg ? (lg === 'CFB' ? SNAP.cfb.week : SNAP.nfl.week) : '',
-    game_id: g.id, game: `${g.away} @ ${g.home}`, away: lg === 'NFL' ? g.aabbr : g.away, home: lg === 'NFL' ? g.habbr : g.home, market: m, side,
+    game_id: g.id, game: lg === 'MLB' ? `${g.aabbr} @ ${g.habbr}` : `${g.away} @ ${g.home}`, away: lg !== 'CFB' ? g.aabbr : g.away, home: lg !== 'CFB' ? g.habbr : g.home, market: m, side,
     line: m === 'ml' ? '' : m === 'total' ? ln : (side === 'away' ? -ln : ln), odds, stake, result: '', kick_hour: kh,
     away_conf: sg ? (sg.away_conf || sg.away_div || '') : '', home_conf: sg ? (sg.home_conf || sg.home_div || '') : ''};
   if (g.done) b.result = grade(b, {hs: g.hs, as: g.as});
@@ -1668,8 +1681,8 @@ async function shotFindGame(lg, leg, around) {   // best-scoring game on the nea
 }
 function shotLeg(lg, leg, g, side) {   // one leg in this page's format (spread lines stored from the home team's side)
   const m = leg.market === 'moneyline' ? 'ml' : leg.market;
-  if (m === 'total') return {league: lg, game_id: g.id, espn: g.id, kick: g.kick, away: lg === 'NFL' ? g.aabbr : g.away, home: lg === 'NFL' ? g.habbr : g.home, market: 'total', side: String(leg.pick || '').toLowerCase().startsWith('u') ? 'under' : 'over', line: +leg.line};
-  return {league: lg, game_id: g.id, espn: g.id, kick: g.kick, away: lg === 'NFL' ? g.aabbr : g.away, home: lg === 'NFL' ? g.habbr : g.home, market: m, side,
+  if (m === 'total') return {league: lg, game_id: g.id, espn: g.id, kick: g.kick, away: lg !== 'CFB' ? g.aabbr : g.away, home: lg !== 'CFB' ? g.habbr : g.home, market: 'total', side: String(leg.pick || '').toLowerCase().startsWith('u') ? 'under' : 'over', line: +leg.line};
+  return {league: lg, game_id: g.id, espn: g.id, kick: g.kick, away: lg !== 'CFB' ? g.aabbr : g.away, home: lg !== 'CFB' ? g.habbr : g.home, market: m, side,
           line: m === 'ml' ? '' : (side === 'away' ? -(+leg.line) : +leg.line)};
 }
 let SHOT = null;
@@ -1688,9 +1701,10 @@ function shotOdds(b) {   // the slip's American odds; if the reader missed them,
 }
 async function shotGames() {   // NFL + college games from 3 days back to 6 ahead, for the reader to pick from
   const days = []; for (let k = -3; k <= 6; k++) { const d = new Date(today() + 'T12:00:00'); d.setDate(d.getDate() + k); days.push(d.toISOString().slice(0, 10)); }
-  await Promise.all(['NFL', 'CFB'].flatMap(lg => days.filter(d => !ST.slate[lg + ':' + d]).map(d => espnDay(lg, d).catch(() => null))));
+  const LGS = ['NFL', 'CFB', 'MLB'].filter(lg => inSeason(lg));   // only leagues being played, so the reader is not handed 150 idle games
+  await Promise.all(LGS.flatMap(lg => days.filter(d => !ST.slate[lg + ':' + d]).map(d => espnDay(lg, d).catch(() => null))));
   const byId = {}, lines = [];
-  for (const lg of ['NFL', 'CFB']) for (const d of days) for (const g of Object.values(ST.slate[lg + ':' + d] || {})) {
+  for (const lg of LGS) for (const d of days) for (const g of Object.values(ST.slate[lg + ':' + d] || {})) {
     if (byId[g.id]) continue; byId[g.id] = {g, lg};
     lines.push(`${g.id} | ${lg} | ${ctDate(g.kick)} | ${g.away}${g.anick ? ' ' + g.anick : ''}${g.aabbr ? ' (' + g.aabbr + ')' : ''} @ ${g.home}${g.hnick ? ' ' + g.hnick : ''}${g.habbr ? ' (' + g.habbr + ')' : ''}`);
   }
@@ -1720,9 +1734,9 @@ async function shotRead(files) {
           if (Math.abs(exp - win) > Math.max(0.5, 0.03 * win)) { warn.push(`Odds ${b.odds > 0 ? '+' : ''}${b.odds} don't match the $${win.toFixed(2)} to win on the slip — using odds from the payout.`); b.odds = decToAm(win / b.stake); b.odds_how = 'from the payout'; }
         }
       }
-      const lg = /college|ncaa|cfb/i.test(b.league || '') ? 'CFB' : /nfl/i.test(b.league || '') ? 'NFL' : (b.league || '').toUpperCase();
+      const lg = /college|ncaa|cfb/i.test(b.league || '') ? 'CFB' : /nfl/i.test(b.league || '') ? 'NFL' : /mlb|baseball/i.test(b.league || '') ? 'MLB' : (b.league || '').toUpperCase();
       const legs = [], miss = [], slip = [];
-      if (lg !== 'NFL' && lg !== 'CFB') { out.push({b, err: `${b.league || 'This sport'} isn't tracked yet (NFL and college football only for now).`}); continue; }
+      if (lg !== 'NFL' && lg !== 'CFB' && lg !== 'MLB') { out.push({b, err: `${b.league || 'This sport'} isn't tracked yet (NFL, college football and MLB only for now).`}); continue; }
       for (const leg of b.legs || []) {
         if (!/^(spread|total|moneyline|ml)$/.test(leg.market)) { miss.push(`${leg.description || leg.team} (player props can't be graded yet)`); continue; }
         let f = null; const pick = leg.game_id && GM.byId[String(leg.game_id)];
@@ -1914,7 +1928,9 @@ async function tick() {
   if (tickN % 30 === 0) refreshAll(false);
   if (tickN % 5 === 0 && location.protocol.startsWith('http')) checkNewWeek();
   if (tickN % 30 === 0) applySeasons();
+  if (inSeason('MLB') && Object.values(ST.mine).some(b => !b.result && (b.league === 'MLB' || (b.legs || []).some(l => l.league === 'MLB')))) await espnDay('MLB', today()).catch(() => {});   // your open MLB bets
   if (TAB === 'mlb' && tickN % 3 === 0) { if (MLB) await Promise.allSettled([...new Set(MLB.games.map(g => g.date))].map(d => mlbEspnDay(d))); mlbRender(); }
+  if (inSeason('MLB') && tickN % 20 === 0) mlbLoad(true);   // a new build lands several times a day
   if (!busy()) recompute(true);
 }
 async function checkNewWeek() {   // the Tuesday update publishes a new page; load it on its own
@@ -2245,95 +2261,185 @@ function applySeasons() {
   $$('#tabs button').forEach(b => { if (b.dataset.sport) b.classList.toggle('hide', !on[b.dataset.sport]); });
   $('#status')?.classList.toggle('hide', !on.fb);   // score / line / QB status chips are football's
   ['lg', 'sb-lg'].forEach(id => $$('#' + id + ' button').forEach(b => b.classList.toggle('hide', !fb[b.dataset.l])));
-  $$('#m-lg option').forEach(o => { o.hidden = o.disabled = !fb[o.value] && on.fb; });
+  const ins = {CFB: fb.CFB, NFL: fb.NFL, MLB: on.mlb}, any = on.fb || on.mlb;
+  $$('#m-lg option').forEach(o => { o.hidden = o.disabled = any && !ins[o.value]; });
+  if (any && !ins[$('#m-lg').value]) $('#m-lg').value = ['CFB', 'NFL', 'MLB'].find(l => ins[l]);
+  // "My bets" (add a bet, screenshots) lives on the Week tab; when football is out of season it moves to the MLB tab
+  { const card = $('#m-form').closest('.card'), slot = on.fb ? null : $('#mlb-mine-slot');
+    if (slot && card.parentNode !== slot) slot.appendChild(card); else if (!slot && card.parentNode.id === 'mlb-mine-slot') $('#t-week').insertBefore(card, $('#t-week').children[2] || null); }
+  $$('#tk-lg button').forEach(b => { if (b.dataset.v === 'MLB') b.classList.toggle('hide', !on.mlb && !(MLBLOG && Object.keys(MLBLOG.games || {}).length)); if (b.dataset.v === '') b.textContent = on.mlb ? 'All' : 'Both'; });
+  if (TK.lg === 'MLB' && !on.mlb && !MLBLOG) TK.lg = '';
   if (on.fb) {   // move off a league that just ended
     if (!fb[LG]) $$('#lg button').find(b => fb[b.dataset.l])?.click();
     if (!fb[SB.lg]) $$('#sb-lg button').find(b => fb[b.dataset.l])?.click();
-    if (!fb[$('#m-lg').value]) { $('#m-lg').value = fb.CFB ? 'CFB' : 'NFL'; }
   }
   const cur = $$('#tabs button').find(b => b.dataset.t === TAB);
   if (cur && cur.classList.contains('hide')) $$('#tabs button').find(b => !b.classList.contains('hide'))?.click();
 }
 
-// ---------------- MLB: daily model file (data branch) + DraftKings lines and scores from ESPN ----------------
-const MLB_URL = 'https://raw.githubusercontent.com/Dan2Duper/betting-model/data/mlb.json';
+// ---------------- MLB: daily model file + season pick log (data branch), live scores and current lines from ESPN ----------------
+// The picks are made by the daily build (mlb/live.py on GitHub): winner, run line and over/under for every game against the DraftKings
+// line in hand at build time, frozen at first pitch, graded from finals. This page only shows them; nothing here depends on it being open.
+const MLB_RAW = 'https://raw.githubusercontent.com/Dan2Duper/betting-model/data/';
+const MLB_URL = MLB_RAW + 'mlb.json';
 const MLB_ESPN = {LAA: 'ANA', CHC: 'CHN', CHW: 'CHA', CWS: 'CHA', KC: 'KCA', LAD: 'LAN', NYM: 'NYN', NYY: 'NYA', SD: 'SDN', SF: 'SFN', STL: 'SLN', TB: 'TBA', WSH: 'WAS', OAK: 'ATH', AZ: 'ARI'};
 const MLB_SHOW = {ANA: 'LAA', CHN: 'CHC', CHA: 'CWS', KCA: 'KC', LAN: 'LAD', NYN: 'NYM', NYA: 'NYY', SDN: 'SD', SFN: 'SF', SLN: 'STL', TBA: 'TB', WAS: 'WSH'};
 const mlbT = c => MLB_SHOW[c] || c;
-let MLB = null, mlbDay = '', mlbEspn = {}, mlbErr = '';
+let MLB = null, MLBLOG = null, mlbLogBusy = false, mlbDay = '', mlbEspn = {}, mlbErr = '', MLBROWS = [];
 const amImp = o => o < 0 ? -o / (-o + 100) : 100 / (o + 100);
 const amTxt = o => o == null || isNaN(o) ? '' : (o > 0 ? '+' : '') + Math.round(o);
-function mlbOdds(c) {   // ESPN lists the DraftKings line two ways depending on the feed version
+function mlbOdds(c) {   // ESPN lists the DraftKings line two ways depending on the feed version; rl = the HOME run line (-1.5 / +1.5)
   const o = c.odds?.[0]; if (!o) return null;
   const num = v => { const n = parseFloat(String(v ?? '').replace(/[^0-9.+-]/g, '')); return isNaN(n) ? null : n; };
-  const mh = num(o.homeTeamOdds?.moneyLine ?? o.moneyline?.home?.close?.odds), ma = num(o.awayTeamOdds?.moneyLine ?? o.moneyline?.away?.close?.odds);
-  return {mh, ma, total: num(o.overUnder ?? o.total?.over?.close?.line), over: num(o.overOdds ?? o.total?.over?.close?.odds), under: num(o.underOdds ?? o.total?.under?.close?.odds), src: o.provider?.name || 'ESPN'};
+  const am = v => /^ev/i.test(String(v ?? '').trim()) ? 100 : (x => x != null && Math.abs(x) >= 100 ? x : null)(num(v));
+  const out = {mh: am(o.homeTeamOdds?.moneyLine ?? o.moneyline?.home?.close?.odds), ma: am(o.awayTeamOdds?.moneyLine ?? o.moneyline?.away?.close?.odds),
+    total: num(o.overUnder ?? o.total?.over?.close?.line), over: am(o.overOdds ?? o.total?.over?.close?.odds), under: am(o.underOdds ?? o.total?.under?.close?.odds), rl: null,
+    rl_h: am(o.pointSpread?.home?.close?.odds ?? o.homeTeamOdds?.spreadOdds), rl_a: am(o.pointSpread?.away?.close?.odds ?? o.awayTeamOdds?.spreadOdds), src: o.provider?.name || 'ESPN'};
+  let hl = num(o.pointSpread?.home?.close?.line);
+  if (hl == null && o.spread != null) { const sp = Math.abs(num(o.spread) || 0); if (sp) hl = o.homeTeamOdds?.favorite ? -sp : o.awayTeamOdds?.favorite ? sp : null; }
+  if (hl != null && Math.abs(hl) === 1.5) out.rl = hl;
+  if (out.total != null && !(out.total >= 4 && out.total <= 20)) out.total = null;
+  return out.mh != null || out.total != null || out.rl != null ? out : null;
 }
 async function mlbEspnDay(d) {
   const j = await getJSON('https://site.api.espn.com/apis/site/v2/sports/baseball/mlb/scoreboard?dates=' + ymd(d)); const out = [];
   for (const ev of j.events || []) {
     const c = ev.competitions?.[0]; if (!c) continue;
     const H = c.competitors.find(x => x.homeAway === 'home'), A = c.competitors.find(x => x.homeAway === 'away');
-    out.push({id: ev.id, kick: ev.date, home: MLB_ESPN[H.team.abbreviation] || H.team.abbreviation, away: MLB_ESPN[A.team.abbreviation] || A.team.abbreviation, hs: +H.score, as: +A.score,
+    out.push({id: String(ev.id), kick: ev.date, home: MLB_ESPN[H.team.abbreviation] || H.team.abbreviation, away: MLB_ESPN[A.team.abbreviation] || A.team.abbreviation, hs: +H.score, as: +A.score,
               state: ev.status?.type?.state || '', done: !!ev.status?.type?.completed, detail: ev.status?.type?.shortDetail || '', odds: mlbOdds(c)});
+    if (ev.status?.type?.completed) ST.finals['MLB:' + ev.id] = {lg: 'MLB', id: String(ev.id), date: ctDate(ev.date), home: H.team.abbreviation, away: A.team.abbreviation, habbr: H.team.abbreviation, aabbr: A.team.abbreviation, hs: +H.score, as: +A.score, done: true};
   }
   const keep = ST.mlbLines = ST.mlbLines || {};   // remember the last pregame line so it is still shown after first pitch
   out.forEach(e => { if (e.odds && e.state === 'pre') keep[e.id] = e.odds; else if (keep[e.id]) e.odds = keep[e.id]; });
+  const ids = Object.keys(keep); if (ids.length > 400) ids.slice(0, ids.length - 400).forEach(k => delete keep[k]);
   mlbEspn[d] = out; save();
+}
+function mlbRulesIn() {   // the build's self-tuned rule numbers are the truth for MLB (the weekly football snapshot does not carry them)
+  Object.entries((MLB && MLB.rule_stats) || {}).forEach(([k, r]) => { BR.rules[k] = Object.assign({}, BR.rules[k] || {}, r); if (r.name) NAMES2[k] = r.name; });
 }
 async function mlbLoad(force) {
   if (!MLB || force) {
-    try { const r = await fetch(MLB_URL + '?t=' + Date.now()); if (!r.ok) throw new Error(r.status); MLB = await r.json(); mlbErr = ''; }
+    try { const r = await fetch(MLB_URL + '?t=' + Date.now()); if (!r.ok) throw new Error(r.status); MLB = await r.json(); mlbErr = ''; mlbRulesIn(); }
     catch (e) { mlbErr = 'No MLB file yet. It appears after the next automatic refresh.'; MLB = MLB || null; }
   }
   if (MLB) {
-    const days = [...new Set(MLB.games.map(g => g.date))].sort(); if (!days.includes(mlbDay)) mlbDay = days[0] || '';
-    await Promise.allSettled(days.map(d => mlbEspnDay(d)));
+    const days = mlbDays(); if (!days.includes(mlbDay)) mlbDay = days.find(d => d >= mlbToday()) || days[days.length - 1] || '';
+    await Promise.allSettled([...new Set(MLB.games.map(g => g.date))].map(d => mlbEspnDay(d)));
   }
-  mlbRender();
+  mlbRender(); mlbLogLoad(force);
 }
-function mlbMatch(g) {   // the ESPN game for a model game: same teams, closest start (doubleheaders)
-  const c = (mlbEspn[g.date] || []).filter(e => e.home === g.home && e.away === g.away);
+const mlbToday = () => ASOF || today();
+async function mlbLogLoad(force) {   // the season log: every game's frozen picks and results (Tracker, yesterday's games, records)
+  if (mlbLogBusy || (MLBLOG && !force)) return; mlbLogBusy = true;
+  const f = (MLB && MLB.log) || `mlb/log_${asofDate().getFullYear()}.json`;
+  try { const r = await fetch(MLB_RAW + f + '?t=' + Date.now()); if (r.ok) { MLBLOG = await r.json(); mlbRows(); if (TAB === 'mlb') mlbRender(); else if (TAB === 'track') recompute(); else { buildBets(); } } }
+  catch (e) {}
+  mlbLogBusy = false;
+}
+function mlbRows() {   // lean / rule picks from the log, in the same shape as the football pick rows
+  MLBROWS = [];
+  Object.values((MLBLOG && MLBLOG.games) || {}).forEach(r => (r.rules || []).forEach(x => {
+    const gid = String(r.espn || r.pk), o = {date: r.date, kick: r.kick, league: 'MLB', week: '', game_id: gid, game: `${r.away} @ ${r.home}`, away: r.away, home: r.home, rule: x.rule, market: x.market, side: x.side, line: x.line,
+      odds: x.odds || -110, line_total: (r.line || {}).total ?? '', model_total: r.total != null ? (+r.total - ((MLB && MLB.rules && MLB.rules.total_offset) ?? 0.45)).toFixed(2) : '', src: 'model', result: ((r.res || {}).rules || {})[x.rule] || '', kick_hour: r.kick ? ctHour(r.kick) : 0};
+    o.id = o.date + '|' + o.game_id + '|' + o.rule; MLBROWS.push(o); }));
+}
+function mlbDays() { const s = new Set((MLB ? MLB.games : []).map(g => g.date)); const y = ctDate(new Date(new Date(mlbToday() + 'T12:00:00').getTime() - 864e5).toISOString());
+  if (MLBLOG && Object.values(MLBLOG.games || {}).some(r => r.date === y)) s.add(y); return [...s].sort(); }
+function mlbMatch(g) {   // the ESPN game for a model game: its ESPN id, else same teams and closest start (doubleheaders)
+  const L = mlbEspn[g.date] || [], byId = g.espn && L.find(e => e.id === String(g.espn)); if (byId) return byId;
+  const c = L.filter(e => e.home === (g.h || g.home) && e.away === (g.a || g.away));
   return c.sort((a, b) => Math.abs(new Date(a.kick) - new Date(g.kick)) - Math.abs(new Date(b.kick) - new Date(g.kick)))[0] || null;
 }
-function mlbView(g) {
-  const e = mlbMatch(g), o = e && e.odds, R = MLB.rules || {}, off = R.total_offset ?? 0.45, gapMin = R.total_gap_min ?? 0.75, ov = MLB.model.over;
-  const v = {g, e, o, fav: g.p_home >= 0.5 ? 'home' : 'away', pFav: Math.max(g.p_home, 1 - g.p_home), mtot: g.total - off, leans: []};
-  if (o && o.mh != null && o.ma != null) { const ih = amImp(o.mh), ia = amImp(o.ma); v.mktHome = ih / (ih + ia); v.edge = g.p_home - v.mktHome; }
-  if (o && o.total != null) {
-    v.gap = v.mtot - o.total; v.pOver = 1 / (1 + Math.exp(-(ov.a + ov.b * (g.total - o.total))));
-    if (v.gap >= gapMin) v.leans.push({rule: 'mlb_total_gap_over', txt: `Lean: Over ${o.total}`}); else if (v.gap <= -gapMin) v.leans.push({rule: 'mlb_total_gap_under', txt: `Lean: Under ${o.total}`});
-    if (g.park === 'CHI11' && g.wind_out >= (R.wrigley_wind_out_mph ?? 10)) v.leans.push({rule: 'mlb_wrigley_wind_out_over', txt: `Lean: Over ${o.total} (Wrigley, wind out ${g.wind_out})`});
-  }
-  return v;
+function mlbGamesFor(d) {   // today's file first; a day no longer in it (yesterday) comes from the log
+  const G = (MLB ? MLB.games : []).filter(g => g.date === d).map(g => Object.assign({}, g, g.logged || {}, {away: g.away, home: g.home}));
+  if (G.length || !MLBLOG) return G;
+  return Object.values(MLBLOG.games).filter(r => r.date === d).map(r => Object.assign({}, r, {away: r.a || r.away, home: r.h || r.home, logonly: true}));
+}
+const mlbRes = d => d > 0 ? 'W' : d < 0 ? 'L' : 'P';
+function mlbGrade(g, hs, as) {   // W / L / P of the three model picks and each lean from a score (final or live)
+  const P = g.picks || {}, m = hs - as, t = hs + as, R = {rules: {}};
+  if (P.ml) R.su = mlbRes(P.ml.side === 'home' ? m : -m);
+  if (P.rl) R.rl = mlbRes((P.rl.side === 'home' ? 1 : -1) * (m + P.rl.line));
+  if (P.tot) R.tot = mlbRes((P.tot.side === 'over' ? 1 : -1) * (t - P.tot.line));
+  (g.rules || []).forEach(x => { R.rules[x.rule] = mlbRes((x.market === 'total' ? t - x.line : m + (+x.line || 0)) * (x.side === 'under' || x.side === 'away' ? -1 : 1)); });
+  return R;
+}
+const mlbPct = p => p == null ? '' : Math.round(100 * p) + '%';
+const WDIR = {out: '↑ out', in: '↓ in', x: '↔ across'};
+function mlbWx(g) {
+  if (g.dome) return (g.wx_more && g.wx_more.roof && g.wx_more.roof !== 'dome' ? 'roof ' + String(g.wx_more.roof).replace(' (expected)', '') + ' (expected)' : 'roof closed / dome');
+  if (g.wx === 'neutral') return '';
+  const w = g.wind_out ? `wind ${WDIR.out} ${g.wind_out} mph` : g.wind_in ? `wind ${WDIR.in} ${g.wind_in} mph` : g.wind_x ? `wind ${WDIR.x} ${g.wind_x} mph` : 'calm';
+  const rain = g.wx_more && g.wx_more.rain >= 40 ? `, rain ${Math.round(g.wx_more.rain)}%` : '';
+  return `${g.temp}°, ${w}${rain}${g.wx === 'forecast' ? ' (forecast)' : ''}`;
+}
+function mlbRecLine(S) {
+  if (!S || !S.model) return '';
+  const m = S.model, pc = x => x.W + x.L ? ' (' + Math.round(100 * x.W / (x.W + x.L)) + '%)' : '', u = x => x.n_u ? `, ${x.u >= 0 ? '+' : ''}${(+x.u).toFixed(1)}u` : '';
+  return `Winner ${m.su.W}-${m.su.L}${pc(m.su)} · Run line ${m.rl.W}-${m.rl.L}${u(m.rl)} · Totals ${m.tot.W}-${m.tot.L}${m.tot.P ? '-' + m.tot.P : ''}${u(m.tot)}`;
 }
 function mlbRender() {
   const el = $('#mlb-games'); if (!el) return;
-  $('#mlb-note').innerHTML = `<b>How to read this.</b> The model predicts each team's runs from the starter, bullpen, lineup, park and weather, using only games played before today. Tested on 29,045 games (2013-25) it picked the winner 57.9% of the time; DraftKings' closing line picked 58.1%. Betting its moneyline disagreements lost about the juice, so <b>no MLB bet is an AI-LOX yet</b>. The leans (model total 0.75+ runs from the line, Wrigley with the wind blowing out) won 53-61% in the backtest but have not cleared the bar; they are tracked, not staked.`;
+  const st = (MLB && MLB.stats_note) || 'Tested on 29,045 games (2013-25) the model picked the winner 57.9% of the time; DraftKings\' closing line picked 58.1%.';
+  $('#mlb-note').innerHTML = `<b>How to read this.</b> The model predicts each team's runs from the starter, bullpen, lineup, park, plate umpire and weather, using only games played before today, and makes three picks a game against the DraftKings line: the winner, the run line (the side whose chance to cover beats its price by more) and the over/under. ${esc(st)} Betting its moneyline or run-line disagreements at closing prices lost about the juice, and none of 67 rules or 5 new groups of variables beat the closing line in both test windows, so <b>no MLB pick is an AI-LOX yet and none get stars</b>. Every pick is logged at first pitch and graded, with closing-line value, so a real edge would show up here first. Leans (model total 0.75+ runs from the line; Wrigley with the wind blowing out) won 53-61% in the backtest; they are tracked, not staked, until 50 live picks at 55% or better.`;
   if (!MLB) { $('#mlb-built').textContent = mlbErr || 'loading…'; el.innerHTML = ''; return; }
-  const days = [...new Set(MLB.games.map(g => g.date))].sort();
+  const days = mlbDays(); if (!days.includes(mlbDay)) mlbDay = days.find(d => d >= mlbToday()) || days[days.length - 1] || '';
   $('#mlb-day').innerHTML = days.map(d => `<button data-d="${d}" class="${d === mlbDay ? 'on' : ''}">${new Date(d + 'T12:00:00').toLocaleDateString([], {weekday: 'short', month: 'short', day: 'numeric'})}</button>`).join('');
-  $$('#mlb-day button').forEach(b => b.onclick = () => { mlbDay = b.dataset.d; mlbRender(); });
+  $$('#mlb-day button').forEach(b => b.onclick = () => { mlbDay = b.dataset.d; if (!mlbEspn[mlbDay]) mlbEspnDay(mlbDay).then(mlbRender, () => {}); mlbRender(); });
+  const I = MLB.inputs || {};
   $('#mlb-built').textContent = `Model built ${new Date(MLB.built).toLocaleString([], {weekday: 'short', hour: 'numeric', minute: '2-digit'})} · lines: DraftKings via ESPN`;
-  const G = MLB.games.filter(g => g.date === mlbDay).sort((a, b) => a.kick < b.kick ? -1 : 1);
-  if (!G.length) { el.innerHTML = '<div class="small">No games on this day.</div>'; return; }
+  const rec = MLB.record || (MLBLOG && MLBLOG.record), r7 = MLB.record_7 || (MLBLOG && MLBLOG.record_7), RS = MLB.rule_stats || {};
+  const cv = rec && rec.clv ? Object.entries(rec.clv).map(([k, v]) => `${({ml: 'moneyline', tot: 'totals', rl: 'run line'})[k]} beat the close ${Math.round(100 * v.beat)}% of ${v.n}`).join(', ') : '';
+  const leanRec = Object.entries(RS).filter(([, r]) => r.live_n).map(([k, r]) => `${esc(RNAME(k).replace(/^MLB /, '').replace(' (lean)', ''))} ${r.live_w}-${r.live_n - r.live_w}`).join(' · ');
+  $('#mlb-record').innerHTML = rec && (rec.model.su.W + rec.model.su.L) ? `<div class="small"><b>Model picks this season:</b> ${mlbRecLine(rec)}</div>${r7 && (r7.model.su.W + r7.model.su.L) ? `<div class="small">Last 7 days: ${mlbRecLine(r7)}</div>` : ''}
+    <details class="small" style="margin:2px 0 4px"><summary>Leans, closing-line value, what "u" means</summary>${leanRec ? `<div>Leans (tracked, not bet): ${leanRec}</div>` : ''}${cv ? `<div>Closing line value: ${cv}. Beating the close more than half the time is the sign of a real edge.</div>` : '<div>Closing line value appears once games have a closing snapshot.</div>'}<div>u = units won or lost betting 1 unit on every pick at its listed price. The Tracker tab (MLB) has every game.</div></details>`
+    : '<span class="small">No graded MLB picks yet this season. The record starts with the first game.</span>';
+  const G = mlbGamesFor(mlbDay).sort((a, b) => a.kick < b.kick ? -1 : 1);
+  if (!G.length) { el.innerHTML = '<div class="small">No games on this day.</div>'; mlbMineCard(); return; }
+  const pill = r => r ? `<span class="pill ${r}">${r}</span>` : '';
   el.innerHTML = G.map(g => {
-    const v = mlbView(g), o = v.o, e = v.e, favT = mlbT(v.fav === 'home' ? g.home : g.away);
+    const e = mlbMatch(g), P = g.picks || {}, L = g.line || null, o = e && e.odds, A = mlbT(g.away), H = mlbT(g.home), tm = s => s === 'home' ? H : A;
+    const fin = g.final ? {as: g.final[0], hs: g.final[1]} : e && e.done ? e : null, live = !fin && e && e.state === 'in' ? e : null;
+    const R = g.res || (fin ? mlbGrade(g, fin.hs, fin.as) : live ? mlbGrade(g, live.hs, live.as) : {rules: {}}), lv = !g.res && !fin && live;   // live: where each pick stands right now
     const when = new Date(g.kick).toLocaleTimeString([], {hour: 'numeric', minute: '2-digit'});
-    const score = e && (e.state === 'in' || e.done) ? `<span>${mlbT(g.away)} ${e.as}, ${mlbT(g.home)} ${e.hs} <span class="small">${esc(e.detail)}</span></span>` : `<span class="small">${when}</span>`;
-    const warn = [!g.sp_away_known || !g.sp_home_known ? 'starter not announced' : '', g.lineup_away !== 'posted' || g.lineup_home !== 'posted' ? 'lineups not posted (using last game)' : '', g.wx !== 'posted' ? 'weather not in yet (72°, calm)' : ''].filter(Boolean);
-    const ml = o && o.mh != null ? `${mlbT(g.away)} ${amTxt(o.ma)} / ${mlbT(g.home)} ${amTxt(o.mh)}` : 'no line yet';
-    const mktFav = v.mktHome != null ? (v.fav === 'home' ? v.mktHome : 1 - v.mktHome) : null;
-    return `<div class="mg"><div class="top"><span>${mlbT(g.away)} @ ${mlbT(g.home)}${g.num ? ' (G' + g.num + ')' : ''}</span>${score}</div>
-      <div class="small">${esc(g.sp_away)} vs ${esc(g.sp_home)} · ${esc(g.venue)}${g.wx === 'posted' && !g.dome ? ` · ${g.temp}°${g.wind_out ? ', wind out ' + g.wind_out : g.wind_in ? ', wind in ' + g.wind_in : ''}` : ''}</div>
-      <div class="row"><div><span class="k">Model score</span><b>${mlbT(g.away)} ${g.pa.toFixed(1)}, ${mlbT(g.home)} ${g.ph.toFixed(1)}</b></div>
-        <div><span class="k">Model winner</span><b>${favT} ${(100 * v.pFav).toFixed(0)}%</b></div>
-        <div><span class="k">DraftKings moneyline</span>${ml}${mktFav != null ? ` <span class="small">(${favT} ${(100 * mktFav).toFixed(0)}%)</span>` : ''}</div>
-        <div><span class="k">Total: model / line</span><b>${v.mtot.toFixed(1)}</b> / ${o && o.total != null ? o.total + (o.over != null ? ` <span class="small">(o ${amTxt(o.over)}, u ${amTxt(o.under)})</span>` : '') : 'no line yet'}</div></div>
-      <div>${v.leans.map(l => `<span class="chip lean" title="${esc((BR.rules[l.rule] || {}).src || '')}">${esc(l.txt)}</span>`).join('')}${warn.map(w => `<span class="chip">${esc(w)}</span>`).join('')}</div></div>`;
+    const score = fin ? `<span>${A} ${fin.as}, ${H} ${fin.hs} <span class="small">Final</span></span>` : live ? `<span>${A} ${live.as}, ${H} ${live.hs} <span class="small">${esc(live.detail)}</span></span>` : g.status === 'ppd' ? '<span class="small">Postponed</span>' : `<span class="small">${when}</span>`;
+    const pre = !fin && !live && !started(g.kick);
+    const ok = [], warn = [];
+    if (!g.logonly) { (g.sp_away_known && g.sp_home_known ? ok : warn).push(g.sp_away_known && g.sp_home_known ? 'starters set' : 'starter not announced');
+      (g.lineup_away === 'posted' && g.lineup_home === 'posted' ? ok : warn).push(g.lineup_away === 'posted' && g.lineup_home === 'posted' ? 'lineups confirmed' : 'lineups not posted (using last game)');
+      if (g.wx === 'neutral') warn.push('weather not in yet (72°, calm)'); if (g.ump) ok.push('ump ' + g.ump); }
+    const pk = (k, label, txt, sub) => `<div class="mp"><span class="k">${label}</span> ${lv && R[k === 'ml' ? 'su' : k] ? `<span class="pill O" title="where it stands right now">${R[k === 'ml' ? 'su' : k] === 'W' ? 'ahead' : R[k === 'ml' ? 'su' : k] === 'L' ? 'behind' : 'even'}</span>` : pill(R[k === 'ml' ? 'su' : k])}<b>${txt}</b>${sub ? ` <span class="small">${sub}</span>` : ''}</div>`;
+    const rows = [];
+    if (P.ml) rows.push(pk('ml', 'Winner', `${tm(P.ml.side)} ${mlbPct(P.ml.p)}`, P.ml.odds != null ? `DK ${amTxt(P.ml.odds)} = ${mlbPct(P.ml.mkt)}` : 'no line yet'));
+    if (P.rl) { const ln = P.rl.side === 'home' ? P.rl.line : -P.rl.line; rows.push(pk('rl', 'Run line', `${tm(P.rl.side)} ${ln > 0 ? '+' : ''}${ln}`, P.rl.odds != null ? `${amTxt(P.rl.odds)} · model ${mlbPct(P.rl.p)}, price ${mlbPct(P.rl.mkt)}` : `model ${mlbPct(P.rl.p)}`)); }
+    if (P.tot) rows.push(pk('tot', 'Total', `${P.tot.side === 'over' ? 'Over' : 'Under'} ${P.tot.line}`, `${amTxt(P.tot.odds)} · model ${(P.tot.line + P.tot.gap).toFixed(1)}`));
+    const leans = (g.rules || []).map(x => { const r = BR.rules[x.rule] || {}, bet = r.lean_only === false, rr = R.rules && R.rules[x.rule];
+      return `<span class="chip lean" title="${esc(r.src || '')}">${bet ? LOX : ''}${lv && rr ? '' : pill(rr)}${bet ? '' : 'Lean: '}${x.market === 'total' ? (x.side === 'over' ? 'Over ' : 'Under ') + x.line : esc(RNAME(x.rule))}${x.rule === 'mlb_wrigley_wind_out_over' ? ' (Wrigley, wind out)' : ''}${r.p ? ` · ${Math.round(100 * r.p)}% of ${r.n}` : ''}</span>`; }).join('');
+    const moved = pre && o && L && ((o.total != null && L.total != null && o.total !== L.total) || (o.mh != null && L.mh != null && Math.abs(amImp(o.mh) - amImp(L.mh)) >= 0.02));
+    const now = moved ? `<div class="small">Line now: ${A} ${amTxt(o.ma)} / ${H} ${amTxt(o.mh)}${o.total != null ? ', total ' + o.total : ''} (picks above were made at ${A} ${amTxt(L.ma)} / ${H} ${amTxt(L.mh)}${L.total != null ? ', ' + L.total : ''}; they update at the next build)</div>` : '';
+    const noline = !L && pre ? `<div class="small">No DraftKings line at the last build${o && o.mh != null ? ` (now ${A} ${amTxt(o.ma)} / ${H} ${amTxt(o.mh)}${o.total != null ? ', total ' + o.total : ''}; run line and total picks arrive with the next build)` : ' yet'}.</div>` : '';
+    const wx = mlbWx(g), cl = g.clv ? Object.entries(g.clv).map(([k, v]) => `${({ml: 'winner', tot: 'total', rl: 'run line'})[k]} ${v > 0 ? 'beat' : v < 0 ? 'lost to' : 'matched'} the close`).join(', ') : '';
+    return `<div class="mg"><div class="top"><span>${A} @ ${H}${g.num ? ' (G' + g.num + ')' : ''}</span>${score}</div>
+      <div class="small">${esc(g.sp_away || '')} vs ${esc(g.sp_home || '')}${g.venue ? ' · ' + esc(g.venue) : ''}${wx ? ' · ' + esc(wx) : ''}</div>
+      <div class="row"><div><span class="k">Model score</span><b>${A} ${(+g.pa).toFixed(1)}, ${H} ${(+g.ph).toFixed(1)}</b></div>${rows.join('')}</div>
+      ${now}${noline}${cl ? `<div class="small">${cl}</div>` : ''}
+      <div>${leans}${ok.map(w => `<span class="chip okc">${esc(w)}</span>`).join('')}${warn.map(w => `<span class="chip">${esc(w)}</span>`).join('')}</div></div>`;
   }).join('');
+  mlbMineCard();
 }
+function mlbMineCard() { if ($('#t-mlb').contains($('#mineboard'))) renderMine(); }
 $('#mlb-refresh').onclick = () => mlbLoad(true);
+// every logged MLB game as a "model game" for the Tracker scorecard: winner, run line (as ATS) and over/under, graded by the build
+function mlbModelGames() {
+  return Object.values((MLBLOG && MLBLOG.games) || {}).map(r => { const P = r.picks || {}, R = r.res || {}, o = {league: 'MLB', date: r.date, kick: r.kick || r.date, game: `${r.away} @ ${r.home}`, away: r.away, home: r.home, pa: +r.pa, ph: +r.ph,
+      f: r.final ? {as: r.final[0], hs: r.final[1]} : null, ln: r.line || null, res: {}, pick: {}, star: {}, gap: {}, units: r.units || {}, dec: 1};
+    const tm = s => s === 'home' ? r.home : r.away;
+    if (P.ml) { o.pick.su = `${tm(P.ml.side)} to win${P.ml.odds != null ? ' (' + amTxt(P.ml.odds) + ')' : ''}`; if (R.su) o.res.su = R.su; }
+    if (P.rl) { const ln = P.rl.side === 'home' ? P.rl.line : -P.rl.line; o.pick.ats = `Take ${tm(P.rl.side)} ${ln > 0 ? '+' : ''}${ln}${P.rl.odds != null ? ' (' + amTxt(P.rl.odds) + ')' : ''}`; if (R.rl) o.res.ats = R.rl; }
+    if (P.tot) { const k = P.tot.side === 'over' ? 'over' : 'under'; o.pick[k] = `Take the ${k.toUpperCase()} ${P.tot.line}`; o.gap[k] = Math.abs(P.tot.gap); if (R.tot) o.res[k] = R.tot; }
+    return o; });
+}
 
 let TAB = 'week';
 $$('#tabs button').forEach(b => b.onclick = () => { TAB = b.dataset.t; if (TAB === 'live') setTimeout(refreshLive, 0); if (TAB === 'reports') setTimeout(repLoad, 0); if (TAB === 'dfs') setTimeout(dfsLoad, 0); if (TAB === 'mlb') setTimeout(mlbLoad, 0); $$('#tabs button').forEach(x => x.classList.toggle('on', x === b)); ['week', 'mlb', 'live', 'dfs', 'reports', 'track', 'stats', 'rules', 'settings'].forEach(t => $('#t-' + t).classList.toggle('hide', t !== TAB)); renderAll(); });
@@ -2350,7 +2456,7 @@ async function refreshAll(force) {
 }
 $('#refresh').onclick = () => { refreshAll(true); syncCycle(); };
 setStatus('scores', '<b>Scores:</b> loading…'); setStatus('lines', '<b>Lines:</b> loading…'); setStatus('wx', '<b>Weather:</b> loading…'); setStatus('qb', '<b>QB news:</b> loading…');
-themeLbl(); applySeasons(); if (TAB !== 'mlb') sbLoad(); restoreGF(); $$('.ftoggle').forEach(b => b._set && b._set()); recompute(); refreshAll(false); syncCycle(); repLoad();
+themeLbl(); applySeasons(); if (TAB !== 'mlb') sbLoad(); restoreGF(); $$('.ftoggle').forEach(b => b._set && b._set()); recompute(); refreshAll(false); syncCycle(); repLoad(); if (inSeason('MLB')) mlbLoad();
 if (screen.width <= 700 && innerWidth >= 900) $('#dsnote').innerHTML = '<div class="note">Your phone is showing the desktop version, so everything is tiny. In Chrome tap <b>⋮</b> and uncheck <b>Desktop site</b>.</div>';
 let rt; addEventListener('resize', () => { clearTimeout(rt); rt = setTimeout(renderAll, 150); });
 </script>
