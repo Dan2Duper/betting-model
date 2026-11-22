@@ -43,7 +43,7 @@ for r in LG.itertuples():
         if len(w):
             temp = float(w.temperature_2m.mean()); ws = float(w.wind_speed_10m.mean()); rain = float(np.nanmax(w.precipitation_probability.fillna(0).values)) if 'precipitation_probability' in w else 0.0
             wf = math.degrees(math.atan2(np.sin(np.radians(w.wind_direction_10m)).sum(), np.cos(np.radians(w.wind_direction_10m)).sum())) % 360
-            closed = p[3] == 'R' and (rain >= 40 or temp < 60 or (r.home in inputs.HOT_ROOF and temp >= 85))
+            closed = p[3] == 'R' and inputs.roof_closed(r.home, temp, rain)
             f = dict(f_temp=72.0, f_ws=0.0, f_dir='unknown', f_sky='dome', f_ok=True) if closed else dict(f_temp=temp, f_ws=ws, f_dir=inputs.field_wind(wf, p[2]) if p[2] is not None else 'unknown', f_sky='', f_ok=True)
     rows.append(f)
 LG = pd.concat([LG.reset_index(drop=True), pd.DataFrame(rows)], axis=1)

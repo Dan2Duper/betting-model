@@ -28,7 +28,17 @@ PARKS = {'ANA': (33.800, -117.883, 44, 'O'), 'ARI': (33.445, -112.067, 0, 'R'), 
          'MIL': (43.028, -87.971, 129, 'R'), 'MIN': (44.982, -93.278, 90, 'O'), 'NYN': (40.757, -73.846, 13, 'O'), 'NYA': (40.829, -73.926, 75, 'O'), 'ATH': (38.580, -121.514, 45, 'O'),
          'PHI': (39.906, -75.166, 9, 'O'), 'PIT': (40.447, -80.006, 116, 'O'), 'SDN': (32.707, -117.157, 0, 'O'), 'SFN': (37.778, -122.389, 85, 'O'), 'SEA': (47.591, -122.332, 49, 'R'),
          'SLN': (38.623, -90.193, 62, 'O'), 'TBA': (27.768, -82.653, 45, 'D'), 'TEX': (32.747, -97.084, 30, 'R'), 'TOR': (43.641, -79.389, 345, 'R'), 'WAS': (38.873, -77.007, 28, 'O')}
-HOT_ROOF = {'ARI', 'HOU', 'TEX', 'MIA'}   # retractable roofs that close for heat as well as rain / cold
+# When each retractable roof is shut, from what the clubs actually did in 2026 against the outdoor forecast (mlb/research/wx_check.py,
+# 567 games; in-sample for these cut-offs): Houston and Miami are closed essentially always, Texas unless it is a mild dry evening,
+# Arizona only above ~90F, Milwaukee and Toronto when it is cool, Seattle only for rain. Rain (40%+) closes every one of them.
+def roof_closed(home, temp, rain):
+    if rain >= 40 or home in ('HOU', 'MIA'): return True
+    if home == 'TEX': return not (64 <= temp < 70)
+    if home == 'ARI': return temp > 90
+    if home == 'MIL': return temp < 66
+    if home == 'TOR': return temp < 58
+    if home == 'SEA': return False
+    return temp < 60
 
 def parks(X, max_age_days=30):
     """X['parks'][venue id] = [lat, lon, azimuth, roof]. Refreshed from the Stats API every `max_age_days`; kept in the crosswalk file."""
@@ -89,7 +99,7 @@ def forecasts(games, P):
                 # mean direction as a vector, so 350 and 10 degrees average to north
                 sx = sum(math.sin(math.radians(h['wind_direction_10m'][x])) for x in ks if h['wind_direction_10m'][x] is not None); cx = sum(math.cos(math.radians(h['wind_direction_10m'][x])) for x in ks if h['wind_direction_10m'][x] is not None)
                 wfrom = math.degrees(math.atan2(sx, cx)) % 360.0
-                closed = p[3] == 'R' and (rain >= 40 or temp < 60 or (g.get('home') in HOT_ROOF and temp >= 85))
+                closed = p[3] == 'R' and roof_closed(g.get('home'), temp, rain)
                 if closed: out[g['gid']] = dict(temp=72.0, windspeed=0.0, winddir='unknown', sky='dome', roof='closed (expected)', rain=float(rain), src='forecast'); continue
                 out[g['gid']] = dict(temp=round(float(temp), 1), windspeed=round(float(ws), 1), winddir=field_wind(wfrom, p[2]) if p[2] is not None else 'unknown', sky='', rain=float(rain), gust=round(float(gust), 1),
                                      humid=round(float(hum)), wind_from=round(wfrom), roof='open (expected)' if p[3] == 'R' else '', src='forecast')
