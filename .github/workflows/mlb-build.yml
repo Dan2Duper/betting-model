@@ -1,0 +1,34 @@
+# Rebuilds the Bet Tracker's MLB picks (and MLB DFS lineups) whenever mlb/_refresh.json is saved here: the relay does that at set
+# times each day in season and ~90 minutes before each first-pitch window (confirmed lineups, umpires, weather, fresh lines).
+# The twice-a-day schedule lives in "MLB model" on main; both run the same code from the package branch.
+name: MLB build
+on:
+  push:
+    branches: [data]
+    paths: ['mlb/_refresh.json']
+  workflow_dispatch:
+permissions:
+  contents: write
+concurrency: mlb
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    timeout-minutes: 40
+    steps:
+      - uses: actions/checkout@v4
+        with: {ref: data, path: databr}
+      - uses: actions/checkout@v4
+        with: {ref: package, path: code}
+      - uses: actions/setup-python@v5
+        with: {python-version: '3.12'}
+      - run: pip install -q -r code/dfs/requirements.txt requests
+      - name: Build
+        run: python3 code/mlb/run_refresh.py databr
+      - name: Save to the data branch
+        run: |
+          cd databr
+          git config user.name "mlb-bot"; git config user.email "mlb-bot@users.noreply.github.com"
+          git add mlb.json mlb
+          [ -f dfs_mlb.json ] && git add dfs_mlb.json
+          git commit -q -m "MLB build $(date -u +%F' '%H:%M)" || { echo "no change"; exit 0; }
+          git pull -q --rebase origin data && git push origin HEAD:data
