@@ -359,6 +359,7 @@ a{color:var(--series)}
     <div class="card" id="scorecard"></div>
     <div class="card" id="starcard"></div>
     <div class="card"><h2 id="runtitle">Profit over time</h2><div class="small" id="runsub" style="margin-bottom:6px"></div><div id="run"></div></div>
+    <div class="card" id="dfstrack"></div>
     <div class="card">
       <div class="cardhead"><div><h2 id="listtitle">Bets</h2><div id="listsub" style="margin-top:4px"></div></div>
         <div class="seg" id="mode"><button data-m="mine" class="on">My bets</button><button data-m="bets">AI-LOX</button><button data-m="model">Model</button></div></div>
@@ -393,6 +394,7 @@ a{color:var(--series)}
       <div class="card" style="margin:0" id="stat-nfl"></div>
     </div>
     <div class="card" id="stat-rules"></div>
+    <div class="card" id="stat-dfs"></div>
     <div class="grid2">
       <div class="card" style="margin:0" id="w-cfb"></div>
       <div class="card" style="margin:0" id="w-nfl"></div>
@@ -1260,12 +1262,50 @@ function renderStarCard(MG, B) {
       <div>Model counts every ATS and over/under pick it makes; AI-LOX counts only the picks that made its bet list. Green = beating 52.4%. A big gap can mean a real edge, or that Vegas knows something the model doesn't (injuries, weather). That's what this tracks.</div></div>`;
   $$('#starcard button.scc').forEach(b => b.onclick = () => { MODE = b.dataset.who; CAT = 'all'; STARF = +b.dataset.star; LISTN = 25; renderTracker(); document.getElementById('list').closest('.card').scrollIntoView({behavior: 'smooth', block: 'start'}); });
 }
+// ---------------- DFS IN THE TRACKER AND STATS (its own line, never mixed into betting totals) ----------------
+function dfsSum(list) {
+  const done = list.filter(e => e.status === 'done' && e.won != null), cost = e => (+e.fee || 0) * (e.entries || 1);
+  const fees = done.reduce((t, e) => t + cost(e), 0), won = done.reduce((t, e) => t + (+e.won || 0), 0);
+  const fin = done.filter(e => e.place && e.field).map(e => e.place / e.field);
+  return {n: done.length, fees, won, net: won - fees, roi: fees ? (won - fees) / fees : null, cashed: done.filter(e => +e.won > 0).length,
+    open: list.filter(e => e.status !== 'done' || e.won == null).length, openFees: list.filter(e => e.status !== 'done' || e.won == null).reduce((t, e) => t + cost(e), 0),
+    avgPts: (a => a.length ? a.reduce((s, v) => s + v, 0) / a.length : null)(list.filter(e => e.points != null).map(e => +e.points)),
+    finish: fin.length ? fin.reduce((s, v) => s + v, 0) / fin.length : null};
+}
+function dfsGrades(from) { return ((DFS && DFS.lineup_grades) || []).filter(g => !from || (g.lock && ctDate(g.lock) >= from)); }
+function dfsGradeSum(G, m) {
+  const r = G.filter(g => g[m] && g[m].length).map(g => ({a: g[m][0].actual, p: g[m][0].proj, o: g.optimal}));
+  const avg = a => a.length ? a.reduce((s, v) => s + v, 0) / a.length : null;
+  return {n: r.length, act: avg(r.map(x => x.a)), proj: avg(r.map(x => x.p)), err: avg(r.map(x => Math.abs(x.a - x.p))), opt: avg(r.filter(x => x.o).map(x => x.a / x.o))};
+}
+function renderDfsTrack() {
+  const el = $('#dfstrack'); if (!el) return;
+  if (!DFS) { dfsLoad().then(() => { if (DFS) renderDfsTrack(); }); }
+  const from = tkFrom(), E = dfsEntries().filter(e => !from || e.day >= from), S = dfsSum(E), G = dfsGrades(from);
+  const c = dfsGradeSum(G, 'cash'), t = dfsGradeSum(G, 'gpp'), f1 = v => v == null ? '–' : v.toFixed(1);
+  el.innerHTML = `<h2>DFS</h2><div class="small">Kept separate from your bets: none of this is in the scorecard or the profit line above.</div>
+    <div style="margin-top:8px"><b>My entries</b>: ${S.n ? `${S.n} settled · fees ${fmt$(S.fees)} · won ${fmt$(S.won)} · net <b class="${S.net > 0 ? 'pos' : S.net < 0 ? 'neg' : ''}">${fmt$(S.net)}</b>${S.roi != null ? ` · ROI ${(S.roi * 100).toFixed(0)}%` : ''} · cashed ${S.cashed} of ${S.n}` : 'nothing settled yet'}${S.open ? ` · ${S.open} open (${fmt$(S.openFees)} in fees)` : ''}</div>
+    <div style="margin-top:6px"><b>This site's lineups</b> (graded with official stats the morning after): ${G.length ? `${G.length} slate${G.length > 1 ? 's' : ''} · top cash lineup averaged <b>${f1(c.act)}</b> pts (projected ${f1(c.proj)})${c.opt ? `, ${(c.opt * 100).toFixed(0)}% of the best possible` : ''} · top tournament lineup <b>${f1(t.act)}</b> (projected ${f1(t.proj)})${t.opt ? `, ${(t.opt * 100).toFixed(0)}% of the best possible` : ''}` : 'first grades arrive after this week\'s games'}</div>
+    ${G.length ? `<div class="tablewrap" style="margin-top:8px"><table><thead><tr><th>Slate</th><th class="num">Cash #1</th><th class="num">Tournament #1</th><th class="num">Best possible</th></tr></thead><tbody>${G.slice(-12).reverse().map(g => `<tr><td>${esc(g.label)} <span class="small">wk ${g.week}</span></td><td class="num">${g.cash[0] ? `${g.cash[0].actual} <span class="small">/ ${g.cash[0].proj}</span>` : '–'}</td><td class="num">${g.gpp[0] ? `${g.gpp[0].actual} <span class="small">/ ${g.gpp[0].proj}</span>` : '–'}</td><td class="num">${g.optimal ?? '–'}</td></tr>`).join('')}</tbody></table><div class="small">Actual / projected DraftKings points.</div></div>` : ''}`;
+}
+function renderDfsStats() {
+  const el = $('#stat-dfs'); if (!el) return;
+  if (!DFS) { dfsLoad().then(() => { if (DFS) renderDfsStats(); }); }
+  const E = dfsEntries(), rows = [['All', E], ['Cash', E.filter(e => e.mode === 'cash')], ['Tournament', E.filter(e => e.mode !== 'cash')]].map(([k, l]) => [k, dfsSum(l)]);
+  const G = dfsGrades(''), c = dfsGradeSum(G, 'cash'), t = dfsGradeSum(G, 'gpp'), f1 = v => v == null ? '–' : v.toFixed(1);
+  el.innerHTML = `<h2>DFS</h2><div class="hint">Your DraftKings entries and this site's own lineups, kept apart from the betting numbers.</div>
+    <table><thead><tr><th>My entries</th><th class="num">Settled</th><th class="num">Fees</th><th class="num">Won</th><th class="num">Net</th><th class="num">ROI</th><th class="num">Cashed</th><th class="num">Avg pts</th><th class="num">Avg finish</th></tr></thead><tbody>` +
+    rows.map(([k, s]) => `<tr><td>${k}</td><td class="num">${s.n}</td><td class="num">${fmt$(s.fees)}</td><td class="num">${fmt$(s.won)}</td><td class="num ${s.net > 0 ? 'pos' : s.net < 0 ? 'neg' : ''}">${fmt$(s.net)}</td><td class="num">${s.roi != null ? (s.roi * 100).toFixed(0) + '%' : '–'}</td><td class="num">${s.n ? pct(s.cashed / s.n) : '–'}</td><td class="num">${f1(s.avgPts)}</td><td class="num">${s.finish != null ? 'top ' + (s.finish * 100).toFixed(0) + '%' : '–'}</td></tr>`).join('') + `</tbody></table>
+    <table style="margin-top:10px"><thead><tr><th>This site's lineups</th><th class="num">Slates</th><th class="num">Avg actual</th><th class="num">Avg projected</th><th class="num">Avg miss</th><th class="num">% of best possible</th></tr></thead><tbody>
+    ${[['Top cash lineup', c], ['Top tournament lineup', t]].map(([k, s]) => `<tr><td>${k}</td><td class="num">${s.n}</td><td class="num">${f1(s.act)}</td><td class="num">${f1(s.proj)}</td><td class="num">${f1(s.err)}</td><td class="num">${s.opt ? (s.opt * 100).toFixed(0) + '%' : '–'}</td></tr>`).join('')}</tbody></table>
+    <div class="small">Site lineups are snapshotted at lock and graded with official NFL stats; "best possible" is the highest-scoring lineup that fit the salary cap in hindsight.</div>`;
+}
 function renderTracker() {
   initFilters();
   $$('#tk-lg button').forEach(b => b.classList.toggle('on', b.dataset.v === TK.lg)); $$('#tk-per button').forEach(b => b.classList.toggle('on', b.dataset.v === TK.per));
   $$('#mode button').forEach(b => b.classList.toggle('on', b.dataset.m === MODE));
   const MG = modelGames(), B = filtered('bets'), M = filtered('mine');
-  renderScorecard(MG, B, M); renderStarCard(MG, B);
+  renderScorecard(MG, B, M); renderStarCard(MG, B); renderDfsTrack();
   drawRun(B, M);
   // list
   const inCat = r => (CAT === 'all' || catOf(r) === CAT) && (!STARF || betStars(r) === STARF);
@@ -1381,7 +1421,7 @@ function renderModelCard() {
     ['All', 'CFB', 'NFL'].map(lg => `<tr><td>${lg === 'All' ? 'Both' : lg}</td><td class="num">${cell((R[lg] || {}).su, 0.5)}</td><td class="num">${cell((R[lg] || {}).ats, 0.524)}</td><td class="num">${cell((R[lg] || {}).ou, 0.524)}</td></tr>`).join('') + '</tbody></table>';
 }
 function renderStats() {
-  renderModelCard();
+  renderModelCard(); renderDfsStats();
   const live = {CFB: [], NFL: []};
   DATA.predlog.forEach(p => { const f = finalFor(p.league, p.id, p.date, p.away, p.home);
     if (f) live[p.league].push({et: Math.abs(+p.pred_away + +p.pred_home - f.as - f.hs), wrong: Math.sign(+p.pred_home - +p.pred_away) !== Math.sign(f.hs - f.as)}); });
@@ -1917,7 +1957,7 @@ async function refreshLive() {
 }
 function scoreLine(g) { if (!g || !(g.state === 'in' || g.state === 'post' || g.done)) return '';
   return `<div class="sline ${g.state === 'in' ? 'in' : ''}">${g.as} – ${g.hs} <span class="small">${esc(g.detail || 'Final')}</span></div>`; }
-const PAGE_VER = "20261122102918";   // stamped by tracker.py; a newer published page reloads itself
+const PAGE_VER = "20261122103154";   // stamped by tracker.py; a newer published page reloads itself
 // ---------------- AUTO REFRESH (while the page is open) ----------------
 const busy = () => { const a = document.activeElement; return a && ['INPUT', 'SELECT', 'TEXTAREA'].includes(a.tagName) || $('#m-form').classList.contains('open'); };
 let tickN = 0;
