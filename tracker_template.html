@@ -526,7 +526,7 @@ async function espnDay(lg, d) {
     const rec = {lg, id: ev.id, date: edate, home: H.team.location, away: A.team.location, habbr: nflAbbr(H.team.abbreviation), aabbr: nflAbbr(A.team.abbreviation),
                  hs: +H.score, as: +A.score, done: !!ev.status?.type?.completed};
     if (rec.done) ST.finals[lg + ':' + ev.id] = rec;
-    (ST.slate[lg + ':' + d] = ST.slate[lg + ':' + d] || {})[ev.id] = {id: ev.id, kick: ev.date, away: A.team.location, home: H.team.location, aabbr: rec.aabbr, habbr: rec.habbr, done: rec.done, as: rec.as, hs: rec.hs, state: ev.status?.type?.state || '', detail: ev.status?.type?.shortDetail || '', ts: Date.now(),
+    (ST.slate[lg + ':' + d] = ST.slate[lg + ':' + d] || {})[ev.id] = {id: ev.id, kick: ev.date, away: A.team.location, home: H.team.location, aabbr: rec.aabbr, habbr: rec.habbr, anick: A.team.name || '', hnick: H.team.name || '', aab0: A.team.abbreviation || '', hab0: H.team.abbreviation || '', done: rec.done, as: rec.as, hs: rec.hs, state: ev.status?.type?.state || '', detail: ev.status?.type?.shortDetail || '', ts: Date.now(),
       ar: A.curatedRank?.current < 26 ? A.curatedRank.current : '', hr: H.curatedRank?.current < 26 ? H.curatedRank.current : '', tv: (c.broadcasts?.[0]?.names || []).join('/'), lg, ac: ESPN_CONF[A.team.conferenceId] || '', hc: ESPN_CONF[H.team.conferenceId] || '',
       poss: c.situation?.possession ? (c.situation.possession === H.team.id ? 'h' : c.situation.possession === A.team.id ? 'a' : '') : '', dd: c.situation?.downDistanceText || '', rz: !!c.situation?.isRedZone};
     const o = c.odds?.[0];
@@ -1612,17 +1612,24 @@ function shotImage(file) { return new Promise((res, rej) => { const img = new Im
     c.getContext('2d').drawImage(img, 0, 0, c.width, c.height); URL.revokeObjectURL(url); res(c.toDataURL('image/jpeg', 0.82).split(',')[1]); };
   img.onerror = rej; img.src = url; }); }
 const shotNorm = s => String(s || '').toLowerCase().replace(/[^a-z0-9 ]/g, ' ').replace(/\s+/g, ' ').trim();
-function shotTeamScore(loc, ab, team) {   // how well a slip team name matches an ESPN school/team: 3 exact ... 0 none
-  const t = shotNorm(team), L = shotNorm(loc), A = shotNorm(ab); if (!t || !L) return 0;
-  if (t === L) return 3;
-  const tw = t.split(' '), Lw = L.split(' ');
-  if (A && tw.includes(A)) return 2.5;
-  if (Lw.every(w => tw.includes(w))) return 2 + Lw.length / tw.length * 0.5;   // "Tennessee Volunteers" -> Tennessee
-  if (tw.every(w => Lw.includes(w))) return 0.6 * tw.length / Lw.length;      // "Tennessee" -> Tennessee Tech: weak, only if nothing better
+const CITY = {la: 'los angeles', ny: 'new york', kc: 'kansas city', tb: 'tampa bay', sf: 'san francisco', gb: 'green bay', ne: 'new england', no: 'new orleans',
+  lv: 'las vegas', jax: 'jacksonville', jac: 'jacksonville', wsh: 'washington', was: 'washington', phi: 'philadelphia', pitt: 'pittsburgh', cincy: 'cincinnati'};
+const shotWords = s => shotNorm(s).split(' ').filter(Boolean).flatMap(w => (CITY[w] || w).split(' '));
+function shotTeamScore(loc, ab, team, nick, ab0) {   // how well a slip team ("LA Chargers", "Tennessee", "DET Lions", "LAC") matches an ESPN team: 3 exact ... 0 none
+  const tw = shotWords(team), Lw = shotWords(loc), N = shotNorm(nick), A = [shotNorm(ab), shotNorm(ab0)].filter(Boolean); if (!tw.length || !Lw.length) return 0;
+  const t = tw.join(' '), L = Lw.join(' ');
+  if (t === L || (N && (t === `${L} ${N}` || t === N))) return 3;
+  const hasNick = N && N.split(' ').every(w => tw.includes(w)), hasCity = Lw.every(w => tw.includes(w)), hasAbbr = A.some(a => tw.includes(a));
+  if (hasNick && (hasCity || hasAbbr)) return 3;                                // "LA Chargers", "DET Lions", "Tennessee Volunteers"
+  if (hasNick) return 2.8;                                                     // "Chargers" alone (tells the two LA / NY teams apart)
+  if (hasAbbr) return 2.5;
+  if (hasCity) return 2 + Lw.length / tw.length * 0.5;                         // city/school named, plus words that aren't this team's nickname
+  if (tw.every(w => Lw.includes(w))) return 0.6 * tw.length / Lw.length;       // "Tennessee" -> Tennessee Tech: weak, only if nothing better
   return 0;
 }
 function shotTeamSide(g, team) {   // which side of ESPN game g is this slip team on, and how sure (score)
-  const h = shotTeamScore(g.home, g.habbr, team), a = shotTeamScore(g.away, g.aabbr, team);
+  const h = shotTeamScore(g.home, g.habbr, team, g.hnick, g.hab0), a = shotTeamScore(g.away, g.aabbr, team, g.anick, g.aab0);
+  if (h && a && Math.abs(h - a) < 0.01) return null;                           // "Los Angeles" alone can't tell Rams from Chargers
   return h >= a ? (h ? {side: 'home', s: h} : null) : {side: 'away', s: a};
 }
 async function shotFindGame(lg, leg, around) {   // best-scoring game on the nearest days; an exact school name always beats a partial one
@@ -1639,11 +1646,12 @@ async function shotFindGame(lg, leg, around) {   // best-scoring game on the nea
       else if (O) { side = O.side === 'home' ? 'away' : 'home'; sc = O.s; }
       if (!side || sc < 0.3) continue;
       if (leg.market === 'total') side = side || 'home';
-      if (!best || sc > best.sc) best = {g, side, sc};
+      if (best && Math.abs(sc - best.sc) < 0.01 && best.g.id !== g.id) best.tie = true;   // two games fit equally ("Los Angeles" alone)
+      if (!best || sc > best.sc + 0.01) best = {g, side, sc};
     }
     if (best && best.sc >= 2) break;          // a solid match on the nearest day: stop looking further out
   }
-  return best && {g: best.g, side: best.side, sc: best.sc};
+  return best && {g: best.g, side: best.side, sc: best.tie ? 1.9 : best.sc};   // a tie gets the "check it" warning
 }
 function shotLeg(lg, leg, g, side) {   // one leg in this page's format (spread lines stored from the home team's side)
   const m = leg.market === 'moneyline' ? 'ml' : leg.market;
@@ -1671,7 +1679,7 @@ async function shotGames() {   // NFL + college games from 3 days back to 6 ahea
   const byId = {}, lines = [];
   for (const lg of ['NFL', 'CFB']) for (const d of days) for (const g of Object.values(ST.slate[lg + ':' + d] || {})) {
     if (byId[g.id]) continue; byId[g.id] = {g, lg};
-    lines.push(`${g.id} | ${lg} | ${ctDate(g.kick)} | ${g.away}${g.aabbr ? ' (' + g.aabbr + ')' : ''} @ ${g.home}${g.habbr ? ' (' + g.habbr + ')' : ''}`);
+    lines.push(`${g.id} | ${lg} | ${ctDate(g.kick)} | ${g.away}${g.anick ? ' ' + g.anick : ''}${g.aabbr ? ' (' + g.aabbr + ')' : ''} @ ${g.home}${g.hnick ? ' ' + g.hnick : ''}${g.habbr ? ' (' + g.habbr + ')' : ''}`);
   }
   return {byId, text: lines.join('\n')};
 }
