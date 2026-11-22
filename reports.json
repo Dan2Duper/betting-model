@@ -2,6 +2,15 @@
  "_note": "Written automatically by the relay (and by Claude); newest first; the Bet Tracker Reports tab reads this.",
  "reports": [
   {
+   "id": "2026-11-22T00:36:10Z-CFB",
+   "time": "2026-11-22T00:36:10Z",
+   "league": "CFB",
+   "kind": "update",
+   "title": "T-Minus Fuck-All: Rich's Bankroll Reaches Orbit, BYU Blows Up the 4-Leg Parlay on the Pad",
+   "text": "**MY BETS:**\n\nFLIGHT, we have a status update. Settled 3-2-0, net +$57.52 on $122.84 staked. Telemetry is green, mostly.\n\n- Wisconsin -5.5: WON +$8.31. Wisconsin 42-10 Purdue. Cleared the number by 26.5. Purdue was a launch tower made of wet cardboard.\n- BYU -5.5: LOST -$9.54. BYU 31-29 Kansas in 3OT. Missed by 3.5. Three overtimes just to piss on your boots.\n- 4-leg parlay: LOST -$19.97. It was going to pay $489.07. BYU was the O-ring. Wisconsin, Tennessee and Washington all did their jobs and none of it matters.\n- Tennessee ML: LIVE AND WINNING. Tennessee 27, LSU 13, 1:56 left in the 4th. $44.25 to win $62.83. Stand by for clean separation.\n- Washington ML: WON +$67.42. Washington 27-24 Indiana in OT. That's your whole profit and it nearly scrubbed itself.\n- Michigan ML: WON +$11.30. Michigan 18-16 UCLA in 3OT. Ugly, stupid, paid.\n\n**AI-LOX:**\n\nNothing settled, 0-0-0, with $130.00 on the pad. Both picks are still fueling and we're praying the fuel isn't AI-LOX's.\n\n**THE MODEL:**\n\n34 of 54 modeled games are final. It picked the winner in 21 of 34, went 17-17 against the spread and 17-16 on totals. Average miss on the margin is 11.0 points. That's a coin flip with a rocket strapped to it.\n\n- Closest call: South Alabama 40-35 Southern Miss (model had 36-31). Even a broken clock.\n- Worst miss: Georgia Southern 45-7 Troy (model had 26-16). Catastrophic anomaly. Total vehicle loss.\n- Live and in the air: Virginia Tech 14-3 Miami (model 20-43), Maryland 7-13 USC (model 17-40), Washington State 7-21 Texas State at the half (model 25-34). Those three look like the model's trajectory is pointed at the ocean.\n\n**STILL TO COME:**\n\n- TCU +8.5 vs Utah, $35.00 to win $31.25, 9:00 PM EST\n- Arizona State +2.5 vs Oklahoma State, $95.00 to win $90.48, 10:15 PM EST\n- UNDER 44.5 MIA @ BUF, $63.00 to win $60.00\n- UNDER 48.5 NO @ CHI, $46.00 to win $40.71\n- UNDER 40.5 ARI @ KC, $21.00 to win $20.00\n- UNDER 54.5 CIN @ WAS, $130.00 to win $120.37, Monday 8:15 PM EST\n\nThat last one is $130.00 on one under. Godspeed, you magnificent dumbass.",
+   "style": "mission control during a launch that may or may not explode"
+  },
+  {
    "id": "2026-11-21T21:43:18Z-CFB",
    "time": "2026-11-21T21:43:18Z",
    "league": "CFB",
@@ -248,12 +257,13 @@
    ]
   },
   "2026-11-21": {
-   "n": 3,
-   "last": "2026-11-21T21:43:18Z",
-   "fp": "mine|CFB|401856866|spread|1795296997882|0L,mine|CFB|401858533|spread|1795296371564|1W|14",
-   "fpBets": "mine|CFB|401856866|spread|1795296997882|0L,mine|CFB|401858533|spread|1795296371564|1W",
+   "n": 4,
+   "last": "2026-11-22T00:36:10Z",
+   "fp": "mine|CFB|401856866+401858533+401856754+401858535|parlay|1795297334860|0L,mine|CFB|401856866|spread|1795296997882|0L,mine|CFB|401858528|ml|1795297783490|2W,mine|CFB|401858533|spread|1795296371564|1W,mine|CFB|401858535|ml|1795297782662|1W|34",
+   "fpBets": "mine|CFB|401856866+401858533+401856754+401858535|parlay|1795297334860|0L,mine|CFB|401856866|spread|1795296997882|0L,mine|CFB|401858528|ml|1795297783490|2W,mine|CFB|401858533|spread|1795296371564|1W,mine|CFB|401858535|ml|1795297782662|1W",
    "kinds": [
     "preview",
+    "update",
     "update",
     "update"
    ]
