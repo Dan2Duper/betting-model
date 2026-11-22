@@ -36,13 +36,17 @@ def num_of(g): return int(g.get('gameNumber', 1)) if g.get('doubleHeader', 'N') 
 # ---------------- id crosswalks (MLBAM -> Retrosheet), kept in CACHE/xwalk.json ----------------
 def load_xwalk(cache, hist_games):
     f = f'{cache}/xwalk.json'; X = json.load(open(f)) if os.path.exists(f) else {}
-    if 'players' not in X or time.time() - X.get('players_ts', 0) > 20 * 86400:
-        P = {}
+    if 'players' not in X or 'names' not in X or time.time() - X.get('players_ts', 0) > 20 * 86400:
+        P = {}; NM = {}
         for h in '0123456789abcdef':
-            try: d = pd.read_csv(f'https://raw.githubusercontent.com/chadwickbureau/register/master/data/people-{h}.csv', usecols=['key_mlbam', 'key_retro'], low_memory=False)
+            try: d = pd.read_csv(f'https://raw.githubusercontent.com/chadwickbureau/register/master/data/people-{h}.csv', usecols=lambda c: c in ('key_mlbam', 'key_retro', 'name_first', 'name_last', 'mlb_played_last'), low_memory=False)
             except Exception as e: print('register part', h, 'failed', e); continue
-            d = d.dropna(); P.update({str(int(m)): r for m, r in zip(d.key_mlbam, d.key_retro)})
+            k = d.dropna(subset=['key_mlbam', 'key_retro']); P.update({str(int(m)): r for m, r in zip(k.key_mlbam, k.key_retro)})
+            if 'name_last' in d and 'mlb_played_last' in d:   # names of recent players (DFS: matching the model's ids to DraftKings' player list)
+                n = d[d.key_mlbam.notna() & (d.mlb_played_last >= dt.date.today().year - 4)]
+                NM.update({(r if isinstance(r, str) and r else f'm{int(m)}'): f'{a} {b}'.strip() for m, r, a, b in zip(n.key_mlbam, n.key_retro, n.name_first.fillna(''), n.name_last.fillna(''))})
         if P: X['players'] = P; X['players_ts'] = time.time()
+        if NM: X['names'] = NM
         print('crosswalk players', len(X.get('players', {})))
     last = int(hist_games.season.max())
     if X.get('venues_from') != last:   # learn venue and plate-umpire ids from the last three Retrosheet seasons, matched game by game
@@ -139,6 +143,7 @@ def hands_for(X, ids, cache):
         try:
             for p in get(f"{API}/people?personIds={','.join(i[1:] for i in need[k:k + 100])}").get('people', []):
                 X['hands'][f"m{p['id']}"] = [p.get('batSide', {}).get('code', 'R').replace('S', 'B'), p.get('pitchHand', {}).get('code', 'R')]
+                if p.get('fullName'): X.setdefault('names', {})[f"m{p['id']}"] = p['fullName']
         except Exception as e: print('people lookup failed', e)
     if need: json.dump(X, open(f'{cache}/xwalk.json', 'w'))
 
@@ -147,7 +152,7 @@ def main():
     ap.add_argument('--check', action='store_true'); ap.add_argument('--max-new', type=int, default=4000)
     ap.add_argument('--hist-last', type=int, help='parity test: pretend Retrosheet history ends with this season')
     ap.add_argument('--log', help='season pick log to update (default: log_<season>.json in --cache)'); ap.add_argument('--lines', help="the relay's closing-line snapshots (default: lines.json in --cache)")
-    ap.add_argument('--no-log', action='store_true', help='build mlb.json only'); ap.add_argument('--now', help='pretend it is this UTC time (replays: default 6 am Central on --date)'); A = ap.parse_args()
+    ap.add_argument('--no-log', action='store_true', help='build mlb.json only'); ap.add_argument('--no-dfs', action='store_true', help='skip the DFS projections'); ap.add_argument('--now', help='pretend it is this UTC time (replays: default 6 am Central on --date)'); A = ap.parse_args()
     os.makedirs(A.cache, exist_ok=True)
     day0 = A.date or str((dt.datetime.now(dt.timezone.utc) - dt.timedelta(hours=6)).date()); d0 = dt.date.fromisoformat(day0)
     NOW = dt.datetime.fromisoformat(A.now.replace('Z', '+00:00')) if A.now else (dt.datetime.fromisoformat(day0 + 'T12:00:00+00:00') if A.date else dt.datetime.now(dt.timezone.utc))
@@ -170,7 +175,7 @@ def main():
         for c in ('a_lineup', 'h_lineup'): LG[c] = [','.join(rp(i) for i in str(v).split(',')) for v in LG[c]]
         for n in ('pit', 'bat'): T[n] = T[n].assign(pid=T[n].pid.map(rp))
     # ---- the slate ----
-    slate = []; sched_final = {}; sched_status = {}
+    slate = []; sched_final = {}; sched_status = {}; NAMES = dict(X.get('names') or {})
     for g in schedule(startDate=day0, endDate=str(d0 + dt.timedelta(days=A.days - 1)), gameType='R', hydrate='probablePitcher,lineups,venue,weather,officials'):
         if g.get('status', {}).get('detailedState') in ('Postponed', 'Cancelled'): sched_status[str(g['gamePk'])] = 'ppd'; continue
         if is_final(g): sched_final[str(g['gamePk'])] = (g['teams']['away']['score'], g['teams']['home']['score'])
@@ -187,6 +192,9 @@ def main():
         for side, pre in (('away', 'a'), ('home', 'h')):
             t = g['teams'][side]; pp = t.get('probablePitcher') or {}
             r[pre + 'sp'] = pid(X, pp['id']) if pp.get('id') else ''; r[pre + 'sp_name'] = pp.get('fullName', 'TBD')
+            if pp.get('id') and pp.get('fullName'): NAMES[r[pre + 'sp']] = pp['fullName']
+            for q in (g.get('lineups') or {}).get(side + 'Players') or []:
+                if q.get('id') and q.get('fullName'): NAMES[pid(X, q['id'])] = q['fullName']
             lu = (g.get('lineups') or {}).get(side + 'Players') or []
             if len(lu) >= 9:
                 r[pre + '_lineup'] = ','.join(pid(X, p['id']) for p in lu[:9]); r[pre + '_pos'] = ','.join(str(p.get('primaryPosition', {}).get('code', '')) for p in lu[:9]); r[pre + '_lineup_src'] = 'posted'
@@ -255,7 +263,7 @@ def main():
     if not BRULES: BRULES = {k: v for k, v in json.load(open(f'{os.path.dirname(HERE)}/rules_seed.json')).items() if k.startswith('mlb_')}
     if not A.no_log and not A.hist_last:
         lf = A.log or f'{A.cache}/log_{d0.year}.json'      # inside the cache folder, which the workflow already saves to the data branch
-        LOG = json.load(open(lf)) if os.path.exists(lf) else dict(season=d0.year, games={})
+        LOG = json.load(open(lf)) if os.path.exists(lf) else dict(season=d0.year, games={}); fresh = not os.path.exists(lf)
         closes = {}
         try:
             cf = A.lines or f'{A.cache}/lines.json'
@@ -266,7 +274,8 @@ def main():
         n = picks.update_log(LOG, out['games'], finals, closes, NOW, sched_status)
         LOG['updated'] = NOW.isoformat(timespec='minutes'); LOG['rule_stats'] = picks.learn(LOG, BRULES); LOG['record'] = picks.record(LOG)
         LOG['record_30'] = picks.record(LOG, since=str(d0 - dt.timedelta(days=30))); LOG['record_7'] = picks.record(LOG, since=str(d0 - dt.timedelta(days=7)))
-        json.dump(LOG, open(lf, 'w'), separators=(',', ':')); print('log:', lf, len(LOG['games']), 'games,', n, 'changed | season record', json.dumps(LOG['record']['model']))
+        if not (fresh and not LOG['games']): json.dump(LOG, open(lf, 'w'), separators=(',', ':'))      # no empty log file out of season
+        print('log:', lf, len(LOG['games']), 'games,', n, 'changed | season record', json.dumps(LOG['record']['model']))
         out['rule_stats'] = LOG['rule_stats']; out['record'] = LOG['record']; out['record_30'] = LOG['record_30']; out['record_7'] = LOG['record_7']; out['log'] = 'mlb/' + os.path.basename(lf)
         for g in out['games']:   # what the log holds for today's games (frozen picks, finals) rides along so the page needs one file for today
             rec = LOG['games'].get(str(g['pk']))
@@ -280,6 +289,14 @@ def main():
                             unknown_players=round(float(np.mean([is_am(i) for s in LG.h_lineup for i in str(s).split(',') if i])), 4), unknown_parks=int(LG.park.astype(str).str.startswith('v').sum()),
                             unknown_umps=int(sum(is_am(u) for u in LG.ump)), weather_missing=int(LG.temp.isna().sum()))
         print('WALK-FORWARD CHECK', json.dumps(out['check']))
+    # ---- DFS projections for the slate (dfs/build_mlb.py turns them into lineups); never allowed to stop the picks ----
+    if not A.no_dfs and not A.hist_last and len(out['games']):
+        try:
+            import dfs_export
+            today_games = [g for g in out['games'] if g['date'] == day0]
+            n = dfs_export.export(G, pit, bat, hands, F, day0, M, A.cache, today_games, NAMES, f'{A.cache}/dfs_proj.json'); print('DFS projections:', n, 'starters for', day0)
+        except Exception as e:
+            import traceback; traceback.print_exc(); print('DFS projections failed (picks unaffected):', e)
     json.dump(out, open(A.out, 'w')); print('wrote', A.out, len(out['games']), 'games')
     for g in out['games'][:6]: print(' ', g['away'], g['pa'], '@', g['home'], g['ph'], 'p_home', g['p_home'], g['sp_away'], 'vs', g['sp_home'], g['lineup_home'])
 

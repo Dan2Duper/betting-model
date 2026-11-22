@@ -1,0 +1,334 @@
+{
+ "season": 2026,
+ "games": 2429,
+ "with_forecast": 2429,
+ "vs_posted": {
+  "outdoor_games": 1958,
+  "temp_mae": 2.41,
+  "temp_corr": 0.964,
+  "wind_mae": 2.22,
+  "wind_corr": 0.677,
+  "wind_mean_forecast": 7.5,
+  "wind_mean_posted": 8.04,
+  "windy_games": 957,
+  "same_direction_code": 0.491,
+  "same_out_in_cross": 0.704,
+  "opposite_out_vs_in": 0.022
+ },
+ "roof": {
+  "retractable_games": 567,
+  "posted_closed": 0.667,
+  "rule_closed": 0.646,
+  "rule_right": 0.94
+ },
+ "roof_table": {
+  "ARI|dry|(70, 75]": [
+   0.0,
+   1
+  ],
+  "ARI|dry|(75, 80]": [
+   0.0,
+   2
+  ],
+  "ARI|dry|(80, 85]": [
+   0.12,
+   8
+  ],
+  "ARI|dry|(85, 90]": [
+   0.22,
+   9
+  ],
+  "ARI|dry|(90, 130]": [
+   0.95,
+   60
+  ],
+  "ARI|rain40+|(80, 85]": [
+   1.0,
+   1
+  ],
+  "HOU|dry|(65, 70]": [
+   1.0,
+   1
+  ],
+  "HOU|dry|(70, 75]": [
+   1.0,
+   10
+  ],
+  "HOU|dry|(75, 80]": [
+   1.0,
+   15
+  ],
+  "HOU|dry|(80, 85]": [
+   1.0,
+   16
+  ],
+  "HOU|dry|(85, 90]": [
+   1.0,
+   21
+  ],
+  "HOU|dry|(90, 130]": [
+   1.0,
+   11
+  ],
+  "HOU|rain40+|(65, 70]": [
+   1.0,
+   1
+  ],
+  "HOU|rain40+|(75, 80]": [
+   1.0,
+   4
+  ],
+  "HOU|rain40+|(80, 85]": [
+   1.0,
+   2
+  ],
+  "MIA|dry|(75, 80]": [
+   0.81,
+   16
+  ],
+  "MIA|dry|(80, 85]": [
+   0.96,
+   28
+  ],
+  "MIA|dry|(85, 90]": [
+   1.0,
+   29
+  ],
+  "MIA|dry|(90, 130]": [
+   1.0,
+   3
+  ],
+  "MIA|rain40+|(70, 75]": [
+   1.0,
+   3
+  ],
+  "MIA|rain40+|(80, 85]": [
+   1.0,
+   1
+  ],
+  "MIA|rain40+|(85, 90]": [
+   1.0,
+   1
+  ],
+  "MIL|dry|(0, 55]": [
+   1.0,
+   11
+  ],
+  "MIL|dry|(55, 60]": [
+   1.0,
+   5
+  ],
+  "MIL|dry|(60, 65]": [
+   0.88,
+   8
+  ],
+  "MIL|dry|(65, 70]": [
+   0.44,
+   9
+  ],
+  "MIL|dry|(70, 75]": [
+   0.28,
+   18
+  ],
+  "MIL|dry|(75, 80]": [
+   0.0,
+   10
+  ],
+  "MIL|dry|(80, 85]": [
+   0.0,
+   9
+  ],
+  "MIL|dry|(85, 90]": [
+   0.0,
+   2
+  ],
+  "MIL|dry|(90, 130]": [
+   0.0,
+   4
+  ],
+  "MIL|rain40+|(60, 65]": [
+   1.0,
+   3
+  ],
+  "MIL|rain40+|(65, 70]": [
+   1.0,
+   1
+  ],
+  "MIL|rain40+|(70, 75]": [
+   1.0,
+   1
+  ],
+  "SEA|dry|(0, 55]": [
+   0.25,
+   12
+  ],
+  "SEA|dry|(55, 60]": [
+   0.43,
+   7
+  ],
+  "SEA|dry|(60, 65]": [
+   0.13,
+   15
+  ],
+  "SEA|dry|(65, 70]": [
+   0.0,
+   14
+  ],
+  "SEA|dry|(70, 75]": [
+   0.0,
+   18
+  ],
+  "SEA|dry|(75, 80]": [
+   0.0,
+   9
+  ],
+  "SEA|dry|(80, 85]": [
+   0.0,
+   3
+  ],
+  "SEA|rain40+|(0, 55]": [
+   1.0,
+   3
+  ],
+  "TEX|dry|(60, 65]": [
+   1.0,
+   2
+  ],
+  "TEX|dry|(65, 70]": [
+   0.25,
+   4
+  ],
+  "TEX|dry|(70, 75]": [
+   1.0,
+   4
+  ],
+  "TEX|dry|(75, 80]": [
+   0.86,
+   7
+  ],
+  "TEX|dry|(80, 85]": [
+   1.0,
+   8
+  ],
+  "TEX|dry|(85, 90]": [
+   0.86,
+   7
+  ],
+  "TEX|dry|(90, 130]": [
+   1.0,
+   45
+  ],
+  "TEX|rain40+|(70, 75]": [
+   1.0,
+   1
+  ],
+  "TEX|rain40+|(75, 80]": [
+   1.0,
+   2
+  ],
+  "TEX|rain40+|(80, 85]": [
+   1.0,
+   1
+  ],
+  "TOR|dry|(0, 55]": [
+   1.0,
+   20
+  ],
+  "TOR|dry|(55, 60]": [
+   0.67,
+   3
+  ],
+  "TOR|dry|(60, 65]": [
+   0.12,
+   8
+  ],
+  "TOR|dry|(65, 70]": [
+   0.17,
+   12
+  ],
+  "TOR|dry|(70, 75]": [
+   0.0,
+   8
+  ],
+  "TOR|dry|(75, 80]": [
+   0.0,
+   16
+  ],
+  "TOR|dry|(80, 85]": [
+   0.0,
+   3
+  ],
+  "TOR|dry|(85, 90]": [
+   0.0,
+   1
+  ],
+  "TOR|rain40+|(0, 55]": [
+   1.0,
+   4
+  ],
+  "TOR|rain40+|(60, 65]": [
+   1.0,
+   1
+  ],
+  "TOR|rain40+|(65, 70]": [
+   1.0,
+   4
+  ],
+  "TOR|rain40+|(75, 80]": [
+   1.0,
+   1
+  ]
+ },
+ "model": {
+  "neutral (72F, calm)": {
+   "games": 2429,
+   "total_mae": 3.5073,
+   "deviance": 2.30142,
+   "winner_logloss": 0.68207,
+   "winner_pct": 0.5562,
+   "mean_total": 8.532,
+   "actual_total": 8.962
+  },
+  "park forecast": {
+   "games": 2429,
+   "total_mae": 3.508,
+   "deviance": 2.2846,
+   "winner_logloss": 0.68207,
+   "winner_pct": 0.5562,
+   "mean_total": 8.798,
+   "actual_total": 8.962
+  },
+  "posted at game time": {
+   "games": 2429,
+   "total_mae": 3.5024,
+   "deviance": 2.28064,
+   "winner_logloss": 0.68207,
+   "winner_pct": 0.5562,
+   "mean_total": 8.82,
+   "actual_total": 8.962
+  },
+  "neutral | windy, cold or hot games": {
+   "games": 810,
+   "total_mae": 3.5599,
+   "bias": -0.695
+  },
+  "forecast | windy, cold or hot games": {
+   "games": 810,
+   "total_mae": 3.5312,
+   "bias": -0.368
+  },
+  "posted | windy, cold or hot games": {
+   "games": 810,
+   "total_mae": 3.5225,
+   "bias": -0.324
+  }
+ },
+ "bias": {
+  "neutral (72F, calm)": -0.43,
+  "park forecast": -0.164,
+  "posted at game time": -0.142
+ },
+ "share_of_posted_gain": 0.809,
+ "verdict": "use the forecast",
+ "note": "Run on GitHub Actions Nov 22 2026 (python3 mlb/research/wx_check.py). The roof cut-offs in mlb/inputs.py roof_closed() were set from this season's roof_table, so 'roof.rule_right' is in-sample."
+}

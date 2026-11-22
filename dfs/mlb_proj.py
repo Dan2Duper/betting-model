@@ -224,13 +224,26 @@ def all_rows(cache=None, hist_last=None, model_json=None, hist_dir=None):
     F = run_lam(F, sorted(s for s in F.season.unique() if s >= int(F.season.min()) + 1), model_json)
     return player_rows(G, pit, bat, hands, F)
 
-def project_day(G, pit, bat, hands, F, day0, model_json):
+def project_day(G, pit, bat, hands, F, day0, model_json, model_cache=None):
     """What the daily job calls (step 3): G/pit/bat/hands/F as mlb/live.py builds them (F from features.build, no lam needed).
-    Trains on every earlier season, projects the season to date (for the drift fix) and returns (hitters, pitchers) for day0's slate."""
+    Trains on every earlier season, projects the season to date (for the drift fix) and returns (hitters, pitchers) for day0's slate.
+    model_cache: a file to keep the fitted trees in. They only depend on earlier seasons, so they are fitted once a season (and again
+    when the features, the training rows or scikit-learn change) instead of on every build."""
     d0 = pd.Timestamp(day0); S = d0.year
     F = run_lam(F, sorted(s for s in F.season.unique() if s > int(F.season.min())), model_json)
     Hs, Ps = player_rows(G, pit, bat, hands, F)
-    M = train(Hs, Ps, list(range(int(Hs.season.min()) + 2, S)))
+    seasons = list(range(int(Hs.season.min()) + 2, S)); M = None
+    if model_cache:
+        import sklearn, joblib, hashlib
+        sig = f"{sklearn.__version__}|{seasons}|{int((Hs.season.isin(seasons) & Hs.DK.notna()).sum())}|{int((Ps.season.isin(seasons) & Ps.DK.notna()).sum())}|{hashlib.md5(','.join(HFEATS + PFEATS + FEATS).encode()).hexdigest()[:10]}|{model_json.get('trained')}|{round(float(model_json.get('b0', 0)), 6)}"
+        try:
+            o = joblib.load(model_cache); M = o['M'] if o.get('sig') == sig else None
+        except Exception: M = None
+        if M is None:
+            M = train(Hs, Ps, seasons)
+            try: joblib.dump(dict(sig=sig, M=M), model_cache, compress=3); print('DFS trees fitted and cached:', model_cache)
+            except Exception as e: print('could not cache the DFS trees:', e)
+    if M is None: M = train(Hs, Ps, seasons)
     h, p = predict(M, Hs[(Hs.season == S) & (Hs.date <= d0)], Ps[(Ps.season == S) & (Ps.date <= d0)])
     h, p = drift(h), drift(p)
     return h[h.date >= d0], p[p.date >= d0]

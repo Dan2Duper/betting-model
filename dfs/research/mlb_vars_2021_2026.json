@@ -1,0 +1,146 @@
+{
+ "built": "2026-11-22",
+ "seasons": [
+  2021,
+  2022,
+  2023,
+  2024,
+  2025
+ ],
+ "rows": {
+  "H": 216217,
+  "P": 24296
+ },
+ "roles": {
+  "H": {
+   "n": 216217,
+   "with_closing_line": 195577,
+   "rmse_base": 6.9966,
+   "rmse_adj_season_forward": 6.993,
+   "mae_base": 5.391,
+   "mae_adj_season_forward": 5.378,
+   "rmse_base_all": 7.0153,
+   "rmse_adj_leave_one_season_out": 7.0117,
+   "t": {
+    "veg_gap": 14.9,
+    "pen_tired": 0.3,
+    "ump_k": -2.4,
+    "ump_bb": 4.5,
+    "park_hand": 1.5
+   },
+   "by_season": {
+    "2022": [
+     6.7978,
+     6.7944
+    ],
+    "2023": [
+     7.1448,
+     7.142
+    ],
+    "2024": [
+     6.9875,
+     6.985
+    ],
+    "2025": [
+     7.0515,
+     7.0458
+    ]
+   },
+   "slate_rank_corr": [
+    0.1801,
+    0.1831
+   ],
+   "starts_on": true
+  },
+  "P": {
+   "n": 24296,
+   "with_closing_line": 22000,
+   "rmse_base": 10.2044,
+   "rmse_adj_season_forward": 10.1844,
+   "mae_base": 8.1315,
+   "mae_adj_season_forward": 8.1169,
+   "rmse_base_all": 10.2546,
+   "rmse_adj_leave_one_season_out": 10.2319,
+   "t": {
+    "veg_gap": -5.6,
+    "veg_win": 5.0,
+    "ump_k": 0.6,
+    "ump_bb": -3.0
+   },
+   "by_season": {
+    "2022": [
+     10.0517,
+     10.0443
+    ],
+    "2023": [
+     10.2808,
+     10.2551
+    ],
+    "2024": [
+     10.1846,
+     10.1702
+    ],
+    "2025": [
+     10.2985,
+     10.2666
+    ]
+   },
+   "slate_rank_corr": [
+    0.3565,
+    0.3578
+   ],
+   "starts_on": true
+  }
+ },
+ "flat_checks": {
+  "batting_order_spot": {
+   "1": 0.116,
+   "2": -0.009,
+   "3": -0.036,
+   "4": -0.132,
+   "5": -0.071,
+   "6": -0.047,
+   "7": 0.011,
+   "8": -0.051,
+   "9": -0.095
+  },
+  "platoon_edge": {
+   "0": -0.068,
+   "1": -0.009
+  },
+  "wind_out_10plus": 0.04,
+  "wind_in_10plus": -0.108,
+  "hot_85plus": -0.021,
+  "cold_55minus": -0.234
+ },
+ "fit_w": {
+  "H": {
+   "veg_gap": 0.7023,
+   "pen_tired": 0.0,
+   "ump_k": -0.019,
+   "ump_bb": 0.0212,
+   "park_hand": 0.0022
+  },
+  "P": {
+   "veg_gap": -1.3177,
+   "veg_win": 11.7392,
+   "ump_k": 0.0,
+   "ump_bb": -0.061
+  }
+ },
+ "start_w": {
+  "H": {
+   "veg_gap": 0.7023,
+   "pen_tired": 0.0,
+   "ump_k": -0.019,
+   "ump_bb": 0.0212,
+   "park_hand": 0.0022
+  },
+  "P": {
+   "veg_gap": -1.3177,
+   "veg_win": 11.7392,
+   "ump_k": 0.0,
+   "ump_bb": -0.061
+  }
+ }
+}

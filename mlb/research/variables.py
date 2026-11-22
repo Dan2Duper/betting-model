@@ -108,7 +108,8 @@ def zreg(x, y):
 if __name__ == '__main__':
     G = pd.read_parquet(f'{D}/games.parquet'); pit = pd.read_parquet(f'{D}/pit.parquet'); bat = pd.read_parquet(f'{D}/bat.parquet')
     F = pd.read_parquet(f'{D}/feat.parquet').reset_index(drop=True)
-    X = extra(G, pit, bat, F); F = pd.concat([F, X], axis=1); F.to_parquet(f'{D}/feat_x.parquet')
+    X = extra(G, pit, bat, F); X = X[[c for c in X.columns if c not in F.columns]]   # a variable already adopted into the model keeps the model's copy
+    F = pd.concat([F, X], axis=1); F.to_parquet(f'{D}/feat_x.parquet')
     print(X.describe().T[['mean', 'std', 'min', 'max']].round(3).to_string())
     keep = G[['gid', 'hruns', 'aruns', 'ml_h', 'ml_a', 'tot', 'over', 'under', 'ml_suspect', 'tot_suspect']]
     res = dict(built=str(pd.Timestamp.now().date()), note='A = run model out of sample (each season fitted on earlier seasons). B = against the closing line.', groups={})
@@ -119,7 +120,8 @@ if __name__ == '__main__':
     print(f"{'group':18s} {'deviance':>10s} {'total MAE':>10s} {'winner logloss':>15s} {'seasons better (dev / ll)':>26s}")
     allnew = []
     for name, cols in list(GROUPS.items()) + [('ALL of them', None)]:
-        cols = cols or allnew; allnew += [c for c in cols if c not in allnew]
+        cols = [c for c in (cols or allnew) if c not in FEATS]; allnew += [c for c in cols if c not in allnew]
+        if not cols: print(f'{name:18s} already in the model (adopted after this test first ran)'); continue
         S1 = score(prep(FEATS + cols)); ss = sorted(S1)
         d = {k: float(np.mean([S1[s][k] - S0[s][k] for s in ss])) for k in ('dev', 'mae', 'll')}
         better = (sum(S1[s]['dev'] < S0[s]['dev'] for s in ss), sum(S1[s]['ll'] < S0[s]['ll'] for s in ss))
@@ -175,4 +177,5 @@ if __name__ == '__main__':
     bet('away_flew_east', 'ml', R.tz_east_away >= 2, 'home', 'road team crossed 2+ time zones eastward since its last game'); bet('away_flew_west', 'ml', R.tz_west_away >= 2, 'home', 'road team crossed 2+ time zones westward')
     bet('home_back_from_west', 'ml', R.tz_east_home >= 2, 'away', 'home team just flew 2+ zones east to get home'); bet('day_after_night_under', 'total', R.dan_sum >= 2, 'under', 'day game after a night game for both teams')
     bet('long_road_trip_fade', 'ml', R.trip_len_away >= 8, 'home', 'road team on its 8th+ straight road game'); bet('doubleheader_g2_under', 'total', R.dh2 == 1, 'under', 'second game of a doubleheader')
-    json.dump(res, open(f'{HERE}/variables_2013_2025.json', 'w'), indent=1); print('\nsaved mlb/research/variables_2013_2025.json')
+    out_f = f'{HERE}/variables_2013_2025.json' if 'ump_k' not in FEATS else f'{D}/variables_rerun.json'   # the saved file is the test as first run, before the umpire zone was adopted
+    json.dump(res, open(out_f, 'w'), indent=1); print('\nsaved', out_f)
