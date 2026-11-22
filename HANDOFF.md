@@ -86,7 +86,7 @@ Pushing to main/package/sync/data from a Claude session with git works.
 - Fixed: starting-QB pick used groupby max of season and week separately (matched nothing) -> fell back to highest salary.
 - Game-day rebuilds are automatic in the relay cron (deployed f7065a59, Nov 22): on any CT day with NFL games (ESPN scoreboard) it saves
   salaries/_refresh.json at 9:00 am CT and ~75 min before each kickoff -> the salaries/** push trigger rebuilds (GH_TOKEN is Contents-only, so no
-  workflow_dispatch). Hourly 6am-8pm it also tries to fetch missing DK salaries from Cloudflare (untested: DK may refuse; logs 'DraftKings refused').
+  workflow_dispatch). Hourly 6am-8pm it also tries missing DK salaries from Cloudflare, but GET /dkcheck showed DraftKings returns 403 to Cloudflare (Nov 22) -> the phone (Tasker) stays the salary source.
   Verified: 9:00 refresh -> build 15:07 UTC with ESPN + Sleeper statuses and 12 forecasts. Tasker salary pull hasn't run since Thu Nov 19.
 - Next: page chips for adj/why + wind on DFS player rows; PROE / pass-funnel and routes-per-dropback variables (need pbp/participation download);
   kicker wind.
