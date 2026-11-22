@@ -2,6 +2,15 @@
  "_note": "Written automatically by the relay (and by Claude); newest first; the Bet Tracker Reports tab reads this.",
  "reports": [
   {
+   "id": "2026-11-22T02:02:09Z-CFB",
+   "time": "2026-11-22T02:02:09Z",
+   "league": "CFB",
+   "kind": "update",
+   "title": "Dear Sportsbook: It's Not Me, It's You, and I'm +$120.35 Richer for It",
+   "text": "Dear Sportsbook,\n\nWe need to talk. You took $161.61 off me and handed back a net +$120.35 at 4-2-0. I came to be abused. You've been weirdly generous, and it's unsettling.\n\n**MY BETS:**\n\n- Wisconsin -5.5: WON +$8.31. Beat Purdue 42-10, covering by 26.5. Purdue showed up like a restraining order.\n- BYU -5.5: LOST -$9.54. Won 31-29 in 3OT, missed by 3.5. Three overtimes to fuck me by a hook.\n- 4-leg parlay: LOST -$19.97 on a $489.07 dream. Wisconsin, Tennessee and Washington all cashed. BYU, again, shat on the whole thing.\n- Tennessee ML: WON +$62.83. LSU lost 13-27. Rich, you absolute lucky bastard.\n- Washington ML: WON +$67.42. Beat Indiana 27-24 in OT, because nothing is allowed to be easy.\n- Michigan ML: WON +$11.30. 18-16 over UCLA in 3OT. Ugly as sin, paid the same.\n- Under 66.5, Virginia Tech/Miami: winning. 17-14 with 13:40 left in the 3rd.\n- SMU +16.5 & Over 57.5 parlay: losing. SMU trails Notre Dame 3-14 with 0:52 left in the 2nd. The cover is alive, the over is on life support.\n- California ML: dead even. 14-14 with 0:02 in the 2nd. Pray, you atheist.\n\n**AI-LOX:**\n\n- Nothing settled, 0-0-0. Arizona State +2.5 for $130.00 hasn't kicked yet, so the robot can't fuck up yet.\n\n**THE MODEL:**\n\nPicked 22 of 36 winners and went 18-18 against the spread. Average miss was 11.4 points, which is a coin flip wearing a lab coat. Worst miss: Georgia Southern 45-7 Troy (model had 26-16). Closest: South Alabama 40-35 Southern Miss (model had 36-31).\n\n**STILL TO COME:**\n\n- Arizona State +2.5, $130.00 to win $123.81, 10:15 PM EST tonight.\n- Under 44.5 MIA @ BUF, $98.00, Sunday.\n- Under 40.5 ARI @ KC, $32.00, Sunday.\n- Under 54.5 CIN @ WAS, $130.00, Monday.\n\nI'm not leaving, you clingy slut. Same time tomorrow?\n\nYours, Rich",
+   "style": "a breakup letter to the sportsbook (or from it)"
+  },
+  {
    "id": "2026-11-22T00:36:10Z-CFB",
    "time": "2026-11-22T00:36:10Z",
    "league": "CFB",
@@ -257,12 +266,13 @@
    ]
   },
   "2026-11-21": {
-   "n": 4,
-   "last": "2026-11-22T00:36:10Z",
-   "fp": "mine|CFB|401856866+401858533+401856754+401858535|parlay|1795297334860|0L,mine|CFB|401856866|spread|1795296997882|0L,mine|CFB|401858528|ml|1795297783490|2W,mine|CFB|401858533|spread|1795296371564|1W,mine|CFB|401858535|ml|1795297782662|1W|34",
-   "fpBets": "mine|CFB|401856866+401858533+401856754+401858535|parlay|1795297334860|0L,mine|CFB|401856866|spread|1795296997882|0L,mine|CFB|401858528|ml|1795297783490|2W,mine|CFB|401858533|spread|1795296371564|1W,mine|CFB|401858535|ml|1795297782662|1W",
+   "n": 5,
+   "last": "2026-11-22T02:02:09Z",
+   "fp": "mine|CFB|401856754|ml|1795297781878|0W,mine|CFB|401856866+401858533+401856754+401858535|parlay|1795297334860|0L,mine|CFB|401856866|spread|1795296997882|0L,mine|CFB|401858528|ml|1795297783490|2W,mine|CFB|401858533|spread|1795296371564|1W,mine|CFB|401858535|ml|1795297782662|1W|36",
+   "fpBets": "mine|CFB|401856754|ml|1795297781878|0W,mine|CFB|401856866+401858533+401856754+401858535|parlay|1795297334860|0L,mine|CFB|401856866|spread|1795296997882|0L,mine|CFB|401858528|ml|1795297783490|2W,mine|CFB|401858533|spread|1795296371564|1W,mine|CFB|401858535|ml|1795297782662|1W",
    "kinds": [
     "preview",
+    "update",
     "update",
     "update",
     "update"
