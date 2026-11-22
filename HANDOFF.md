@@ -183,6 +183,8 @@ already saved; "My DFS results" card: settled fees, won, net, ROI, cashed, split
   (dfs_nfl.json lineup_log); a later build grades them with nflverse stats + DST/K from team_rows, plus the hindsight best lineup from the
   saved salaries (lineup_grades, last 200). Checked on IND@HOU Nov 19 (CPT x1.5 right; best possible 99.6). Tracker tab: "DFS" card (my
   entries + site lineups, follows the period filter); Stats tab: DFS tables. Never mixed into betting totals (Rich: "its own line").
+  Slate list (Nov 22): dk_slate.pick_slates also returns the other multi-game Classic slates (Afternoon Only, Afternoon Turbo, Primetime,
+  Mon-Wed...; suffix set, >=2 games, >=5 contests) - before that only Main + showdowns were built.
   Page live DST scoring can run a few points low (ESPN box has no safeties/blocked kicks); official grading and result screenshots win.
 
 ## START HERE next session: spring-training dry run (late Feb 2027), then Opening Day
