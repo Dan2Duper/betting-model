@@ -2,6 +2,15 @@
  "_note": "Written automatically by the relay (and by Claude); newest first; the Bet Tracker Reports tab reads this.",
  "reports": [
   {
+   "id": "2026-11-22T15:00:47Z-NFL",
+   "time": "2026-11-22T15:00:47Z",
+   "league": "NFL",
+   "kind": "preview",
+   "title": "Rich Wades Into the Savanna With $69.04 and Four Favorites, and the Lions Are Hungry",
+   "text": "**MY BETS:**\n\n*The sun rises over the NFL plains. Here, in the tall grass, we find Rich: $69.04 staked, five bets grazing, zero kickoffs. A fat, juicy herd. The predators are already circling.*\n\n- Parlay, $9.95 to win $145.07: LAC -3.5, DET -3.5, DAL -7.5, SF -3.5. Four favorites tied together like a limping gazelle. One bad leg and the whole thing gets dragged into the brush. Needs all four to cover. Needs a miracle, honestly.\n- DET -3.5 vs TB, $9.72 to win $8.31, 1:00 PM EST. A timid little bet. Needs Detroit by 4 or more.\n- DAL -7.5 vs TEN, $19.61 to win $17.35, 1:00 PM EST. The biggest of the early herd. Needs Dallas by 8 or more. Dallas, a team famous for making that look easy. Never.\n- LAC -3.5 vs NYJ, $10.00 to win $10.00, 4:05 PM EST. Needs the Chargers by 4 or more. The Jets are wounded prey, but wounded animals bite.\n- SF -3.5 vs MIN, $19.76 to win $18.30, 8:20 PM EST. The night hunt. Needs San Francisco by 4 or more, and Rich staying awake to watch it.\n\n**AI-LOX:**\n\n*Now, a rare sight: the model, strutting out in the open with $130.00 of paper money, thinking it's the apex predator.*\n\n- UNDER 44.5, MIA @ BUF, $83.00 to win $79.05. Needs two offenses to stall in the cold like a Land Rover in a swamp.\n- UNDER 40.5, ARI @ KC, $47.00 to win $43.12. Needs Arizona to be as bad as AI-LOX believes. Look at them. Beautiful, tragic creatures.\n\n**THE MODEL:**\n\n- 0 of 11 games final. Record: nothing. Average miss: 0.0 points, which is the last time it will be perfect.\n\n**STILL TO COME:**\n\nEverything. Seven plays, three kickoff windows, one nervous primate. We will observe quietly, from a safe distance.",
+   "style": "a nature documentary narrator watching Rich's bankroll get hunted on the savanna"
+  },
+  {
    "id": "2026-11-22T11:05:03Z-CFB",
    "time": "2026-11-22T11:05:03Z",
    "league": "CFB",
@@ -326,6 +335,15 @@
     "update",
     "update",
     "final"
+   ]
+  },
+  "2026-11-22": {
+   "n": 1,
+   "last": "2026-11-22T15:00:47Z",
+   "fp": "|0",
+   "fpBets": "",
+   "kinds": [
+    "preview"
    ]
   }
  }
