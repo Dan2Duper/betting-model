@@ -309,7 +309,7 @@ async function writeReport(env, F, kind, recent) {
   const r = await fetch('https://api.anthropic.com/v1/messages', {method: 'POST',
     headers: {'x-api-key': env.ANTHROPIC_API_KEY, 'anthropic-version': '2023-06-01', 'content-type': 'application/json'},
     body: JSON.stringify({model: env.MODEL || 'claude-sonnet-5-5', max_tokens: 2500, system: SYS_REPORT(style, kind),
-      tools: [REPORT_TOOL], tool_choice: {type: 'tool', name: 'game_report'}, messages: [{role: 'user', content: user}]})});
+      tools: [REPORT_TOOL], tool_choice: {type: 'auto'}, messages: [{role: 'user', content: user}]})});
   const j = await r.json(); if (!r.ok) throw new Error((j.error && j.error.message) || 'AI error');
   const use = (j.content || []).find(c => c.type === 'tool_use');
   let out = use && use.input;
