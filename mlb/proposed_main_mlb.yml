@@ -1,0 +1,50 @@
+# PROPOSED replacement for .github/workflows/mlb.yml on the main branch (a Claude session may not edit workflows on main without
+# Rich's say-so). It only matters as a backup: the relay starts the data-branch "MLB build" several times a day in season, and the
+# current main workflow still makes the picks; this version also refreshes the DFS projections and lineups on the twice-a-day schedule.
+# MLB model for the Bet Tracker: pulls finished games from the MLB Stats API, rebuilds the features and writes mlb.json
+# to the "data" branch (the page reads it from there). Runs twice a day in season and on demand
+# (Actions tab > MLB model > Run workflow; "date" replays a past day without using its results).
+name: MLB model
+on:
+  schedule:
+    - cron: '23 14 * 3-11 *'    # ~8:23 / 9:23 am Central: probable pitchers
+    - cron: '41 21 * 3-11 *'    # ~3:41 / 4:41 pm Central: evening lineups are posted
+  workflow_dispatch:
+    inputs:
+      date: {description: 'First day to predict (YYYY-MM-DD). Blank = today', required: false, default: ''}
+      days: {description: 'How many days', required: false, default: '2'}
+      check: {description: 'Grade the season so far (walk-forward)', type: boolean, default: false}
+      parity: {description: 'Self-test: replay this season from the Stats API as if Retrosheet ended the year before (nothing is saved)', required: false, default: ''}
+permissions:
+  contents: write
+concurrency: mlb
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    timeout-minutes: 40
+    steps:
+      - uses: actions/checkout@v4
+        with: {ref: package, path: pkg}
+      - uses: actions/checkout@v4
+        with: {ref: data, path: data}
+      - uses: actions/setup-python@v5
+        with: {python-version: '3.12'}
+      - run: pip install -q -r pkg/dfs/requirements.txt requests      # scikit-learn + pulp too: the same run makes the DFS projections and lineups
+      - name: Self-test against a Retrosheet season
+        if: ${{ inputs.parity != '' }}
+        run: python3 pkg/mlb/live.py --cache /tmp/par --out /tmp/par.json --date "${{ inputs.parity }}-11-15" --days 1 --check --hist-last $(( ${{ inputs.parity || 0 }} - 1 ))
+      - name: Build mlb.json
+        if: ${{ inputs.parity == '' }}
+        run: |
+          mkdir -p data/mlb
+          if [ -z "${{ inputs.date }}" ]; then python3 pkg/mlb/run_refresh.py data --scheduled ${{ inputs.check && '--check' || '' }}     # picks + log + DFS lineups, same driver as the data-branch "MLB build"
+          else python3 pkg/mlb/live.py --cache data/mlb --out data/mlb.json --days "${{ inputs.days || '2' }}" --date "${{ inputs.date }}" ${{ inputs.check && '--check' || '' }}; fi
+      - name: Save to the data branch
+        if: ${{ inputs.parity == '' }}
+        run: |
+          cd data
+          git config user.name "mlb-bot"; git config user.email "mlb-bot@users.noreply.github.com"
+          git add mlb.json mlb
+          [ -f dfs_mlb.json ] && git add dfs_mlb.json
+          git commit -q -m "MLB model $(date -u +%F' '%H:%M)" || { echo "no change"; exit 0; }
+          git pull -q --rebase origin data && git push origin HEAD:data

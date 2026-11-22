@@ -84,7 +84,14 @@ Saved, trained models. Nothing needs to be rebuilt week to week: you fill in two
 - Tracker: slicers by rule, conference, team, kickoff window, bet type, line size, wind, model gap and more.
 - Model stats: backtests, factor weights, live accuracy, and each rule's live record.
 
-## MLB (mlb/)
+## MLB (mlb/, dfs/mlb_*.py, dfs/build_mlb.py)
+- Daily, with no PC or phone needed for the picks: `mlb/live.py` (GitHub workflows "MLB build" on the data branch, started by the relay before each
+  first-pitch window, and "MLB model" on main twice a day) -> `mlb.json` (today's games: model score, winner / run line / over-under picks against the
+  DraftKings line ESPN lists, leans, weather forecast with wind out / in, umpire, lineup status), the season log `mlb/log_<season>.json` (picks frozen at
+  first pitch, graded, closing-line value) and DFS projections; `dfs/build_mlb.py` -> `dfs_mlb.json` once the phone has sent DraftKings salaries.
+- Proof scripts: `mlb/backtest.py` (67 rules incl. 15 run-line rules at real closing prices), `mlb/research/variables.py` (candidate variables),
+  `mlb/research/wx_check.py` (forecast vs posted weather), `dfs/research/mlb_vars.py` (DFS adjustments), `dfs/mlb_proj.py backtest`. Tests in `tests/`.
+- Nothing has beaten the closing line in both test windows, so MLB picks are model picks, not bets: no AI-LOX, no stars, three leans.
 - `bash mlb/setup_data.sh [DATA_DIR] [LAST_SEASON]` downloads the history and runs everything: `build_data.py` (games, player lines, closing odds), `features.py` (no look-ahead), `model.py` (walk-forward Poisson run model -> `model.json`, `stats.json`), `backtest.py` (52 rules vs closing lines -> `rules_bt.json`).
 - A rule passes only if it wins in 2013-20 AND clears break-even by itself in the 2021-25 hold-out at DraftKings closing prices. None did. The model picks winners 57.9% (closing line 58.1%); its moneyline edges lose the vig.
 - Leans only (never staked until 50 live picks at 55%+): model total 0.75+ runs over or under the closing total; Wrigley wind out 10+ mph over.

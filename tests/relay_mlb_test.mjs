@@ -1,7 +1,7 @@
-import fs from 'fs';
-const src = fs.readFileSync('/home/claude/betting-model/dfs/worker.js', 'utf8') + '\nexport {buildFacts, factsText, runReports, mlbGameDay, mlbOdds, mlbGrade, mlbSeason, espnDay};\n';
-fs.writeFileSync('./w_test.mjs', src);
-const W = await import('./w_test.mjs');
+import fs from 'fs'; import os from 'os'; import path from 'path'; import {fileURLToPath, pathToFileURL} from 'url';
+const here = path.dirname(fileURLToPath(import.meta.url)), tmp = path.join(os.tmpdir(), 'relay_under_test.mjs');
+fs.writeFileSync(tmp, fs.readFileSync(path.join(here, '..', 'dfs', 'worker.js'), 'utf8') + '\nexport {buildFacts, factsText, runReports, mlbGameDay, mlbOdds, mlbGrade, mlbSeason, espnDay};\n');
+const W = await import(pathToFileURL(tmp).href);
 const day = '2027-06-15', now = new Date('2027-06-16T00:20:00Z');   // 7:20 pm CT June 15
 const ev = (id, a, h, as, hs, state, done, detail, kick, odds) => ({id, date: kick, status: {type: {state, completed: done, shortDetail: detail}},
   competitions: [{competitors: [{homeAway: 'home', score: String(hs), team: {abbreviation: h, location: h}}, {homeAway: 'away', score: String(as), team: {abbreviation: a, location: a}}], odds: odds ? [odds] : []}]});
