@@ -1,4 +1,4 @@
-# Bet Tracker — handoff (Nov 21 2026, MLB DFS projections added)
+# Bet Tracker — handoff (Nov 22 2026, NFL DFS live statuses / weather / self-tuning added)
 
 Repo: Dan2Duper/betting-model (public). Site: https://dan2duper.github.io/betting-model/ (main branch, index.html).
 Branches: main (published page + t.js + dfs-todo and mlb workflows) · package (all code; tracker_template.html is the page source) ·
@@ -71,6 +71,23 @@ Pushing to main/package/sync/data from a Claude session with git works.
     | 2026 | SP (4,857)       | 7.94 / 8.23 | 0.336 / 0.278 | 13.24 / 13.09 | 15.5% | 13.8% |
   Beats naive at every position in 2023-26; projection deciles track actual deciles (see the json). A hitter's 15th-percentile game
   is a zero (23% of starts score 0), so hitter floors are 0: cash builds should rank hitters on proj, pitchers on proj + floor.
+
+## NFL DFS upgrade - done Nov 22 2026 (package branch, dfs/)
+- Research: dfs/research/matchup_*.py + matchup_results_2021_2025.json (2021-25, ~20k player-games, residuals after Vegas + own form).
+  Unit-vs-unit matchups add nothing out of sample once Vegas is in (offense explains ~2/3, defense ~1/3). Lockdown corner on WR1 -0.4 (+/-0.4, not significant);
+  weak top corner +1.1 WR1. Archetype vs elite CB: separators -0.9 (borderline), big/slot -0.75, speed -0.2, deep threats 0. Man/zone fit +0.25 best vs worst.
+  Biggest: vacated roles (lead RB out -> next RB +2.2), wind (Vegas under-adjusts), dome +0.7 WR. Shadow assignments are paid-only (PFF) -> corner tests are proxies.
+- dfs/nfl_live.py: statuses() ESPN injuries + Sleeper (gsis ids) override DK's stale tag (worst tag wins; absent from both feeds = cleared);
+  forecasts() Open-Meteo kickoff wind/gust/temp/rain per stadium_id (retractable roof assumed closed if <55F, rain>=40% or wind>=15). Both fail soft.
+- dfs/nfl_tune.py: adjustment layer on top of the tree model. Vars per position (teammate out targets/carries, wind, dome, new QB, division, byes, elite/weak top corner).
+  Starting weights = walk-forward fit on base-model residuals 2022-25 (nfl_tune_init.json); only RB starts on (only position where it beat out-of-sample RMSE);
+  the rest start at 0. Every build remembers base proj + vars (state lives in dfs_nfl.json "tune"); next week's build grades each variable
+  (log: helped = MAE gain), refits decayed stats pulled to the long-run fit, moves weights 30% of the way. Players carry adj/why/wind in dfs_nfl.json.
+- Fixed: starting-QB pick used groupby max of season and week separately (matched nothing) -> fell back to highest salary.
+- Trigger: data-branch workflow "DFS lineups" (dfs-build.yml) has no Run button; re-run the last manual run (#17) - checkout pulls latest package + data.
+  The Tasker salary pull hasn't run since Thu Nov 19 (salaries don't change after that; statuses now come from ESPN/Sleeper at build time).
+- Next: page chips for adj/why + wind on DFS player rows; PROE / pass-funnel and routes-per-dropback variables (need pbp/participation download);
+  kicker wind; a cron (relay or default-branch workflow) for game-day rebuilds ~10:45 CT and ~6:50 CT.
 
 ## START HERE next session: MLB DFS lineups (steps 2-3)
 2. Lineups: dfs/optimizer.py (PuLP) gets an MLB classic builder: P,P,C,1B,2B,3B,SS,OF,OF,OF, $50,000, max 5 hitters from one team,
