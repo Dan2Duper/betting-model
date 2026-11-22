@@ -5,7 +5,7 @@ Every fetch fails soft: if a feed is down, the build carries on with what it has
 import json, re, urllib.request, datetime as dt
 UA = {'User-Agent': 'Mozilla/5.0 (betting-model DFS)'}
 ESPN_FIX = {'WSH': 'WAS', 'LAR': 'LA', 'JAC': 'JAX', 'LVR': 'LV'}
-SEV = {'None': 0, 'Q': 1, 'D': 2, 'O': 3, 'IR': 3}
+SEV = {'None': 0, 'Q': 1, 'D': 2, 'O': 3, 'OUT': 3, 'IR': 3}
 
 def _get(url, timeout=40):
     with urllib.request.urlopen(urllib.request.Request(url, headers=UA), timeout=timeout) as r: return json.load(r)
@@ -41,11 +41,13 @@ def statuses():
     return out
 
 def merge_status(dk, pid, name, team, S):
-    """Fresh feeds win over the DraftKings tag (DK's is from whenever salaries were pulled). Worst tag across feeds."""
-    if not S['sources']: return dk
-    tags = [S['by_id'].get(str(pid))] if pid == pid and pid else []
-    tags.append(S['by_name'].get((norm(name), team)))
-    tags = [t for t in tags if t]
+    """Worst tag across DraftKings, ESPN and Sleeper. A feed can add or worsen a tag, never clear one: DraftKings lists IR players
+    the free feeds miss (Nov 22: DK had 108 on IR, ESPN 52), so 'not listed' is not proof of healthy."""
+    tags = [dk] if dk and dk not in ('None', 'nan') else []
+    if S['sources']:
+        if pid == pid and pid: tags.append(S['by_id'].get(str(pid)))
+        tags.append(S['by_name'].get((norm(name), team)))
+    tags = [t for t in tags if t and t != 'None']
     if not tags: return 'None'
     return max(tags, key=lambda t: SEV.get(t, 0))
 
