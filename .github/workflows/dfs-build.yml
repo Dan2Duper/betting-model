@@ -3,7 +3,7 @@ name: DFS lineups
 on:
   push:
     branches: [data]
-    paths: ['salaries/**']
+    paths: ['salaries/**', '!salaries/MLB_*']   # MLB salary files start "MLB DFS lineups" (dfs-mlb.yml) instead
   workflow_dispatch:
 permissions:
   contents: write

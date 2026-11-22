@@ -1,0 +1,33 @@
+# Builds the Bet Tracker's MLB DFS lineups whenever the relay saves MLB DraftKings salaries here (the phone sends them), using the
+# projections the latest "MLB build" left in mlb/dfs_proj.json. The MLB build itself also rebuilds the lineups before each first pitch.
+name: MLB DFS lineups
+on:
+  push:
+    branches: [data]
+    paths: ['salaries/MLB_*']
+  workflow_dispatch:
+permissions:
+  contents: write
+concurrency: mlb
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@v4
+        with: {ref: data, path: databr}
+      - uses: actions/checkout@v4
+        with: {ref: package, path: code}
+      - uses: actions/setup-python@v5
+        with: {python-version: '3.12'}
+      - run: pip install -q -r code/dfs/requirements.txt
+      - name: Build lineups
+        run: python3 code/dfs/build_mlb.py --cache databr/mlb --salaries databr/salaries --todo databr/dfs_todo.json --out databr/dfs_mlb.json
+      - name: Save to the data branch
+        run: |
+          cd databr
+          git config user.name "dfs-bot"; git config user.email "dfs-bot@users.noreply.github.com"
+          [ -f dfs_mlb.json ] || { echo "nothing built"; exit 0; }
+          git add dfs_mlb.json
+          git commit -q -m "MLB DFS lineups $(date -u +%F' '%H:%M)" || { echo "no change"; exit 0; }
+          git pull -q --rebase origin data && git push origin HEAD:data
