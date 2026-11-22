@@ -3,7 +3,7 @@
 Usage: python3 build_nfl.py [--season 2026] [--week N] [--out dfs_nfl.json] [--pool FILE.json (offline test pool)]"""
 import os, sys, re, json, argparse, datetime as dt, numpy as np, pandas as pd
 sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
-import nfl_data as d, nfl_model as m, ownership, optimizer as opt, nfl_live as live, nfl_tune as tune
+import nfl_data as d, nfl_model as m, ownership, optimizer as opt, nfl_live as live, nfl_tune as tune, nfl_grade_lineups as glu
 
 def norm(s):
     s = re.sub(r"[.'’\-]", '', str(s).lower()); s = re.sub(r'\b(jr|sr|ii|iii|iv|v)\b', '', s)
@@ -185,9 +185,14 @@ def main():
     GW = d.games(); GW = GW[(GW.season == season) & (GW.week == week)]
     FC, fc_notes = live.forecasts(GW)
     prev = A.prev or (os.path.join(os.path.dirname(A.todo), 'dfs_nfl.json') if A.todo else None)
-    ST = None
-    try: ST = json.load(open(prev)).get('tune') if prev and os.path.exists(prev) else None
+    ST, PJ = None, {}
+    try: PJ = json.load(open(prev)) if prev and os.path.exists(prev) else {}; ST = PJ.get('tune')
     except Exception as e: print('could not read tuning state', e)
+    # the site's own lineups: snapshot until lock, graded once the week's stats are out (kept apart from Rich's entries)
+    NOW = dt.datetime.now(dt.timezone.utc); LOG, GR = PJ.get('lineup_log') or {}, PJ.get('lineup_grades') or []
+    try:
+        for g in glu.grade(LOG, GR, NOW, A.salaries): print('graded lineups', g['label'], 'cash', [x['actual'] for x in g['cash']], 'gpp', [x['actual'] for x in g['gpp']], 'optimal', g.get('optimal'))
+    except Exception as e: print('lineup grading failed', e)
     if not ST or not isinstance(ST.get('pending'), dict): ST = tune.new_state()
     graded = tune.grade_all(ST, season, week)
     for e in graded: print('graded', e['season'], e['week'], {p: (v['mae_base'], v['mae_adj']) for p, v in e['pos'].items()})
@@ -211,13 +216,15 @@ def main():
             df_c, cash = opt.showdown(df, 'cash', n=A.cash, min_diff=1)
             df_g, gpp = opt.showdown(df, 'gpp', n=min(A.gpp, 80), min_diff=2, seed=7)
             pc, pg = pack_showdown(df, cash, 'cash'), pack_showdown(df, gpp, 'gpp')
+        try: glu.remember(LOG, s, df, pc, pg, season, week, GW, NOW)
+        except Exception as e: print('lineup snapshot failed', e)
         game = sorted(set(df.team))
         out['slates'].append(dict(kind=s['kind'], dg=s.get('dg'), label=s.get('label') or ' vs '.join(game), players=players_json(df), cash=pc, gpp=pg))
         print(f"{s['kind']} {s.get('label','')}: {len(df)} players, {len(pc)} cash + {len(pg)} tournament lineups")
       except Exception:
         import traceback; traceback.print_exc(); print('skipped', s.get('label'))
     if not out['slates']: sys.exit('no slates built')
-    out['tune'] = ST
+    out['tune'] = ST; out['lineup_log'] = LOG; out['lineup_grades'] = GR
     json.dump(out, open(A.out, 'w'), separators=(',', ':'))
     print('wrote', A.out)
 
