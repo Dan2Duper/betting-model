@@ -3,7 +3,7 @@
 Usage: python3 build_nfl.py [--season 2026] [--week N] [--out dfs_nfl.json] [--pool FILE.json (offline test pool)]"""
 import os, sys, re, json, argparse, datetime as dt, numpy as np, pandas as pd
 sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
-import nfl_data as d, nfl_model as m, ownership, optimizer as opt
+import nfl_data as d, nfl_model as m, ownership, optimizer as opt, nfl_live as live, nfl_tune as tune
 
 def norm(s):
     s = re.sub(r"[.'’\-]", '', str(s).lower()); s = re.sub(r'\b(jr|sr|ii|iii|iv|v)\b', '', s)
@@ -15,8 +15,10 @@ def upcoming_week(G, season):
 
 _MODEL = {}
 
-def project(pool, season, week):
-    """pool: DK players (name, pos, team, opp, salary...). Returns pool with proj/floor/ceil."""
+def project(pool, season, week, L=None, FC=None, ST=None):
+    """pool: DK players (name, pos, team, opp, salary...). Returns pool with proj/floor/ceil.
+    L: fresh statuses (nfl_live.statuses), FC: kickoff forecasts by game_id, ST: tuning state (nfl_tune)."""
+    L = L or dict(by_id={}, by_name={}, sources=[], notes=[]); FC = FC or {}
     S = list(range(2019, season + 1))
     if not _MODEL: d.fetch(S, force_current=season)
     hist, _ = d.load(S)
@@ -30,17 +32,41 @@ def project(pool, season, week):
         b = off[miss.values].merge(ids.drop_duplicates('key', keep='last')[['key', 'player_id', 'position']], on='key', how='left')
         a.loc[miss, ['player_id', 'position']] = b[['player_id', 'position']].values
     a['position'] = a.pos
+    # fresher injury / inactive tags than the ones DraftKings had when salaries were pulled
+    a['status_dk'] = a.status
+    a['status'] = [live.merge_status(s, p, n, t, L) for s, p, n, t in zip(a.status, a.player_id, a.name, a.team)]
+    OUT = ('O', 'OUT', 'IR', 'D')
+    out_ids = set(a[a.status.isin(OUT)].player_id.dropna())
     ex = a[a.player_id.notna()][['player_id', 'name', 'position', 'team', 'opp']].rename(columns={'name': 'player_display_name', 'opp': 'opponent_team'})
     ex = ex.assign(season=season, week=week, season_type='REG')
     P = d.features(S, extra=ex)
     teams = pool[pool.pos.isin(['DST', 'K'])].drop_duplicates('team')[['team', 'opp']].rename(columns={'opp': 'opponent_team'}).assign(season=season, week=week, season_type='REG')
     T = d.team_rows(S, extra=teams)
+    # kickoff forecast instead of a typical-day wind for this week's games (the model was trained on game-time wind)
+    for X in (P, T):
+        upc = X.upcoming.fillna(False).astype(bool)
+        f = X.loc[upc, 'gid'].map(FC)
+        has = f.notna()
+        if has.any():
+            idx = f[has].index
+            X.loc[idx, 'wind'] = [v['wind'] for v in f[has]]
+            X.loc[idx, 'dome'] = [int(v['roof_used'] in ('dome', 'closed')) for v in f[has]]
+            X.loc[idx, 'wind'] = np.where(X.loc[idx, 'dome'] == 1, 0, X.loc[idx, 'wind'])
+    # today's starting QB per team (most passes in the team's latest game, skipping anyone ruled out)
+    lastq = hist[hist.position == 'QB'].sort_values(['season', 'week']).groupby('team').tail(40)
+    lastq = lastq.assign(gk=lastq.season * 100 + lastq.week); lq = lastq[lastq.gk == lastq.groupby('team').gk.transform('max')]
+    attq = lq.set_index('player_id').attempts.to_dict()
+    qa = a[(a.pos == 'QB') & a.player_id.notna() & ~a.status.isin(OUT)].assign(ra=lambda x: x.player_id.map(attq).fillna(0))
+    qb_now = qa.sort_values(['ra', 'salary'], ascending=False).drop_duplicates('team').set_index('team').player_id.to_dict()
+    if 'CB' not in _MODEL: _MODEL['CB'] = tune.cb_table(S, lambda n, t: L['by_name'].get((live.norm(n), t)))
+    P = tune.add_vars(P, _MODEL['CB'][0], _MODEL['CB'][1], out_ids, qb_now)
     if 'M' not in _MODEL: _MODEL['M'] = m.train(P[~P.upcoming], T[~T.upcoming], S)   # train once, reuse for every slate
     M = _MODEL['M']
     TU = T[T.upcoming & T.ew_dst.notna()]
     R, TT = m.predict(M, P[P.upcoming], TU) if len(TU) else (m.predict(M, P[P.upcoming]), TU)
     R = R.drop_duplicates('player_id')
-    a = a.merge(R[['player_id', 'proj', 'floor', 'ceil', 'implied', 'ew_tgt_sh', 'ew_car_sh', 'dvp', 'n_prior']], on='player_id', how='left')
+    VCOLS = sorted({v for V in tune.VARS.values() for v in V})
+    a = a.merge(R[['player_id', 'proj', 'floor', 'ceil', 'implied', 'ew_tgt_sh', 'ew_car_sh', 'dvp', 'n_prior', 'wind'] + [c for c in VCOLS if c != 'wind']], on='player_id', how='left')
     dst = pool[pool.pos == 'DST'].merge(TT[['team', 'proj', 'floor', 'ceil', 'implied']], on='team', how='left')
     k = pool[pool.pos == 'K'].merge(T[T.upcoming][['team', 'ew_k', 'implied']], on='team', how='left')
     k['proj'] = 0.5 * k.ew_k.fillna(7.5) + 0.5 * 0.34 * k.implied.fillna(22); k['floor'] = 0.45 * k.proj; k['ceil'] = 1.6 * k.proj
@@ -53,7 +79,7 @@ def project(pool, season, week):
     out['no_history'] = nohist
     # one starting QB per team: the QB who threw the most passes in his team's latest game (next in line if he is out)
     last = hist[hist.position == 'QB'].sort_values(['season', 'week']).groupby('team').tail(40)
-    lastwk = last.groupby('team')[['season', 'week']].max().reset_index().merge(last, on=['team', 'season', 'week'])
+    last = last.assign(gk=last.season * 100 + last.week); lastwk = last[last.gk == last.groupby('team').gk.transform('max')]
     qbs = out[out.pos == 'QB'].copy()
     att = lastwk.set_index('player_id').attempts.to_dict()
     qbs['recent_att'] = qbs.player_id.map(att).fillna(0)
@@ -70,6 +96,19 @@ def project(pool, season, week):
     out.loc[hist, 'proj'] = 0.75 * out.proj[hist] + 0.25 * implied[hist]
     near_min = out.salary <= out.groupby('pos').salary.transform('min') * 1.25
     out['proj'] = out.proj.where(~near_min, out.proj.clip(upper=2 * implied))
+    # self-tuning adjustments (teammate out, wind, corners, ...), weights learned week to week
+    out['adj'], out['why'] = 0.0, ''
+    off = out.pos.isin(d.POS) & out.player_id.notna() & ~out.no_history
+    if ST is not None and off.any():
+        x = out[off].copy()
+        for c in VCOLS: x[c] = x[c].fillna(0) if c in x else 0
+        adj, why = tune.adjust(x.assign(position=x.pos), ST['w'])
+        adj = np.clip(adj, -0.3 * x.proj.values, 0.35 * x.proj.values + 1.0)
+        live_rows = ~x.status.isin(OUT)
+        tune.remember(ST, season, week, [dict(player_id=r.player_id, pos=r.pos, base=round(float(r.proj), 2), **{c: round(float(getattr(r, c)), 4) for c in tune.VARS[r.pos]})
+                                         for r in x[live_rows].itertuples()])
+        out.loc[x.index, 'adj'] = np.round(adj, 2); out.loc[x.index, 'why'] = why
+        out.loc[x.index, 'proj'] = x.proj + adj; out.loc[x.index, 'floor'] = (x.floor + 0.5 * adj).clip(lower=0); out.loc[x.index, 'ceil'] = x.ceil + adj
     # injury status from DraftKings
     out.loc[out.status.isin(['O', 'OUT', 'IR', 'D']), ['proj', 'floor', 'ceil']] = 0
     q = out.status.isin(['Q'])
@@ -114,14 +153,14 @@ def pack_showdown(df, lineups, mode):
     return res
 
 def players_json(df):
-    cols = ['name', 'pos', 'team', 'opp', 'salary', 'cpt_salary', 'status', 'proj', 'floor', 'ceil', 'own', 'cpt_own', 'implied', 'no_history', 'draftable_id', 'cpt_draftable_id']
+    cols = ['name', 'pos', 'team', 'opp', 'salary', 'cpt_salary', 'status', 'proj', 'floor', 'ceil', 'own', 'cpt_own', 'implied', 'no_history', 'draftable_id', 'cpt_draftable_id', 'adj', 'why', 'wind']
     x = df.reindex(columns=cols).copy()
-    for c in ('proj', 'floor', 'ceil', 'own', 'cpt_own', 'implied'): x[c] = x[c].astype(float).round(1)
+    for c in ('proj', 'floor', 'ceil', 'own', 'cpt_own', 'implied', 'adj', 'wind'): x[c] = x[c].astype(float).round(1)
     return json.loads(x.to_json(orient='records'))
 
 def main():
     ap = argparse.ArgumentParser(); ap.add_argument('--season', type=int); ap.add_argument('--week', type=int)
-    ap.add_argument('--out', default='dfs_nfl.json'); ap.add_argument('--pool'); ap.add_argument('--salaries', help='folder of DraftKings draftables JSON saved by the phone'); ap.add_argument('--todo', help='dfs_todo.json'); ap.add_argument('--gpp', type=int, default=150); ap.add_argument('--cash', type=int, default=20)
+    ap.add_argument('--out', default='dfs_nfl.json'); ap.add_argument('--pool'); ap.add_argument('--salaries', help='folder of DraftKings draftables JSON saved by the phone'); ap.add_argument('--todo', help='dfs_todo.json'); ap.add_argument('--prev', help='last dfs_nfl.json (tuning state)'); ap.add_argument('--gpp', type=int, default=150); ap.add_argument('--cash', type=int, default=20)
     A = ap.parse_args()
     today = dt.date.today(); season = A.season or (today.year if today.month >= 8 else today.year - 1)
     d.fetch([season], force_current=season); G = d.games(); week = A.week or upcoming_week(G, season)
@@ -141,11 +180,25 @@ def main():
         main_g, sds = dk_slate.pick_slates(dk_slate.draft_groups('NFL'))
         if main_g: slates.append(dict(kind='classic', dg=main_g['dg'], label=f"Main slate {main_g.get('label', '')}", players=dk_slate.players(main_g['dg'])))
         for g in sds: slates.append(dict(kind='showdown', dg=g['dg'], label=g.get('label', ''), players=dk_slate.players(g['dg'])))
-    out = dict(built=dt.datetime.now(dt.timezone.utc).isoformat(), season=season, week=week, weights=opt.W, slates=[])
+    # fresh statuses + kickoff forecasts + the tuning state carried from the last build
+    L = live.statuses()
+    GW = d.games(); GW = GW[(GW.season == season) & (GW.week == week)]
+    FC, fc_notes = live.forecasts(GW)
+    prev = A.prev or (os.path.join(os.path.dirname(A.todo), 'dfs_nfl.json') if A.todo else None)
+    ST = None
+    try: ST = json.load(open(prev)).get('tune') if prev and os.path.exists(prev) else None
+    except Exception as e: print('could not read tuning state', e)
+    if not ST or not isinstance(ST.get('pending'), dict): ST = tune.new_state()
+    graded = tune.grade_all(ST, season, week)
+    for e in graded: print('graded', e['season'], e['week'], {p: (v['mae_base'], v['mae_adj']) for p, v in e['pos'].items()})
+    print('statuses:', L['sources'], L['notes'], '| forecasts:', len(FC), fc_notes[:3])
+    out = dict(built=dt.datetime.now(dt.timezone.utc).isoformat(), season=season, week=week, weights=opt.W, slates=[],
+               live=dict(statuses=L['sources'], notes=L['notes'] + fc_notes[:5],
+                         weather={g: v for g, v in FC.items()}))
     for s in slates:
       try:
         pool = pd.DataFrame(s['players'])
-        df = project(pool, season, week)
+        df = project(pool, season, week, L, FC, ST)
         df = df[df.proj > 0].reset_index(drop=True)
         if s['kind'] == 'classic':
             df = ownership.classic(df)
@@ -164,6 +217,7 @@ def main():
       except Exception:
         import traceback; traceback.print_exc(); print('skipped', s.get('label'))
     if not out['slates']: sys.exit('no slates built')
+    out['tune'] = ST
     json.dump(out, open(A.out, 'w'), separators=(',', ':'))
     print('wrote', A.out)
 

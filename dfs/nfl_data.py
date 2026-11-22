@@ -18,6 +18,12 @@ def fetch(seasons, force_current=None):
         get(f'{NV}/stats_player/stats_player_week_{y}.csv', f'{D}/stats_player_week_{y}.csv', cur)
         get(f'{NV}/stats_team/stats_team_week_{y}.csv', f'{D}/stats_team_week_{y}.csv', cur)
     get(f'{NV}/schedules/games.csv', f'{D}/games.csv', True)
+    # corner coverage stats (PFR) and player bio, for the lockdown-corner variables
+    for y in seasons:
+        try: get(f'{NV}/pfr_advstats/advstats_week_def_{y}.parquet', f'{D}/advdef_{y}.parquet', y == force_current)
+        except Exception as e: print('no PFR defense file for', y, e)
+    try: get(f'{NV}/players/players.parquet', f'{D}/players.parquet')
+    except Exception as e: print('no players file', e)
 
 def dk_points(p):
     """DraftKings classic NFL scoring for offensive players."""
@@ -45,8 +51,10 @@ def games():
     g = g[g.game_type.isin(['REG', 'WC', 'DIV', 'CON', 'SB'])]
     rows = []
     for side, opp, sgn in (('home', 'away', 1), ('away', 'home', -1)):
-        x = g[['game_id', 'season', 'week', 'gameday', 'gametime', 'roof', 'wind', 'temp', 'spread_line', 'total_line', f'{side}_team', f'{opp}_team', f'{side}_score', f'{opp}_score']].copy()
-        x.columns = ['game_id', 'season', 'week', 'gameday', 'gametime', 'roof', 'wind', 'temp', 'spread_line', 'total_line', 'team', 'opp', 'pts', 'opp_pts']
+        x = g[['game_id', 'season', 'week', 'gameday', 'gametime', 'roof', 'wind', 'temp', 'spread_line', 'total_line', f'{side}_team', f'{opp}_team', f'{side}_score', f'{opp}_score',
+               'div_game', f'{side}_rest', f'{opp}_rest', f'{side}_qb_id', 'stadium_id']].copy()
+        x.columns = ['game_id', 'season', 'week', 'gameday', 'gametime', 'roof', 'wind', 'temp', 'spread_line', 'total_line', 'team', 'opp', 'pts', 'opp_pts',
+                     'div_game', 'rest', 'opp_rest', 'qb_id', 'stadium_id']
         x['home'] = 1 if side == 'home' else 0
         # nflverse spread_line: points the home team is favored by
         x['implied'] = (x.total_line + sgn * x.spread_line) / 2
@@ -82,7 +90,8 @@ def features(seasons, extra=None):
     P['att_sh'] = P.attempts / P.team_att.replace(0, np.nan)
     P['opps'] = P.carries.fillna(0) + P.targets.fillna(0)
     P['qb_rush'] = np.where(P.position == 'QB', P.rushing_yards.fillna(0), 0)
-    P = P.merge(G[['season', 'week', 'team', 'game_id', 'gameday', 'gametime', 'roof', 'wind', 'temp', 'implied', 'opp_implied', 'spread', 'total_line', 'home', 'pts']].rename(columns={'game_id': 'gid'}),
+    P = P.merge(G[['season', 'week', 'team', 'game_id', 'gameday', 'gametime', 'roof', 'wind', 'temp', 'implied', 'opp_implied', 'spread', 'total_line', 'home', 'pts',
+                   'div_game', 'rest', 'opp_rest', 'qb_id', 'stadium_id']].rename(columns={'game_id': 'gid'}),
                 on=['season', 'week', 'team'], how='left')
     P['team_share'] = P.dk / (P.pts.replace(0, np.nan))
     P = P.sort_values(['player_id', 'season', 'week']).reset_index(drop=True)

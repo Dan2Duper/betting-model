@@ -1,0 +1,226 @@
+{
+ "w": {
+  "QB": {
+   "vac_car_gain": 0.0,
+   "wind_x": 0.0,
+   "dome": 0.0,
+   "qb_new": 0.0,
+   "div_game": 0.0,
+   "off_bye": 0.0,
+   "opp_off_bye": 0.0
+  },
+  "RB": {
+   "vac_car_gain": 6.423,
+   "vac_tgt_gain": 26.771,
+   "vac_tgt_raw": -3.594,
+   "wind_x": -0.0,
+   "qb_new": 0.0,
+   "div_game": -0.183,
+   "off_bye": -0.0,
+   "opp_off_bye": -0.0
+  },
+  "WR": {
+   "vac_tgt_gain": 0.0,
+   "vac_tgt_raw": 0.0,
+   "wind_x": 0.0,
+   "dome": 0.0,
+   "qb_new": 0.0,
+   "div_game": 0.0,
+   "off_bye": 0.0,
+   "opp_off_bye": 0.0,
+   "cb_elite": 0.0,
+   "cb_weak": 0.0
+  },
+  "TE": {
+   "vac_tgt_gain": 0.0,
+   "vac_tgt_raw": 0.0,
+   "wind_x": 0.0,
+   "dome": 0.0,
+   "qb_new": 0.0,
+   "div_game": 0.0,
+   "off_bye": 0.0,
+   "opp_off_bye": 0.0
+  }
+ },
+ "sd": {
+  "QB": {
+   "vac_car_gain": 0.0679,
+   "wind_x": 2.2052,
+   "dome": 0.467,
+   "qb_new": 0.3481,
+   "div_game": 0.4759,
+   "off_bye": 0.3313,
+   "opp_off_bye": 0.3346
+  },
+  "RB": {
+   "vac_car_gain": 0.1391,
+   "vac_tgt_gain": 0.0231,
+   "vac_tgt_raw": 0.1283,
+   "wind_x": 2.0024,
+   "qb_new": 0.3996,
+   "div_game": 0.4774,
+   "off_bye": 0.3352,
+   "opp_off_bye": 0.3277
+  },
+  "WR": {
+   "vac_tgt_gain": 0.0384,
+   "vac_tgt_raw": 0.1225,
+   "wind_x": 1.9245,
+   "dome": 0.4672,
+   "qb_new": 0.3945,
+   "div_game": 0.4765,
+   "off_bye": 0.3372,
+   "opp_off_bye": 0.3364,
+   "cb_elite": 0.3474,
+   "cb_weak": 0.2172
+  },
+  "TE": {
+   "vac_tgt_gain": 0.0347,
+   "vac_tgt_raw": 0.1254,
+   "wind_x": 2.0259,
+   "dome": 0.4684,
+   "qb_new": 0.4032,
+   "div_game": 0.4765,
+   "off_bye": 0.3321,
+   "opp_off_bye": 0.3346
+  }
+ },
+ "report": {
+  "QB": {
+   "n": 2048,
+   "rmse_base": 8.472,
+   "rmse_adj_oos": 8.484,
+   "mae_base": 6.768,
+   "mae_adj_oos": 6.771,
+   "t": {
+    "vac_car_gain": -0.3,
+    "wind_x": 0.6,
+    "dome": -0.2,
+    "qb_new": 0.6,
+    "div_game": -2.1,
+    "off_bye": -0.1,
+    "opp_off_bye": -2.3
+   },
+   "big_vacancy_rows": 931,
+   "rmse_on_vacancy_rows": [
+    8.33,
+    8.367
+   ],
+   "starts_on": false
+  },
+  "RB": {
+   "n": 4085,
+   "rmse_base": 7.56,
+   "rmse_adj_oos": 7.514,
+   "mae_base": 5.754,
+   "mae_adj_oos": 5.782,
+   "t": {
+    "vac_car_gain": 7.4,
+    "vac_tgt_gain": 3.5,
+    "vac_tgt_raw": -2.6,
+    "wind_x": -0.0,
+    "qb_new": 0.1,
+    "div_game": -1.5,
+    "off_bye": -0.8,
+    "opp_off_bye": -0.5
+   },
+   "big_vacancy_rows": 2246,
+   "rmse_on_vacancy_rows": [
+    7.922,
+    7.82
+   ],
+   "starts_on": true
+  },
+  "WR": {
+   "n": 6565,
+   "rmse_base": 7.521,
+   "rmse_adj_oos": 7.53,
+   "mae_base": 5.714,
+   "mae_adj_oos": 5.768,
+   "t": {
+    "vac_tgt_gain": 2.2,
+    "vac_tgt_raw": 1.0,
+    "wind_x": 1.2,
+    "dome": 0.8,
+    "qb_new": -1.1,
+    "div_game": -0.6,
+    "off_bye": -1.9,
+    "opp_off_bye": -1.4,
+    "cb_elite": -0.1,
+    "cb_weak": 1.3
+   },
+   "big_vacancy_rows": 2280,
+   "rmse_on_vacancy_rows": [
+    7.635,
+    7.638
+   ],
+   "starts_on": false
+  },
+  "TE": {
+   "n": 2701,
+   "rmse_base": 6.326,
+   "rmse_adj_oos": 6.333,
+   "mae_base": 4.759,
+   "mae_adj_oos": 4.815,
+   "t": {
+    "vac_tgt_gain": 3.3,
+    "vac_tgt_raw": -0.9,
+    "wind_x": -0.0,
+    "dome": -0.1,
+    "qb_new": 0.6,
+    "div_game": -0.8,
+    "off_bye": -0.3,
+    "opp_off_bye": -0.3
+   },
+   "big_vacancy_rows": 961,
+   "rmse_on_vacancy_rows": [
+    6.665,
+    6.67
+   ],
+   "starts_on": false
+  }
+ },
+ "fit_w": {
+  "QB": {
+   "vac_car_gain": -0.0,
+   "wind_x": 0.0,
+   "dome": -0.0,
+   "qb_new": 0.0,
+   "div_game": -0.828,
+   "off_bye": -0.0,
+   "opp_off_bye": -1.27
+  },
+  "RB": {
+   "vac_car_gain": 6.423,
+   "vac_tgt_gain": 26.771,
+   "vac_tgt_raw": -3.594,
+   "wind_x": -0.0,
+   "qb_new": 0.0,
+   "div_game": -0.183,
+   "off_bye": -0.0,
+   "opp_off_bye": -0.0
+  },
+  "WR": {
+   "vac_tgt_gain": 9.966,
+   "vac_tgt_raw": 0.78,
+   "wind_x": 0.028,
+   "dome": 0.0,
+   "qb_new": -0.125,
+   "div_game": -0.0,
+   "off_bye": -0.257,
+   "opp_off_bye": -0.197,
+   "cb_elite": -0.0,
+   "cb_weak": 0.269
+  },
+  "TE": {
+   "vac_tgt_gain": 19.851,
+   "vac_tgt_raw": -0.0,
+   "wind_x": -0.0,
+   "dome": -0.0,
+   "qb_new": 0.0,
+   "div_game": -0.0,
+   "off_bye": -0.0,
+   "opp_off_bye": -0.0
+  }
+ }
+}
