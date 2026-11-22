@@ -9,13 +9,16 @@ import requests
 API = 'https://statsapi.mlb.com/api/v1'
 S = requests.Session(); S.headers['User-Agent'] = 'bet-tracker (personal project)'
 def _get(url, tries=3, timeout=30):
+    why = ''
     for i in range(tries):
         try:
             r = S.get(url, timeout=timeout)
             if r.status_code == 200: return r.json()
-        except Exception: pass
+            why = f'HTTP {r.status_code} {r.text[:160]}'
+            if r.status_code in (400, 404): break
+        except Exception as e: why = repr(e)[:160]
         time.sleep(1.5 * (i + 1))
-    raise RuntimeError(f'failed: {url}')
+    raise RuntimeError(f'failed ({why}): {url[:120]}')
 
 # Fallback when the Stats API venue record is missing a field: home park by team code -> (lat, lon, bearing from home plate to
 # center field in degrees clockwise from north, roof: O open / R retractable / D dome). Bearings are approximate (good to ~15 degrees).
@@ -67,14 +70,17 @@ def forecasts(games, P):
         if p[0] is None or not g.get('start_utc'): continue
         if p[3] == 'D': out[g['gid']] = dict(temp=72.0, windspeed=0.0, winddir='unknown', sky='dome', roof='dome', src='dome'); continue
         G.append((g, p))
-    for i in range(0, len(G), 40):
-        chunk = G[i:i + 40]
-        try:
-            j = _get('https://api.open-meteo.com/v1/forecast?latitude=' + ','.join(f'{p[0]:.4f}' for _, p in chunk) + '&longitude=' + ','.join(f'{p[1]:.4f}' for _, p in chunk) +
-                     '&hourly=temperature_2m,relative_humidity_2m,precipitation_probability,wind_speed_10m,wind_direction_10m,wind_gusts_10m&wind_speed_unit=mph&temperature_unit=fahrenheit&timezone=GMT&forecast_days=4')
-        except Exception as e: print('weather forecast failed:', e); continue
-        if not isinstance(j, list): j = [j]
-        for (g, p), w in zip(chunk, j):
+    Q = '&hourly=temperature_2m,relative_humidity_2m,precipitation_probability,wind_speed_10m,wind_direction_10m,wind_gusts_10m&wind_speed_unit=mph&temperature_unit=fahrenheit&timezone=GMT&forecast_days=4'
+    W = {}   # one call per park (a day's games share parks only in doubleheaders); a failed park just stays neutral
+    for g, p in G:
+        k = (round(p[0], 3), round(p[1], 3))
+        if k in W: continue
+        try: W[k] = _get(f'https://api.open-meteo.com/v1/forecast?latitude={p[0]:.4f}&longitude={p[1]:.4f}' + Q, tries=2, timeout=20)
+        except Exception as e: W[k] = None; print('weather forecast failed for', g.get('home'), e)
+    for chunk in [G]:
+        for (g, p) in chunk:
+            w = W.get((round(p[0], 3), round(p[1], 3)))
+            if not w: continue
             try:
                 h = w['hourly']; t0 = dt.datetime.fromisoformat(g['start_utc'].replace('Z', '+00:00')).astimezone(dt.timezone.utc).replace(minute=0, second=0, microsecond=0)
                 k = h['time'].index(t0.strftime('%Y-%m-%dT%H:00')); ks = [x for x in (k, k + 1, k + 2) if x < len(h['time'])]     # first pitch and the two hours after
