@@ -2,6 +2,15 @@
  "_note": "Written automatically by the relay (and by Claude); newest first; the Bet Tracker Reports tab reads this.",
  "reports": [
   {
+   "id": "2026-11-22T20:16:41Z-NFL",
+   "time": "2026-11-22T20:16:41Z",
+   "league": "NFL",
+   "kind": "update",
+   "title": "DROP AND GIVE ME 0.5 POINTS, RICH: Lions Are Short a Hook, Cowboys Are Cruising, $69.04 Is Out in the Field",
+   "text": "**MY BETS:**\n\nLISTEN UP, MAGGOT! It's 2:16 PM Central and you've got $69.04 staked, nothing settled, and a Detroit problem the size of a half-point. MOVE IT!\n\n- DET -3.5 vs TB, $9.72 to win $8.31: Tampa Bay 14, Detroit 17, end of the 3rd. You're missing by 0.5. HALF A POINT! My grandmother's cough has more margin than your Lions. LOSING.\n- DAL -7.5 vs TEN, $19.61 to win $17.35: Dallas 41, Tennessee 23, 3rd quarter. Covering by 10.5. Finally, one soldier who can follow an order. WINNING. Don't get cocky, private.\n- 4-leg parlay (LAC, DET, DAL, SF), $9.95 to win $145.07: Dallas is carrying its pack. Detroit is face-down in the mud, and the Chargers and Niners haven't even left the barracks. LOSING, because of your Lions.\n- LAC -3.5 vs NYJ, $10.00 to win $10.00: not started.\n- SF -3.5 vs MIN, $19.76 to win $18.30: not started.\n\n**THE MODEL:**\n\nZero of 11 games final, so the model's record is 0-0. That's the only perfect thing in this outfit, and it's an empty set. Live and ugly:\n\n- Arizona 7, Kansas City 34, 4th quarter. The model said 15-27. Even its fantasy is better than Arizona's reality.\n- Miami 9, Buffalo 20, 3rd. The model said 16-29.\n- Pittsburgh 9, Philadelphia 16, 3rd. The model has Pittsburgh winning 21-19. STAND UP STRAIGHT AND EARN IT, STEELERS!\n\n**STILL TO COME:**\n\n- LAC -3.5 vs NYJ, $10.00 to win $10.00, 4:05 PM EST.\n- SF -3.5 vs MIN, $19.76 to win $18.30, 8:20 PM EST.\n- AI-LOX: UNDER 54.5 in CIN @ WAS, Monday 8:15 PM EST, $130.00 to win $126.21. That's a LOT of money on two offenses in Monday night formation, recruit.\n\nNow get off my sight and pray for a field goal, Rich! DISMISSED!",
+   "style": "a drill sergeant screaming at a recruit"
+  },
+  {
    "id": "2026-11-22T19:28:48Z-NFL",
    "time": "2026-11-22T19:28:48Z",
    "league": "NFL",
@@ -347,12 +356,13 @@
    ]
   },
   "2026-11-22": {
-   "n": 2,
-   "last": "2026-11-22T19:28:48Z",
+   "n": 3,
+   "last": "2026-11-22T20:16:41Z",
    "fp": "|0",
    "fpBets": "",
    "kinds": [
     "preview",
+    "update",
     "update"
    ]
   }
