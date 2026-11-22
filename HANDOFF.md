@@ -138,6 +138,12 @@ DFS entry tracking - BUILT Nov 22 (page eb99f21 on main, relay 1abeb538): "✅ I
 contest) -> ST.dfsMine (synced); "📷 Add DFS screenshots" -> relay /dfsshot (DFS_SHOT prompt + dfs_screens tool; a lineup split over two
 screenshots is merged) -> matched to saved entries by player overlap (first initial + last name, need max(4, n-2)) -> new / result update /
 already saved; "My DFS results" card: settled fees, won, net, ROI, cashed, split cash vs tournament. MLB: works as soon as MLB lineups exist.
+  Added same day: contest choices (dfs/dk_slate.lobby_contests -> dfs_todo.json slates[].contests: top prize pools <= $100 fee + biggest cash
+  games) fill contest/fee/type; screenshot fee from the Submit button / DETAILS tab / same contest before / lobby name / last fee (editable);
+  contest-only screens (Standings) attach to saved entries; $ button edits a fee. AUTO SCORING: page dfsScore() every 60 s scores entered NFL
+  lineups from ESPN summaries with DK rules (CPT x1.5, DST incl. points allowed; kickers approximate) - matched official stats exactly on
+  IND@HOU Nov 19; final totals saved (autoFinal). report.json carries dfs[]; relay factsText has a MY DFS block (relay 23715ff4, which
+  also carries the MLB-session report code; its tests/relay_mlb_test.mjs passed). Not yet: DFS rows in the Tracker/Stats tabs.
 
 Phase 3 - spring training dry run (late Feb 2027): run every piece on real spring games/slates, fix feed surprises, then go live.
 
