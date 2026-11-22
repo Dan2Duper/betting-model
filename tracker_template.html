@@ -316,6 +316,19 @@ a{color:var(--series)}
       </div>
       <div id="dfs-lineup"></div>
       <div style="display:flex;gap:8px;margin-top:10px;flex-wrap:wrap"><button class="btn" id="dfs-prev">◀ Back</button><button class="btn primary" id="dfs-shuffle">Shuffle ▶</button><span class="small" id="dfs-count" style="align-self:center"></span></div>
+      <div style="margin-top:10px"><button class="btn" id="dfs-enter">✅ I entered this lineup</button>
+        <div id="dfs-enter-form" class="hide"><div style="display:flex;gap:8px;flex-wrap:wrap;align-items:flex-end;margin-top:8px">
+          <label class="small">Type<br><select id="dfs-e-mode"><option value="cash">Cash</option><option value="gpp">Tournament</option></select></label>
+          <label class="small">Entry fee $<br><input id="dfs-e-fee" inputmode="decimal" style="width:70px"></label>
+          <label class="small">Entries<br><input id="dfs-e-n" inputmode="numeric" value="1" style="width:50px"></label>
+          <label class="small">Contest<br><input id="dfs-e-contest" placeholder="optional" style="width:150px"></label>
+          <button class="btn primary" id="dfs-e-save">Save</button><span class="small" id="dfs-e-msg"></span></div></div></div>
+    </div>
+    <div class="card">
+      <div class="cardhead"><div><h2>My DFS results</h2><div class="small">Lineups you entered and how they did. Add DraftKings screenshots of a lineup (one of these or your own) or of contest results. A lineup that takes two screenshots is read as one.</div></div>
+        <label class="btn primary">📷 Add DFS screenshots<input type="file" id="dfs-shot" accept="image/*" multiple class="hide"></label></div>
+      <div id="dfs-shot-box" class="hide" style="margin:8px 0"></div>
+      <div id="dfs-mine"></div>
     </div>
     <div class="card">
       <h2>My read on the game</h2>
@@ -471,7 +484,7 @@ const today = () => ctDate(new Date().toISOString());
 
 // ---------------- state ----------------
 const KEY = 'bt-state-v2';
-let ST = {key: '', budget: BR.daily_budget, struck: {}, ov: {}, frozen: {}, frozenPicks: {}, mine: {}, mineDel: {}, slate: {}, finals: {}, odds: {}, wx: {}, inputs: {}, espnOdds: {}, qbnews: {}, nflInj: null};
+let ST = {key: '', budget: BR.daily_budget, struck: {}, ov: {}, frozen: {}, frozenPicks: {}, mine: {}, mineDel: {}, dfsMine: {}, slate: {}, finals: {}, odds: {}, wx: {}, inputs: {}, espnOdds: {}, qbnews: {}, nflInj: null};
 try { Object.assign(ST, JSON.parse(localStorage.getItem(KEY) || '{}')); } catch (e) {}
 const save = () => { try { localStorage.setItem(KEY, JSON.stringify(ST)); } catch (e) {} };
 const LOX = `<span class="lox" title="AI-LOX: one of the model's picks"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M7 10.5V7.5a5 5 0 0 1 10 0v3" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round"/><rect x="4" y="10" width="16" height="12" rx="3" fill="currentColor"/><circle cx="12" cy="15.5" r="1.8" fill="#17142b"/><rect x="11.2" y="16" width="1.6" height="3" rx=".8" fill="#17142b"/></svg>AI-LOX</span>`;
@@ -1420,7 +1433,7 @@ $('#s-about').innerHTML = `Model snapshot built ${new Date(SNAP.built).toLocaleS
 
 // ---------------- GITHUB SYNC ----------------
 const GH = {owner: 'Dan2Duper', repo: 'betting-model', branch: 'sync', path: 'state.json'};
-const SYNCED = ['inputs', 'frozen', 'frozenPicks', 'budget', 'mine', 'mineDel'];
+const SYNCED = ['inputs', 'frozen', 'frozenPicks', 'budget', 'mine', 'mineDel', 'dfsMine'];
 let syncSha = null, syncLast = null, syncTimer = null, syncBusy = false, syncApplying = false;
 function syncMark() { ST.syncPending = true; save(); clearTimeout(syncTimer); syncTimer = setTimeout(() => { ST.syncPending = false; syncPush(); }, 2500); }
 const b64e = s => btoa(unescape(encodeURIComponent(s)));
@@ -2081,6 +2094,105 @@ function dfsPickAi() {
   }
   return best;
 }
+// ---------------- MY DFS ENTRIES ----------------
+// Entered lineups live in ST.dfsMine (synced). "I entered this lineup" saves the lineup on screen; DFS screenshots (lineups, My Contests,
+// results) go to the relay's /dfsshot reader and are matched to saved entries by player overlap (first initial + last name).
+let DFS_SHOWN = null, DFSSHOT = [];
+const dfsNum = v => { if (typeof v === 'number') return isFinite(v) ? v : null; const m = String(v ?? '').replace(/,/g, '').match(/-?\d+(\.\d+)?/); return m ? +m[0] : null; };
+const dfsKey = n => { const w = String(n || '').toLowerCase().replace(/\b(jr|sr|ii|iii|iv|v)\b\.?/g, ' ').replace(/[^a-z .'-]/g, ' ').replace(/[.'-]/g, ' ').trim().split(/\s+/).filter(Boolean);
+  return w.length ? (w.length > 1 ? w[0][0] + ' ' + w[w.length - 1] : w[0]) : ''; };
+const dfsOverlap = (a, b) => { const B = new Set(b.map(p => dfsKey(p.n))); return a.filter(p => B.has(dfsKey(p.n))).length; };
+const dfsGuessMode = c => /50\s*\/\s*50|double\s*up|triple|head.?to.?head|h2h|cash/i.test(c || '') ? 'cash' : 'gpp';
+const dfsId = () => 'd' + Date.now().toString(36) + Math.random().toString(36).slice(2, 6);
+function dfsEntries() { return Object.values(ST.dfsMine || {}).sort((a, b) => (b.created || 0) - (a.created || 0)); }
+function dfsSaveShown() {
+  if (!DFS_SHOWN) return;
+  const {s, rows, L} = DFS_SHOWN, fee = dfsNum($('#dfs-e-fee').value), n = Math.max(1, Math.round(dfsNum($('#dfs-e-n').value) || 1));
+  if (fee == null) { $('#dfs-e-msg').textContent = 'Enter the entry fee.'; return; }
+  const id = dfsId(); ST.dfsMine = ST.dfsMine || {};
+  ST.dfsMine[id] = {id, created: Date.now(), day: today(), sport: s.sport || 'NFL', slate: s.label, kind: s.kind || (rows.length <= 6 ? 'showdown' : 'classic'), mode: $('#dfs-e-mode').value,
+    contest: $('#dfs-e-contest').value.trim(), fee, entries: n, src: 'app', status: 'open', proj: L.proj, salary: L.salary,
+    players: rows.map(r => ({n: r[1].name, pos: r[0], t: r[1].team, cpt: r[0] === 'CPT', proj: +(r[2] * r[1].proj).toFixed(1)}))};
+  usave(); $('#dfs-e-msg').textContent = 'Saved to My DFS results.'; $('#dfs-enter-form').classList.add('hide'); dfsMineRender();
+}
+function dfsMineRender() {
+  const box = $('#dfs-mine'); if (!box) return;
+  const E = dfsEntries();
+  if (!E.length) { box.innerHTML = '<div class="small">Nothing yet. Tap "I entered this lineup" under a lineup, or add DraftKings screenshots.</div>'; return; }
+  const sum = list => { const done = list.filter(e => e.status === 'done' && e.won != null), fees = done.reduce((t, e) => t + (e.fee || 0) * (e.entries || 1), 0), won = done.reduce((t, e) => t + (+e.won || 0), 0);
+    return {n: done.length, fees, won, net: won - fees, roi: fees ? (won - fees) / fees : null, cashed: done.filter(e => +e.won > 0).length}; };
+  const line = (lab, t) => t.n ? `<div class="small"><b>${lab}</b>: ${t.n} settled · fees ${fmt$(t.fees)} · won ${fmt$(t.won)} · net <b>${fmt$(t.net)}</b>${t.roi != null ? ` · ROI ${(t.roi * 100).toFixed(0)}%` : ''} · cashed ${t.cashed} of ${t.n}</div>` : '';
+  const open = E.filter(e => e.status !== 'done'), openFees = open.reduce((t, e) => t + (e.fee || 0) * (e.entries || 1), 0);
+  const ST_LAB = {open: 'not started', live: 'live', done: 'final'};
+  box.innerHTML = line('All', sum(E)) + line('Cash', sum(E.filter(e => e.mode === 'cash'))) + line('Tournament', sum(E.filter(e => e.mode !== 'cash'))) +
+    (open.length ? `<div class="small">${open.length} not settled yet (${fmt$(openFees)} in entry fees).</div>` : '') +
+    E.map(e => `<div class="card" style="margin:6px 0;padding:10px">
+      <div style="display:flex;justify-content:space-between;gap:8px;align-items:flex-start"><div><b>${esc(e.contest || e.slate || 'Lineup')}</b>
+        <div class="small">${esc(e.day || '')} · ${e.sport || 'NFL'} ${esc(e.kind || '')}${e.src === 'screenshot' ? ' · from screenshot' : ''} · ${e.fee != null ? fmt$(e.fee) : '$?'}${(e.entries || 1) > 1 ? ' × ' + e.entries : ''} · ${ST_LAB[e.status] || e.status}${e.points != null ? ` · <b>${e.points} pts</b>` : e.proj ? ` · proj ${e.proj}` : ''}${e.place ? ` · ${(+e.place).toLocaleString()}${e.field ? ' of ' + (+e.field).toLocaleString() : ''}` : ''}${e.won != null ? ` · won <b>${fmt$(+e.won)}</b>` : ''}</div></div>
+        <div style="display:flex;gap:6px;align-items:center"><select data-dfsmode="${e.id}" class="small"><option value="cash"${e.mode === 'cash' ? ' selected' : ''}>Cash</option><option value="gpp"${e.mode !== 'cash' ? ' selected' : ''}>Tournament</option></select><button class="btn small" data-dfsdel="${e.id}">✕</button></div></div>
+      <details><summary class="small">Players</summary><div class="small">${(e.players || []).map(p => `${p.cpt ? '<b>CPT</b> ' : esc(p.pos || '') + ' '}${esc(p.n)}${p.t ? ' (' + esc(p.t) + ')' : ''}${p.pts != null ? ' ' + p.pts : ''}`).join(' · ')}</div></details></div>`).join('');
+  $$('[data-dfsmode]').forEach(el => el.onchange = () => { ST.dfsMine[el.dataset.dfsmode].mode = el.value; usave(); dfsMineRender(); });
+  $$('[data-dfsdel]').forEach(el => el.onclick = () => { if (!confirm('Remove this entry from My DFS results?')) return; delete ST.dfsMine[el.dataset.dfsdel]; usave(); dfsMineRender(); });
+}
+async function dfsShotRead(files) {
+  files = [...files].slice(0, 8);
+  const box = $('#dfs-shot-box'); box.classList.remove('hide');
+  box.innerHTML = `<div class="note">Reading ${files.length > 1 ? files.length + ' screenshots' : 'your screenshot'}…</div>`;
+  let code = ''; try { code = localStorage.getItem('dfsAiCode') || ''; } catch (e) {}
+  if (!code) { box.innerHTML = '<div class="note">Save your relay password first: Settings tab, "DFS AI code".</div>'; return; }
+  try {
+    const images = await Promise.all(files.map(shotImage));
+    const r = await fetch(DFS_AI_URL + '/dfsshot', {method: 'POST', headers: {'Content-Type': 'application/json', 'X-Code': code}, body: JSON.stringify({images, today: today()})});
+    const j = await r.json(); if (!r.ok) throw new Error(j.error || r.status);
+    const E = dfsEntries();
+    DFSSHOT = (j.items || []).map(it => {
+      if (it.kind === 'ignore' || !(it.players || []).length && it.kind !== 'result') return {it, act: 'skip', why: it.ignore_reason || 'no lineup on it'};
+      const pl = (it.players || []).map(p => ({n: p.name, pos: p.slot || '', t: p.team || '', cpt: !!p.captain || /^(cpt|captain|mvp)$/i.test(p.slot || ''), pts: dfsNum(p.points)}));
+      let best = null, bo = 0; E.forEach(e => { const o = dfsOverlap(pl, e.players || []); if (o > bo) { bo = o; best = e; } });
+      const need = Math.max(4, pl.length - 2), m = pl.length >= 4 && bo >= need ? best : null;
+      return {it, pl, m, act: it.kind === 'result' ? (m ? 'update' : 'new') : (m ? 'dup' : 'new')};
+    });
+    dfsShotShow();
+  } catch (e) { box.innerHTML = `<div class="note">Could not read that: ${esc(e.message || e)}</div>`; }
+}
+function dfsShotApply(i) {
+  const x = DFSSHOT[i]; if (!x || x.done || x.act === 'skip') return;
+  const it = x.it, st = it.status === 'completed' ? 'done' : it.status === 'live' ? 'live' : null;
+  const res = {}; [['points', 'total_points'], ['place', 'place'], ['field', 'field'], ['won', 'winnings']].forEach(([k, f]) => { const v = dfsNum(it[f]); if (v != null) res[k] = v; });
+  ST.dfsMine = ST.dfsMine || {};
+  if (x.m) {
+    const e = ST.dfsMine[x.m.id]; if (!e) return;
+    Object.assign(e, res); if (st) e.status = st;
+    if (e.fee == null && dfsNum(it.entry_fee) != null) e.fee = dfsNum(it.entry_fee);
+    if (dfsNum(it.entries)) e.entries = dfsNum(it.entries);
+    if (!e.contest && it.contest) e.contest = it.contest;
+    if (x.pl.some(p => p.pts != null)) { const pts = Object.fromEntries(x.pl.map(p => [dfsKey(p.n), p.pts])); e.players.forEach(p => { const v = pts[dfsKey(p.n)]; if (v != null) p.pts = v; }); }
+  } else {
+    const id = dfsId(), fee = dfsNum(it.entry_fee);
+    ST.dfsMine[id] = Object.assign({id, created: Date.now(), day: today(), sport: (it.sport || 'NFL').toUpperCase(), slate: it.date || '', kind: it.game_type || (x.pl.length <= 6 ? 'showdown' : 'classic'),
+      mode: dfsGuessMode(it.contest), contest: it.contest || '', fee, entries: Math.max(1, Math.round(dfsNum(it.entries) || 1)), src: 'screenshot',
+      status: st || 'open', salary: dfsNum(it.total_salary), players: x.pl}, res);
+  }
+  x.done = true; usave();
+}
+function dfsShotShow() {
+  const box = $('#dfs-shot-box'), LAB = {new: 'New entry', update: 'Result for a saved entry', dup: 'Already saved', skip: 'Skipped'};
+  const todo = DFSSHOT.filter(x => !x.done && x.act !== 'skip').length;
+  box.innerHTML = DFSSHOT.map((x, i) => { const it = x.it;
+    return `<div class="card" style="margin:6px 0;padding:10px"><span class="pill ${x.act === 'skip' || x.act === 'dup' ? 'P' : 'O'}" style="margin-right:6px">${x.done ? 'Saved' : LAB[x.act]}</span>
+      <b>${esc(it.contest || (it.kind === 'result' ? 'Contest result' : 'Lineup'))}</b>${x.m ? ` <span class="small">→ matches ${esc(x.m.contest || x.m.slate || 'a saved lineup')} (${x.m.day})</span>` : ''}
+      <div class="small">${x.act === 'skip' ? esc(x.why) : `${(x.pl || []).length} players${dfsNum(it.entry_fee) != null ? ' · fee ' + fmt$(dfsNum(it.entry_fee)) : ''}${dfsNum(it.entries) > 1 ? ' × ' + dfsNum(it.entries) : ''}${it.status ? ' · ' + esc(it.status) : ''}${dfsNum(it.total_points) != null ? ' · ' + dfsNum(it.total_points) + ' pts' : ''}${dfsNum(it.place) ? ' · ' + dfsNum(it.place).toLocaleString() + (dfsNum(it.field) ? ' of ' + dfsNum(it.field).toLocaleString() : '') : ''}${dfsNum(it.winnings) != null ? ' · won ' + fmt$(dfsNum(it.winnings)) : ''}`}</div>
+      ${it.cut_off ? `<div class="small" style="color:var(--bad,#b00)">Looks cut off${it.note ? ': ' + esc(it.note) : ''}. Add the other screenshot with it if you have one.</div>` : ''}
+      ${x.pl && x.pl.length ? `<div class="small">${x.pl.map(p => (p.cpt ? 'CPT ' : '') + esc(p.n) + (p.pts != null ? ' ' + p.pts : '')).join(' · ')}</div>` : ''}
+      ${!x.done && x.act !== 'skip' && x.act !== 'dup' ? `<button class="btn small primary" data-dfsapply="${i}" style="margin-top:6px">Save</button>` : ''}</div>`; }).join('') +
+    `<div style="display:flex;gap:8px;margin-top:6px">${todo > 1 ? `<button class="btn primary small" id="dfs-shot-all">Save all ${todo}</button>` : ''}<button class="btn small" id="dfs-shot-close">Close</button></div>`;
+  $$('[data-dfsapply]').forEach(el => el.onclick = () => { dfsShotApply(+el.dataset.dfsapply); dfsShotShow(); dfsMineRender(); });
+  if ($('#dfs-shot-all')) $('#dfs-shot-all').onclick = () => { DFSSHOT.forEach((x, i) => { if (x.act !== 'dup') dfsShotApply(i); }); dfsShotShow(); dfsMineRender(); };
+  $('#dfs-shot-close').onclick = () => { box.classList.add('hide'); box.innerHTML = ''; };
+}
+$('#dfs-enter').onclick = () => { $('#dfs-enter-form').classList.toggle('hide'); $('#dfs-e-mode').value = dfsMode === 'cash' ? 'cash' : 'gpp'; $('#dfs-e-msg').textContent = ''; };
+$('#dfs-e-save').onclick = dfsSaveShown;
+$('#dfs-shot').onchange = e => { if (e.target.files.length) dfsShotRead(e.target.files); e.target.value = ''; };
 function dfsRender() {
   const s = dfsCur(); if (!s) return;
   const pool = dfsPool(); const L = dfsAiPick || pool[dfsIdx % Math.max(pool.length, 1)];
@@ -2092,6 +2204,7 @@ function dfsRender() {
     slots.forEach((sl, k) => rows.push([sl, P[filled[k]], 1]));
   } else { rows.push(['CPT', P[L.cpt], 1.5]); L.flex.forEach(i => rows.push(['FLEX', P[i], 1])); }
   const own = r => r[0] === 'CPT' ? r[1].cpt_own : r[1].own;
+  DFS_SHOWN = {s, rows, L}; dfsMineRender();
   $('#dfs-lineup').innerHTML = `<table class="dfs-lu">${rows.map(r => `<tr class="${r[0] === 'CPT' ? 'cpt' : ''}"><td class="pos">${r[0]}</td><td><b>${esc(r[1].name)}</b> <span class="small">${esc(r[1].pos)} · ${esc(r[1].team)} vs ${esc(r[1].opp)}${r[1].status && r[1].status !== 'None' ? ' · ' + esc(r[1].status) : ''}${r[1].wind >= 12 ? ' · wind ' + Math.round(r[1].wind) + ' mph' : ''}</span>${r[1].why ? `<div class="small">${esc(r[1].why)}</div>` : ''}</td><td class="num">$${((r[0] === 'CPT' ? r[1].cpt_salary : r[1].salary) || 0).toLocaleString()}</td><td class="num">${(r[2] * r[1].proj).toFixed(1)}</td><td class="num small">${own(r) != null ? '~' + own(r).toFixed(0) + '%' : ''}</td></tr>`).join('')}</table>
     <div class="dfs-tot">Salary $${L.salary.toLocaleString()} <span>of $50,000</span> · Projected ${L.proj} <span>floor ${L.floor} · ceiling ${L.ceil}</span></div>
     <div class="dfs-note">${esc(L.note)}</div>${DFS.live ? `<div class="small">Injury tags: ${esc((DFS.live.statuses || []).join(' + ') || 'DraftKings only')} · built ${new Date(DFS.built).toLocaleString('en-US', {weekday: 'short', hour: 'numeric', minute: '2-digit'})}</div>` : ''}`;

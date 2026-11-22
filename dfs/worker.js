@@ -119,6 +119,53 @@ async function readSlip(req, env, origin) {
   return reply({bets: out.bets || []}, 200, origin);
 }
 
+// ---------- DFS screenshots (/dfsshot) ----------
+// Rich dumps DraftKings (or other DFS app) screenshots: a lineup he built (maybe his own custom one), an entry / My Contests card,
+// or a finished contest result. Several at once; a lineup split across two screenshots comes back as ONE lineup.
+const DFS_SHOT = `You read daily fantasy sports screenshots (DraftKings mostly; FanDuel, Underdog etc. possible), NFL or MLB, classic or showdown.
+Return one item per distinct lineup/entry:
+- kind "lineup": a lineup being built or already entered but not finished (lineup editor, "Edit lineup", upcoming/live entry view).
+- kind "result": a contest entry with a score: live or completed (My Contests > Live/Completed, an entry detail with fantasy points,
+  a results card with place and winnings).
+- kind "ignore": nothing about a lineup or contest (ads, promos, the player pool list with no lineup, account screens); give ignore_reason.
+For each lineup/result give every player you can see: name exactly as printed (often "M. Wilson" style), slot (QB, RB, WR, TE, FLEX, DST,
+CPT, UTIL, P, C, 1B, 2B, 3B, SS, OF...), team if shown, salary if shown, fantasy points if shown, captain true for a CPT/MVP slot.
+Also: contest name, entry_fee (one entry), entries (how many entries of this lineup, e.g. "x3" or "3 entries"), status upcoming|live|completed,
+total_points, place (rank number), field (number of entries in the contest), winnings (money won for this entry or set of entries; 0 if
+nothing), total_salary, date as printed, game_type classic|showdown, sport NFL|MLB, site.
+SPLIT LINEUPS: a lineup often needs two screenshots (top half then bottom half, sometimes one row repeated). When consecutive screenshots
+continue the same lineup (slots carry on, same contest/header, overlapping player rows), MERGE them into one item and list each player once.
+Only separate items when they are genuinely different lineups or entries. Set cut_off true if a lineup still looks incomplete
+(fewer players than the game type needs: classic NFL 9, MLB 10, showdown 6) and say what's missing in note.
+Never invent players, points or money you cannot read. Answer by calling the dfs_screens tool.`;
+const DFS_TOOL = {name: 'dfs_screens', description: 'Lineups and contest results read from the screenshots.', input_schema: {type: 'object', required: ['items'], properties: {items: {type: 'array', items: {type: 'object', properties: {
+  kind: {type: 'string', enum: ['lineup', 'result', 'ignore']}, ignore_reason: {type: 'string'}, site: {type: 'string'}, sport: {type: 'string'}, game_type: {type: 'string'},
+  contest: {type: 'string'}, entry_fee: {type: ['number', 'string']}, entries: {type: ['number', 'string']}, status: {type: 'string', enum: ['upcoming', 'live', 'completed']},
+  total_points: {type: ['number', 'string']}, place: {type: ['number', 'string']}, field: {type: ['number', 'string']}, winnings: {type: ['number', 'string']},
+  total_salary: {type: ['number', 'string']}, date: {type: 'string'}, cut_off: {type: 'boolean'}, note: {type: 'string'},
+  players: {type: 'array', items: {type: 'object', properties: {name: {type: 'string'}, slot: {type: 'string'}, team: {type: 'string'}, salary: {type: ['number', 'string']},
+    points: {type: ['number', 'string']}, captain: {type: 'boolean'}}}}}}}}}};
+async function readDfsShot(req, env, origin) {
+  let body; try { body = await req.json(); } catch (e) { return reply({error: 'bad request'}, 400, origin); }
+  const imgs = (Array.isArray(body.images) ? body.images : []).filter(Boolean).slice(0, 8);
+  if (!imgs.length || imgs.some(x => x.length > 4e6)) return reply({error: 'no image, or one is too large'}, 400, origin);
+  const content = [];
+  imgs.forEach((data, i) => { if (imgs.length > 1) content.push({type: 'text', text: `Screenshot ${i + 1} of ${imgs.length}:`});
+    content.push({type: 'image', source: {type: 'base64', media_type: 'image/jpeg', data}}); });
+  content.push({type: 'text', text: `Today is ${body.today || ''}. Read every lineup and contest result across these screenshots; merge a lineup split across screenshots into one item.`});
+  const r = await fetch('https://api.anthropic.com/v1/messages', {method: 'POST',
+    headers: {'x-api-key': env.ANTHROPIC_API_KEY, 'anthropic-version': '2023-06-01', 'content-type': 'application/json'},
+    body: JSON.stringify({model: env.SLIP_MODEL || 'claude-opus-5-5', max_tokens: 6000, system: DFS_SHOT, tools: [DFS_TOOL], tool_choice: {type: 'auto'},
+      messages: [{role: 'user', content}]})});
+  const j = await r.json();
+  if (!r.ok) return reply({error: (j.error && j.error.message) || 'AI error'}, 502, origin);
+  const use = (j.content || []).find(c => c.type === 'tool_use');
+  let out = use && use.input;
+  if (!out) { const text = (j.content || []).filter(c => c.type === 'text').map(c => c.text).join('\n');
+    try { out = JSON.parse(text.slice(text.indexOf('{'), text.lastIndexOf('}') + 1)); } catch (e) { return reply({error: 'could not read the screenshots: ' + text.slice(0, 160)}, 502, origin); } }
+  return reply({items: out.items || []}, 200, origin);
+}
+
 // ---------- Automatic game reports (cron) ----------
 // Every 15 minutes: read report.json (the page's scorecard on the sync branch), refresh the scores from ESPN itself so it
 // works with the phone closed, work out the numbers in code, and when a game window closes have Claude write the report
@@ -373,6 +420,7 @@ export default {
     const url = new URL(req.url);
     if (url.pathname === '/salaries') return saveSalaries(req, env, url, origin);
     if (url.pathname === '/betslip') return readSlip(req, env, origin);
+    if (url.pathname === '/dfsshot') return readDfsShot(req, env, origin);
     if (url.pathname === '/report') {   // run the report check now: ?dry=1 shows it without saving; ?force=preview|update|final
       try { return reply(await runReports(env, new Date(), {dry: url.searchParams.get('dry') === '1', force: url.searchParams.get('force') || null}), 200, origin); }
       catch (e) { return reply({error: String(e.message || e)}, 502, origin); } }
