@@ -2,6 +2,15 @@
  "_note": "Written automatically by the relay (and by Claude); newest first; the Bet Tracker Reports tab reads this.",
  "reports": [
   {
+   "id": "2026-11-22T22:43:19Z-NFL",
+   "time": "2026-11-22T22:43:19Z",
+   "league": "NFL",
+   "kind": "update",
+   "title": "THE SAGA OF THE FALLEN HOOK: Rich's Chargers Bleed in the Third While a Doomed Parlay Limps Toward the Night",
+   "text": "**MY BETS:**\n\nHear now the Chronicle of the Sunday Slate, scribed in blood and bad judgment. Two bets are slain and buried in glory: settled 2-0-0, **+$25.66**. The Elders of the Ledger nod. Rich shall not enjoy it.\n\n- **WON +$8.31:** DET -3.5. Tampa Bay fell 21-31, and the Lions cleared the number by 6.5. The prophecy was fulfilled.\n- **WON +$17.35:** DAL -7.5. Tennessee was put to the sword, 30-51, covering by 13.5. The Titans were mere peasants.\n- **LOSING:** LAC -3.5, $10.00 to win $10.00. New York leads 17-10 with 12:03 left in the 3rd. The Chargers are short by 10.5, and the dark one feasts.\n- **LOSING:** the 4-leg parlay, $9.95 to win $145.07. Detroit and Dallas stand tall. The Chargers lie face-down in the mud, dragging the whole fellowship toward the abyss. San Francisco, last leg, sleeps.\n- **PENDING:** SF -3.5 over Minnesota, $19.76 to win $18.30. The war horns sound at 8:20 PM EST.\n\n**THE MODEL:**\n\nThe Oracle has seen 7 of 11 games end. It named the winner in 6 of 7 and went 4-3 against the spread and 4-3 on totals. Its average miss was 7.1 points, a respectable wound.\n\n- Closest call: Baltimore 33-35 Carolina (model had 23-24).\n- Worst miss: Arizona 7-34 Kansas City (model had 17-27). The Oracle was drunk on swamp water.\n- Still burning: NYJ 17, LAC 10 (model 20-24); Jacksonville 6, New York 17 (model 27-21); Las Vegas 10, Denver 17 (model 19-28).\n\n**STILL TO COME:**\n\nTonight, the 49ers must lift Rich's last straight bet and the parlay's final hope. Rich also has four DraftKings lineups, **$80.00** in entry fees, and winnings not yet in. That tells you the gods are still deciding whether to fuck him.\n\nOn Monday at 8:15 PM EST, AI-LOX rides out alone: UNDER 54.5 in CIN @ WAS, **$130.00 to win $126.21**. May the punts be many and the touchdowns few.",
+   "style": "an epic fantasy saga with prophecies and doom"
+  },
+  {
    "id": "2026-11-22T20:57:38Z-NFL",
    "time": "2026-11-22T20:57:38Z",
    "league": "NFL",
@@ -365,12 +374,13 @@
    ]
   },
   "2026-11-22": {
-   "n": 4,
-   "last": "2026-11-22T20:57:38Z",
-   "fp": "|1",
-   "fpBets": "",
+   "n": 5,
+   "last": "2026-11-22T22:43:19Z",
+   "fp": "mine|NFL|401873072|spread|1795346164868|3W,mine|NFL|401873073|spread|1795346164868|4W|7",
+   "fpBets": "mine|NFL|401873072|spread|1795346164868|3W,mine|NFL|401873073|spread|1795346164868|4W",
    "kinds": [
     "preview",
+    "update",
     "update",
     "update",
     "update"
