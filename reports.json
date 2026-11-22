@@ -2,6 +2,15 @@
  "_note": "Written automatically by the relay (and by Claude); newest first; the Bet Tracker Reports tab reads this.",
  "reports": [
   {
+   "id": "2026-11-22T04:01:00Z-CFB",
+   "time": "2026-11-22T04:01:00Z",
+   "league": "CFB",
+   "kind": "update",
+   "title": "Hold Music Hell: Rich Is +$129.06, BYU Murdered a $489.07 Parlay, and I've Been on Hold an Hour",
+   "text": "Yeah, longtime caller, first-time hostage. An hour on hold, listening to smooth jazz, so you're getting every goddamn number. It's 10:01 PM Central. Settled 5-3-0, **+$129.06** on $191.46 staked. Don't hang up on me!\n\n**MY BETS:**\n- Wisconsin -5.5: **WON +$8.31**. Beat Purdue 42-10. Purdue is a parking lot with a mascot.\n- BYU -5.5: **LOST -$9.54**. Beat Kansas 31-29 in 3OT and still missed by 3.5. Fuck.\n- 4-leg parlay: **LOST -$19.97**, would've paid $489.07. Three legs cashed. BYU shat on the fourth.\n- Tennessee ML: **WON +$62.83**. 27-13 over LSU.\n- Washington ML: **WON +$67.42**. Beat Indiana 27-24 in OT. Sweaty as hell, but money.\n- Michigan ML: **WON +$11.30**. 18-16 over UCLA in 3OT. Ugly.\n- Virginia Tech/Miami UNDER 66.5: **WON +$18.52**. 28-20 final.\n- SMU +16.5 & Over 57.5: **LOST -$9.81**. SMU lost 24-3. Nobody scored. Embarrassing.\n- California ML: **LOSING**. Down 44-28 to Stanford with 1:40 left. Toe tag it.\n- Utah -9.5 & Over 45.5: **LOSING**. Utah leads TCU 17-0 at half. The over needs 28.5 more points. Pray.\n- Oklahoma State/Arizona State UNDER 60.5: **WINNING**. It's 7-7 with 2:49 left in the 1st, but the pace is 69 against 60.5. It's winning the way a drunk is \"walking straight.\"\n\n**THE MODEL:**\n44 of 54 games are final. It picked 30 winners in 44, went 23-21 against the spread and 21-22 on totals. The average miss is 11.6 points. Coin-flip energy with a PhD.\n\n- Closest: South Alabama 40-35 Southern Miss. The model had 36-31.\n- Worst: Arkansas State 3-48 Louisiana Tech. The model had 19-35. Dogshit.\n- Live: Colorado State is down 34-49 to Fresno State, 1:48 left in the 4th. The model had 22-46. Pittsburgh is down 10-42 to Louisville. The model had 22-32.\n\n**STILL TO COME:**\n- AI-LOX: UNDER 44.5, MIA @ BUF, 11/22 at 1:00 PM EST. $98.00 to win $93.33.\n- AI-LOX: UNDER 40.5, ARI @ KC, 11/22 at 1:00 PM EST. $32.00 to win $30.48.\n- AI-LOX: UNDER 54.5, CIN @ WAS, 11/23 at 8:15 PM EST. $130.00 to win $120.37.\n\nThree unders, Rich. Hope nobody scores. Now where's my goddamn answer?!",
+   "style": "a furious sports-talk radio caller who has been on hold for an hour"
+  },
+  {
    "id": "2026-11-22T03:01:17Z-CFB",
    "time": "2026-11-22T03:01:17Z",
    "league": "CFB",
@@ -275,12 +284,13 @@
    ]
   },
   "2026-11-21": {
-   "n": 6,
-   "last": "2026-11-22T03:01:17Z",
-   "fp": "mine|CFB|401856754|ml|1795297781878|0W,mine|CFB|401856866+401858533+401856754+401858535|parlay|1795297334860|0L,mine|CFB|401856866|spread|1795296997882|0L,mine|CFB|401858528|ml|1795297783490|2W,mine|CFB|401858533|spread|1795296371564|1W,mine|CFB|401858535|ml|1795297782662|1W|38",
-   "fpBets": "mine|CFB|401856754|ml|1795297781878|0W,mine|CFB|401856866+401858533+401856754+401858535|parlay|1795297334860|0L,mine|CFB|401856866|spread|1795296997882|0L,mine|CFB|401858528|ml|1795297783490|2W,mine|CFB|401858533|spread|1795296371564|1W,mine|CFB|401858535|ml|1795297782662|1W",
+   "n": 7,
+   "last": "2026-11-22T04:01:00Z",
+   "fp": "mine|CFB|401856754|ml|1795297781878|0W,mine|CFB|401856866+401858533+401856754+401858535|parlay|1795297334860|0L,mine|CFB|401856866|spread|1795296997882|0L,mine|CFB|401858302|total|1795308233824|0W,mine|CFB|401858307+401858307|parlay|1795308109429|0L,mine|CFB|401858528|ml|1795297783490|2W,mine|CFB|401858533|spread|1795296371564|1W,mine|CFB|401858535|ml|1795297782662|1W|44",
+   "fpBets": "mine|CFB|401856754|ml|1795297781878|0W,mine|CFB|401856866+401858533+401856754+401858535|parlay|1795297334860|0L,mine|CFB|401856866|spread|1795296997882|0L,mine|CFB|401858302|total|1795308233824|0W,mine|CFB|401858307+401858307|parlay|1795308109429|0L,mine|CFB|401858528|ml|1795297783490|2W,mine|CFB|401858533|spread|1795296371564|1W,mine|CFB|401858535|ml|1795297782662|1W",
    "kinds": [
     "preview",
+    "update",
     "update",
     "update",
     "update",
