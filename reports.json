@@ -2,6 +2,15 @@
  "_note": "Written automatically by the relay (and by Claude); newest first; the Bet Tracker Reports tab reads this.",
  "reports": [
   {
+   "id": "2026-11-22T20:57:38Z-NFL",
+   "time": "2026-11-22T20:57:38Z",
+   "league": "NFL",
+   "kind": "update",
+   "title": "RANGER BRIEFING: Rich's Lions and Cowboys Are Feeding, Two Legs Still Wandering in the Brush",
+   "text": "Afternoon, folks. Ranger here. Gather round the trailhead and stay behind the yellow line, Rich. That means you.\n\n**MY BETS:**\n\nYou've got $69.04 out in the wilderness. Two bets are thriving and two haven't left the parking lot.\n\n- **DET -3.5:** $9.72 to win $8.31. Tampa Bay is down 14-30 with 1:55 left in the 4th. Detroit is covering by 12.5. Tampa is a deer on the highway, and the headlights are on.\n- **DAL -7.5:** $19.61 to win $17.35. Tennessee 23-51 Dallas, 2:00 left in the 4th, covering by 20.5. The Titans got mauled and scored 23 anyway, which is like getting mauled by a bear and bragging you kept your hat.\n- **LAC -3.5:** $10.00 to win $10.00. NYJ @ LAC kicks at 4:05 PM EST. Not started.\n- **SF -3.5:** $19.76 to win $18.30. MIN @ SF kicks at 8:20 PM EST. Not started.\n- **4-leg parlay:** $9.95 to win $145.07. It's the same four favorites. DET and DAL are alive, and LAC and SF are still out in the dark. Don't feed the parlay. You know how this ends.\n\nYour DFS lineups: 4 of them, $80.00 in entry fees, winnings not in yet. Pray to the Broncos.\n\n**THE MODEL:**\n\nOne of 11 games is final. The model picked the winner in 1 of 1 and went 0-1 against the spread and 0-1 on totals. Its average miss on the final margin is 17.0 points. That's a lost hiker walking in circles.\n\n- Closest call: Arizona 7-34 Kansas City. The model had 17-27.\n- Baltimore 33-32 Carolina, 6:32 left in the 4th. The model had 23-24. It's a sinkhole.\n- Pittsburgh is down 9-19 in Philadelphia, and the model had it 21-19.\n\n**STILL TO COME:**\n\n- LAC and SF, as above. Keep your hands inside the vehicle.\n- AI-LOX: UNDER 54.5 in CIN @ WAS on Monday, 11/23 at 8:15 PM EST. It's $130.00 to win $126.21. That's a big stake on a bridge made of twigs.\n\nStay hydrated and stay on the path.",
+   "style": "a nature-park ranger giving a safety briefing"
+  },
+  {
    "id": "2026-11-22T20:16:41Z-NFL",
    "time": "2026-11-22T20:16:41Z",
    "league": "NFL",
@@ -356,12 +365,13 @@
    ]
   },
   "2026-11-22": {
-   "n": 3,
-   "last": "2026-11-22T20:16:41Z",
-   "fp": "|0",
+   "n": 4,
+   "last": "2026-11-22T20:57:38Z",
+   "fp": "|1",
    "fpBets": "",
    "kinds": [
     "preview",
+    "update",
     "update",
     "update"
    ]
