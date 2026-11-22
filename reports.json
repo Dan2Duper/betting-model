@@ -2,6 +2,15 @@
  "_note": "Written automatically by the relay (and by Claude); newest first; the Bet Tracker Reports tab reads this.",
  "reports": [
   {
+   "id": "2026-11-22T05:13:58Z-CFB",
+   "time": "2026-11-22T05:13:58Z",
+   "league": "CFB",
+   "kind": "update",
+   "title": "SOLD! Rich Is +$119.18, BYU Pissed on a $489.07 Parlay, and Utah's Got Us Sweating",
+   "text": "**MY BETS:**\n\nLadies and gents, step right up, we got a settled slate of 5-4-0, net +$119.18 on $191.46 staked, and I'm hearing a hundred-nineteen, do I hear a hundred-twenty? SOLD to the guy who still hates BYU!\n\n- Wisconsin -5.5 WON +$8.31. Wisconsin 42-10 Purdue. Beat the number by 26.5. Purdue got ass-raped by a bus, SOLD!\n- BYU -5.5 LOST -$9.54. BYU 31-29 Kansas in 3OT. Missed by 3.5. Three overtimes to still fuck you, that's commitment!\n- 4-leg parlay LOST -$19.97 to win $489.07. Three legs cashed, BYU shit the bed, and four hundred eighty-nine dollars went down the toilet. Gone!\n- Tennessee ML WON +$62.83. LSU 13-27. Easy money!\n- Washington ML WON +$67.42. Indiana 24-27 in OT. Best bet of the day, you sweaty bastard!\n- Michigan ML WON +$11.30. UCLA 16-18 in 3OT. Ugly as sin, cashed anyway.\n- Virginia Tech/Miami UNDER 66.5 WON +$18.52. Final 20-28. Gorgeous!\n- SMU +16.5 & Over 57.5 parlay LOST -$9.81. SMU 3-24 Notre Dame. Both legs dead, one by 30.5. Dogshit!\n- California ML LOST -$9.88. Stanford 44-28. Cal got bent over by 16.\n- Utah -9.5 & Over 45.5 parlay is LOSING. Utah 17-14 TCU, 10:59 left in the 4th. Missing by 6.5 and 14.5. Pray, Rich!\n- Oklahoma State/Arizona State UNDER 60.5 is WINNING. 7-24 at the half, pace 62 vs 60.5. Too close, buddy!\n\n**AI-LOX:**\n\nNothing today. The robot sat on its ass. Rare mercy!\n\n**THE MODEL:**\n\n49 of 54 final. Winners: 35 of 49. Against the spread: 22-27, which is fucking garbage. Totals: 25-23. Average miss: 11.7 points. Best guess: South Alabama 40-35 Southern Miss (model said 36-31). Worst: Arkansas State 3-48 Louisiana Tech, model said 19-35. Brilliant!\n\nLive: Utah 17-14 TCU (model 26-18), San Diego State 10-10 Boise State (model 19-42, lol), Oklahoma State 7-24 Arizona State (model 33-31), Utah State 17-10 Oregon State (model 21-30), Hawai'i 0-6 Nevada (model 17-23).\n\n**STILL TO COME:**\n\n- AI-LOX: UNDER 44.5 MIA @ BUF, 11/22 1:00 PM EST. $98.00 to win $93.33.\n- AI-LOX: UNDER 40.5 ARI @ KC, 11/22 1:00 PM EST. $32.00 to win $30.48.\n- AI-LOX: UNDER 54.5 CIN @ WAS, 11/23 8:15 PM EST. $130.00 to win $125.00.\n\nGoing once, going twice, go the fuck to bed!",
+   "style": "a fast-talking auctioneer"
+  },
+  {
    "id": "2026-11-22T04:01:00Z-CFB",
    "time": "2026-11-22T04:01:00Z",
    "league": "CFB",
@@ -284,12 +293,13 @@
    ]
   },
   "2026-11-21": {
-   "n": 7,
-   "last": "2026-11-22T04:01:00Z",
-   "fp": "mine|CFB|401856754|ml|1795297781878|0W,mine|CFB|401856866+401858533+401856754+401858535|parlay|1795297334860|0L,mine|CFB|401856866|spread|1795296997882|0L,mine|CFB|401858302|total|1795308233824|0W,mine|CFB|401858307+401858307|parlay|1795308109429|0L,mine|CFB|401858528|ml|1795297783490|2W,mine|CFB|401858533|spread|1795296371564|1W,mine|CFB|401858535|ml|1795297782662|1W|44",
-   "fpBets": "mine|CFB|401856754|ml|1795297781878|0W,mine|CFB|401856866+401858533+401856754+401858535|parlay|1795297334860|0L,mine|CFB|401856866|spread|1795296997882|0L,mine|CFB|401858302|total|1795308233824|0W,mine|CFB|401858307+401858307|parlay|1795308109429|0L,mine|CFB|401858528|ml|1795297783490|2W,mine|CFB|401858533|spread|1795296371564|1W,mine|CFB|401858535|ml|1795297782662|1W",
+   "n": 8,
+   "last": "2026-11-22T05:13:58Z",
+   "fp": "mine|CFB|401856754|ml|1795297781878|0W,mine|CFB|401856866+401858533+401856754+401858535|parlay|1795297334860|0L,mine|CFB|401856866|spread|1795296997882|0L,mine|CFB|401858302|total|1795308233824|0W,mine|CFB|401858307+401858307|parlay|1795308109429|0L,mine|CFB|401858308|ml|1795308111909|1L,mine|CFB|401858528|ml|1795297783490|2W,mine|CFB|401858533|spread|1795296371564|1W,mine|CFB|401858535|ml|1795297782662|1W|49",
+   "fpBets": "mine|CFB|401856754|ml|1795297781878|0W,mine|CFB|401856866+401858533+401856754+401858535|parlay|1795297334860|0L,mine|CFB|401856866|spread|1795296997882|0L,mine|CFB|401858302|total|1795308233824|0W,mine|CFB|401858307+401858307|parlay|1795308109429|0L,mine|CFB|401858308|ml|1795308111909|1L,mine|CFB|401858528|ml|1795297783490|2W,mine|CFB|401858533|spread|1795296371564|1W,mine|CFB|401858535|ml|1795297782662|1W",
    "kinds": [
     "preview",
+    "update",
     "update",
     "update",
     "update",
