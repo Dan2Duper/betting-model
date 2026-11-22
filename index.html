@@ -128,7 +128,7 @@ tr.struck td.keep{text-decoration:none;opacity:1}
 .editgrid{display:flex;flex-wrap:wrap;gap:12px;align-items:end}
 .hide{display:none!important}
 .mg{border-top:1px solid var(--border);padding:11px 0}.mg:first-child{border-top:0}.mg .top{display:flex;justify-content:space-between;gap:8px;flex-wrap:wrap;font-weight:700;font-size:17px}
-.mg .row{display:flex;gap:6px 18px;flex-wrap:wrap;margin-top:4px}.mg .row b{font-weight:700}.mg .k{color:var(--ink-2);font-size:13px;display:block}.mg .lean{background:#d29a00;color:#1b1400}
+.mg .row{display:flex;gap:6px 18px;flex-wrap:wrap;margin-top:4px}.mg .row b{font-weight:700}.mg .k{color:var(--ink-2);font-size:13px;display:block}.mg .lean{background:#d29a00;color:#1b1400}.mg .mp{flex-basis:100%}.mg .mp .k{display:inline-block;min-width:66px}.mg .mp .pill{margin-right:5px}.mg .lean .pill{margin-right:5px}.chip.okc{background:transparent;border:1px solid var(--border);color:var(--ink-2);font-weight:500}
 .ftoggle{display:none}
 .rtext p{margin:6px 0 10px;color:var(--ink-2)}
 .sb{display:grid;grid-template-columns:repeat(auto-fill,minmax(260px,1fr));gap:10px}
@@ -247,10 +247,10 @@ a{color:var(--series)}
       <div id="shot-box" class="hide" style="margin:8px 0 12px"></div>
       <div class="addform" id="m-form">
         <div class="editgrid">
-          <label class="f">League<select id="m-lg"><option value="CFB">College</option><option value="NFL">NFL</option></select></label>
+          <label class="f">League<select id="m-lg"><option value="CFB">College</option><option value="NFL">NFL</option><option value="MLB">MLB</option></select></label>
           <label class="f">Date<input type="date" id="m-date"></label>
           <label class="f" style="flex-basis:100%">Game<select id="m-game"><option value="">loading games…</option></select></label>
-          <label class="f">Bet<select id="m-mkt"><option value="spread">Spread</option><option value="total">Total</option><option value="ml">Moneyline</option></select></label>
+          <label class="f">Bet<select id="m-mkt"><option value="spread">Spread / run line</option><option value="total">Total</option><option value="ml">Moneyline</option></select></label>
           <label class="f">Pick<select id="m-side"></select></label>
           <label class="f" id="m-linewrap">Line<input id="m-line" inputmode="decimal" placeholder="-3.5"></label>
           <label class="f">Odds<input id="m-odds" inputmode="numeric" value="-110"></label>
@@ -300,8 +300,10 @@ a{color:var(--series)}
         <div><h2>MLB: model vs DraftKings</h2><div class="small" id="mlb-built">loading…</div></div>
         <div style="display:flex;gap:8px;flex-wrap:wrap"><div class="seg" id="mlb-day"></div><button class="btn small" id="mlb-refresh">Refresh</button></div>
       </div>
+      <div id="mlb-record" style="margin:8px 0 2px"></div>
       <div id="mlb-games"></div>
     </div>
+    <div id="mlb-mine-slot"></div>
     <div class="card"><div class="small" id="mlb-note"></div></div>
   </section>
 
@@ -318,6 +320,7 @@ a{color:var(--series)}
       <div style="display:flex;gap:8px;margin-top:10px;flex-wrap:wrap"><button class="btn" id="dfs-prev">◀ Back</button><button class="btn primary" id="dfs-shuffle">Shuffle ▶</button><span class="small" id="dfs-count" style="align-self:center"></span></div>
       <div style="margin-top:10px"><button class="btn" id="dfs-enter">✅ I entered this lineup</button>
         <div id="dfs-enter-form" class="hide"><div style="display:flex;gap:8px;flex-wrap:wrap;align-items:flex-end;margin-top:8px">
+          <div id="dfs-e-picks" style="width:100%;display:flex;gap:6px;flex-wrap:wrap"></div>
           <label class="small">Type<br><select id="dfs-e-mode"><option value="cash">Cash</option><option value="gpp">Tournament</option></select></label>
           <label class="small">Entry fee $<br><input id="dfs-e-fee" inputmode="decimal" style="width:70px"></label>
           <label class="small">Entries<br><input id="dfs-e-n" inputmode="numeric" value="1" style="width:50px"></label>
@@ -349,7 +352,7 @@ a{color:var(--series)}
 
   <section id="t-track" class="hide">
     <div class="tk-bar">
-      <div class="seg" id="tk-lg"><button data-v="" class="on">Both</button><button data-v="CFB">College</button><button data-v="NFL">NFL</button></div>
+      <div class="seg" id="tk-lg"><button data-v="" class="on">Both</button><button data-v="CFB">College</button><button data-v="NFL">NFL</button><button data-v="MLB" class="hide">MLB</button></div>
       <div class="seg" id="tk-per"><button data-v="7">7 days</button><button data-v="30">30 days</button><button data-v="all" class="on">Season</button></div>
     </div>
     <div class="card" id="scorecard"></div>
@@ -402,6 +405,7 @@ a{color:var(--series)}
         <p>A game gets flagged when it matches a rule that beat the closing line in past seasons. A flag becomes a bet only when that rule's backtest hit rate is at least <b>55% for college</b> or <b>53.5% for NFL</b> (52.4% breaks even at -110).</p>
         <p>At most <b>5 bets a day</b>, best hit rates first, one per game. Each day's budget is split by edge (fractional Kelly on a shrunk hit rate, $5 minimum), so the more proven rules get bigger stakes.</p>
         <p><b>Current bet rules</b> (backtested against closing lines, Oct 2026 review): NFL wind unders, NFL 2-team underdog teasers (+1.5/+2.5 teased to +7.5/+8.5 when the total is 49 or less, paired automatically at DraftKings' −120), CFB east team flying west, CFB wind unders, CFB totals of 68+ under, CFB road team off a 28+ point loss, SEC/Big Ten road teams off a 21+ loss or 3-game skid (half stakes), and CFB letdown fades (half stakes). Leans are tracked but not bet.</p>
+        <p><b>MLB:</b> the daily model makes a winner, run line and over/under pick on every game and logs each one at first pitch. They are model picks, not bets: in the 2013-25 backtest nothing (moneyline edges, run-line edges, 67 rules, 5 groups of extra variables) beat the closing line in both test windows, so MLB has no AI-LOX and no stars. Three leans are tracked. A lean becomes an AI-LOX only after 50 live picks at 55% or better, and the MLB tab shows closing-line value so a real edge is visible early.</p>
         <p><b>Kill switch:</b> after 50 live bets a rule is retired if it falls below 52.4% (teaser legs below 73.9%); a lean is promoted after 50 live picks at 55% or better. Records are on the <b>Stats</b> tab.</p>
       </div>
     </div>
@@ -520,7 +524,7 @@ const NFL_FULL = {'Arizona Cardinals': 'ARI', 'Atlanta Falcons': 'ATL', 'Baltimo
   'Philadelphia Eagles': 'PHI', 'Pittsburgh Steelers': 'PIT', 'San Francisco 49ers': 'SF', 'Seattle Seahawks': 'SEA', 'Tampa Bay Buccaneers': 'TB', 'Tennessee Titans': 'TEN',
   'Washington Commanders': 'WAS'};
 const ESPN_NFL = {WSH: 'WAS', LAR: 'LA', JAC: 'JAX'};
-const nflAbbr = a => ESPN_NFL[a] || a;
+const nflAbbr = a => ESPN_NFL[a] || a, ESPN_NFL_ABBR = nflAbbr;
 
 // ---------------- fetchers ----------------
 let STATUS = {};
@@ -530,8 +534,8 @@ const ymd = d => d.replace(/-/g, '');
 const ESPN_CONF = {1: 'ACC', 4: 'Big 12', 5: 'Big Ten', 8: 'SEC', 9: 'Pac-12', 12: 'Conference USA', 15: 'MAC', 17: 'Mountain West', 18: 'FBS Independents', 37: 'Sun Belt', 151: 'American'};
 async function espnDay(lg, d) {
   const base = lg === 'CFB' ? 'https://site.api.espn.com/apis/site/v2/sports/football/college-football/scoreboard?groups=80&limit=400&dates='
-                            : 'https://site.api.espn.com/apis/site/v2/sports/football/nfl/scoreboard?dates=';
-  const j = await getJSON(base + ymd(d));
+             : lg === 'MLB' ? 'https://site.api.espn.com/apis/site/v2/sports/baseball/mlb/scoreboard?dates=' : 'https://site.api.espn.com/apis/site/v2/sports/football/nfl/scoreboard?dates=';
+  const j = await getJSON(base + ymd(d)), nflAbbr = lg === 'MLB' ? (a => a) : ESPN_NFL_ABBR;   // MLB keeps ESPN's own abbreviations (NYY, CHW, WSH)
   for (const ev of j.events || []) {
     const c = ev.competitions?.[0]; if (!c) continue;
     const H = c.competitors.find(x => x.homeAway === 'home'), A = c.competitors.find(x => x.homeAway === 'away');
@@ -552,14 +556,15 @@ async function espnDay(lg, d) {
 }
 function finalFor(lg, gameId, date, away, home) {
   if (lg === 'CFB') return ST.finals['CFB:' + gameId];
+  if (lg === 'MLB') return ST.finals['MLB:' + gameId];
   const g = SNAP.nfl.games.find(x => x.id === gameId);
   if (g && g.espn && ST.finals['NFL:' + g.espn]) return ST.finals['NFL:' + g.espn];
   if (ST.finals['NFL:' + gameId]) return ST.finals['NFL:' + gameId];
   return Object.values(ST.finals).find(f => f.lg === 'NFL' && f.aabbr === away && f.habbr === home && Math.abs(new Date(f.date) - new Date(date)) < 3 * 864e5);
 }
 async function refreshFinals() {
-  const t = today(), need = {CFB: new Set(), NFL: new Set()};
-  const add = (lg, d) => { if (d && d <= t) need[lg].add(d); };
+  const t = today(), need = {CFB: new Set(), NFL: new Set(), MLB: new Set()};
+  const add = (lg, d) => { if (d && d <= t && need[lg]) need[lg].add(d); };
   [...DATA.bets, ...DATA.picks].forEach(r => { if (!r.result && !finalFor(r.league, r.game_id, r.date, r.away, r.home)) add(r.league, r.date); });
   Object.values(ST.frozen).concat(Object.values(ST.frozenPicks)).forEach(r => { if (!finalFor(r.league, r.game_id, r.date, r.away, r.home)) add(r.league, r.date); });
   DATA.predlog.forEach(r => { if (!finalFor(r.league, r.id, r.date, r.away, r.home)) add(r.league, r.date); });
@@ -569,7 +574,7 @@ async function refreshFinals() {
   SNAP.nfl.games.forEach(g => need.NFL.add(new Date(g.kick).toLocaleDateString('en-CA', {timeZone: 'America/New_York'})));
   let n = 0, fail = 0;
   const jobs = [];
-  for (const lg of ['CFB', 'NFL']) for (const d of need[lg]) jobs.push(espnDay(lg, d).then(() => n++, () => fail++));
+  for (const lg of ['CFB', 'NFL', 'MLB']) for (const d of need[lg]) jobs.push(espnDay(lg, d).then(() => n++, () => fail++));
   await Promise.all(jobs);
   save(); setStatus('scores', fail && !n ? '<b>Scores:</b> ESPN unreachable right now' : `<b>Scores:</b> ESPN (${n} day${n === 1 ? '' : 's'} checked)`);
 }
@@ -919,6 +924,12 @@ function buildBets() {
     const price = f.market === 'total' ? (f.side === 'over' ? L.prices.overPrice : L.prices.underPrice) : (f.side === 'home' ? L.prices.homePrice : L.prices.awayPrice);
     cands.push(Object.assign(base, {hit_rate: r.p, n: r.n, odds: price || BR.default_odds}));
   }
+  if (MLB && inSeason('MLB')) for (const g of MLB.games) for (const x of ((g.logged || g).rules || [])) {   // an MLB rule becomes an AI-LOX only after it is promoted (50 live picks at 55%+)
+    const r = BR.rules[x.rule]; if (!r || r.lean_only !== false || r.p < (BR.mlb_min_hit ?? 0.535)) continue;
+    const base = {date: g.date, kick: g.kick, league: 'MLB', week: '', game_id: String(g.espn || g.pk), game: `${mlbT(g.away)} @ ${mlbT(g.home)}`, away: mlbT(g.away), home: mlbT(g.home), away_conf: '', home_conf: '', kick_hour: ctHour(g.kick),
+      wind: '', line_spread: '', line_total: (g.line || {}).total ?? '', model_total: (g.total - ((MLB.rules || {}).total_offset ?? 0.45)).toFixed(2), model_home_spread: '', rule: x.rule, market: x.market, side: x.side, line: x.line, src: 'model', result: ''};
+    base.id = base.date + '|' + base.game_id + '|' + base.rule; cands.push(Object.assign(base, {hit_rate: r.p, n: r.n, odds: x.odds || BR.default_odds}));
+  }
   const tr = BR.rules.nfl_teaser_dog, legs = picks.filter(p => p.rule === 'nfl_teaser_leg' && !started(p.kick)).sort((a, b) => a.kick.localeCompare(b.kick));
   if (tr && !tr.lean_only) { const byDay = {}; legs.forEach(l => (byDay[l.date] = byDay[l.date] || []).push(l));
     for (const [d, L2] of Object.entries(byDay)) for (let i = 0; i + 1 < L2.length; i += 2) { const a = L2[i], b = L2[i + 1];
@@ -961,6 +972,7 @@ function buildBets() {
   const pk = {};
   DATA.picks.forEach(p => { const id = p.date + '|' + p.game_id + '|' + p.rule; pk[id] = Object.assign({}, p, {id}); });
   Object.values(ST.frozenPicks).forEach(p => { if (!pk[p.id]) pk[p.id] = p; });
+  MLBROWS.forEach(p => { if (!pk[p.id]) pk[p.id] = Object.assign({}, p); });   // MLB leans come graded from the season log
   picks.forEach(p => { if (!pk[p.id]) pk[p.id] = p; else if (!started(p.kick)) pk[p.id].line = p.line;
     if (started(p.kick) && !ST.frozenPicks[p.id] && !DATA.picks.some(q => q.date + '|' + q.game_id + '|' + q.rule === p.id)) ST.frozenPicks[p.id] = p; });
   PICKS = Object.values(pk).map(p => { if (!p.result) { const f = finalFor(p.league, p.game_id, p.date, p.away, p.home); if (f) p.result = grade(p, f); } return p; });
@@ -1095,7 +1107,7 @@ function enrich(r, isBet) {
   const line = +r.line;
   if (r.market === 'parlay') { o.type = 'Parlay'; o.size = 'Parlay'; o.gap = 'n/a'; }
   else if (r.market === 'ml') { o.type = o.odds < 0 ? 'Favorite' : 'Underdog'; o.size = 'Moneyline'; o.gap = 'n/a'; }
-  else if (r.market === 'total') { o.type = r.side === 'over' ? 'Over' : 'Under'; o.size = line < 42 ? 'Total under 42' : line < 50 ? 'Total 42-49.5' : line < 58 ? 'Total 50-57.5' : 'Total 58+';
+  else if (r.market === 'total') { o.type = r.side === 'over' ? 'Over' : 'Under'; o.size = r.league === 'MLB' ? (line < 8 ? 'Total under 8' : line < 9 ? 'Total 8-8.5' : 'Total 9+') : line < 42 ? 'Total under 42' : line < 50 ? 'Total 42-49.5' : line < 58 ? 'Total 50-57.5' : 'Total 58+';
     const g = Math.abs(+r.model_total - (r.line_total === '' || r.line_total == null ? line : +r.line_total)); o.gap = isNaN(g) ? 'n/a' : g < 3 ? 'Model gap under 3' : g < 5 ? 'Model gap 3-5' : g < 7 ? 'Model gap 5-7' : 'Model gap 7+'; }
   else { const sl = r.side === 'home' ? line : -line; o.type = sl < 0 ? 'Favorite' : sl > 0 ? 'Underdog' : "Pick 'em"; const a = Math.abs(line);
     o.size = a <= 3 ? 'Spread 0-3' : a <= 7 ? 'Spread 3.5-7' : a <= 14 ? 'Spread 7.5-14' : 'Spread 14+';
@@ -1172,7 +1184,7 @@ function betGap(r) {   // model vs line gap for a bet/pick row, in points
   if (r.market === 'total') { const lt = r.line_total === '' || r.line_total == null ? +r.line : +r.line_total; return r.model_total === '' || r.model_total == null ? null : Math.abs(+r.model_total - lt); }
   if (r.market === 'spread') { const ls = r.line_spread === '' || r.line_spread == null ? +r.line : +r.line_spread; return r.model_home_spread === '' || r.model_home_spread == null ? null : Math.abs(+r.model_home_spread - ls); }
   return null; }
-function betStars(r) { return r.market === 'spread' || r.market === 'total' ? starsOf(r.league, r.market, betGap(r)) : 0; }
+function betStars(r) { return r.league === 'MLB' ? 0 : r.market === 'spread' || r.market === 'total' ? starsOf(r.league, r.market, betGap(r)) : 0; }   // MLB: no stars until something beats the closing line
 let STARF = 0;   // tracker list filter by star tier (0 = any)
 function catOf(r) { return r.market === 'parlay' || r.market === 'teaser' ? 'parlay' : r.market === 'ml' ? 'su' : r.market === 'total' ? (r.side === 'over' ? 'over' : 'under') : 'ats'; }
 // every modeled game, graded three ways (winner, spread pick, total pick) against the pregame line
@@ -1193,6 +1205,7 @@ function modelGames() {
       if (side) { o.pick[k] = (side > 0 ? 'Take the OVER ' : 'Take the UNDER ') + ln.total; if (f) { const r = f.hs + f.as - ln.total; o.res[k] = r === 0 ? 'P' : Math.sign(r) === side ? 'W' : 'L'; } } }
     out.push(o);
   });
+  mlbModelGames().forEach(o => out.push(o));
   const F = tkFrom();
   return out.filter(g => (!TK.lg || g.league === TK.lg) && (!F || g.date >= F));
 }
@@ -1216,7 +1229,7 @@ function renderScorecard(MG, B, M) {
   const by = (list, c) => c === 'all' ? list : list.filter(r => catOf(r) === c);
   const row = (c, name, sub, cls) => `<tr class="${cls || ''}"><td>${name}${sub ? `<span class="small">${sub}</span>` : ''}</td>` +
     scCell('model', c, c === 'parlay' ? null : c === 'all' ? modelRec(MG, 'all') : modelRec(MG, c)) + scCell('bets', c, stats(by(B, c))) + scCell('mine', c, stats(by(M, c))) + '</tr>';
-  const per = TK.per === 'all' ? 'this season' : `the last ${TK.per} days`, lg = TK.lg === 'CFB' ? 'College' : TK.lg === 'NFL' ? 'NFL' : 'College + NFL';
+  const per = TK.per === 'all' ? 'this season' : `the last ${TK.per} days`, lg = TK.lg === 'CFB' ? 'College' : TK.lg === 'NFL' ? 'NFL' : TK.lg === 'MLB' ? 'MLB' : MLBLOG ? 'All leagues' : 'College + NFL';
   const matched = stats(filtered('minelox'));
   const ml = matched.n ? `You bet ${matched.n} of the AI-LOX: ${matched.W}-${matched.L}${matched.P ? '-' + matched.P : ''}${matched.W + matched.L + matched.P ? `, <span class="${matched.profit > 0 ? 'pos' : matched.profit < 0 ? 'neg' : ''}">${fmt$(matched.profit)}</span>` : ''}${matched.open ? ` (${matched.open} open)` : ''}.` : 'You haven’t bet any of the AI-LOX in this period.';
   $('#scorecard').innerHTML = `<h2>Scorecard</h2><div class="small" style="margin-bottom:8px">${lg} · ${per} · record, win rate and money</div>
@@ -1225,6 +1238,7 @@ function renderScorecard(MG, B, M) {
     <div class="sclegend small"><div>${ml}</div>
       <div><b>Model</b>: its predicted score for every game, checked against the final and the pregame line. Green means it beat the 52.4% needed to make money (50% for picking winners).</div>
       <div><b>AI-LOX</b>: the bets the model picks, at its suggested stakes, whether you bet them or not. <b>My bets</b>: what you actually bet.</div>
+      ${MG.some(g => g.league === 'MLB') ? '<div><b>MLB</b>: ATS is the run line (-1.5 / +1.5) at its listed price, which is rarely -110, so judge run-line picks by the units on the MLB tab, not by 52.4%. No MLB pick is an AI-LOX until a rule beats the closing line.</div>' : ''}
       <div>Tap any number to see the games behind it.</div></div>`;
   $$('#scorecard button.scc').forEach(b => b.onclick = () => { MODE = b.dataset.who; CAT = b.dataset.cat; STARF = 0; LISTN = 25; renderTracker(); document.getElementById('list').closest('.card').scrollIntoView({behavior: 'smooth', block: 'start'}); });
 }
@@ -1323,7 +1337,7 @@ function drawModelList(G) {
   const okk = (g, k) => g.pick[k] && (!STARF || g.star[k] === STARF);
   const rows = G.filter(g => ks.some(k => okk(g, k))).sort((a, b) => b.date.localeCompare(a.date) || String(a.kick).localeCompare(String(b.kick)));
   $('#list').innerHTML = !rows.length ? '<div class="empty">No model games in this period yet.</div>' : '<div class="bl">' +
-    rows.slice(0, LISTN).map(g => `<div class="bi"><div><div class="t">${esc(g.game)}</div><div class="d">${dayLbl(g.date)} · ${g.league} · model ${Math.round(g.pa)}-${Math.round(g.ph)}</div>
+    rows.slice(0, LISTN).map(g => `<div class="bi"><div><div class="t">${esc(g.game)}</div><div class="d">${dayLbl(g.date)} · ${g.league} · model ${g.dec ? g.pa.toFixed(1) : Math.round(g.pa)}-${g.dec ? g.ph.toFixed(1) : Math.round(g.ph)}</div>
       <div class="picks">${ks.filter(k => okk(g, k)).map(k => `<span>${pill(g.res[k])}${lab[k]}: ${esc(g.pick[k])} ${k !== 'su' ? starHtml(g.star[k], g.gap[k]) : ''}</span>`).join('')}</div></div>
       <div class="rt">${g.f ? `<div class="small">Final</div><div class="amt">${g.f.as}-${g.f.hs}</div>` : '<div class="small">not final</div>'}</div></div>`).join('') + '</div>' + moreBtn(rows.length);
   wireMore();
@@ -1517,14 +1531,17 @@ function reportBuild() {
   const lox = BETS.filter(b => b.date >= cut && !ST.struck[b.id]).map(b => Object.assign(one(b, 'ai-lox'), {hit_rate: b.hit_rate, you_bet: !!mineFor(b)}));
   const BIX = {}; BOARD.forEach(x => BIX[x.lg + ':' + (x.lg === 'NFL' ? x.g.espn : x.g.id)] = x);
   const games = [];
-  Object.entries(ST.slate).forEach(([k, day]) => { const lg = k.split(':')[0]; Object.values(day).forEach(g => { if (ctDate(g.kick) < cut) return;
+  Object.entries(ST.slate).forEach(([k, day]) => { const lg = k.split(':')[0]; if (lg === 'MLB') return; Object.values(day).forEach(g => { if (ctDate(g.kick) < cut) return;
     const o = {league: lg, id: g.id, date: ctDate(g.kick), kick: g.kick, away: g.away, home: g.home, ar: g.ar || '', hr: g.hr || '', ac: g.ac || '', hc: g.hc || '', state: g.state || (g.done ? 'post' : 'pre'), as: g.as, hs: g.hs, detail: g.detail || ''};
     const x = BIX[lg + ':' + g.id];
     if (x) { const LS = likelyScore(lg, x.P.pa, x.P.ph); o.model = {away: +x.P.pa.toFixed(1), home: +x.P.ph.toFixed(1), likely: LS || null, total: +x.P.total.toFixed(1), home_spread: +x.P.hs.toFixed(1),
       line_spread: x.L.spread ?? null, line_total: x.L.total ?? null, flags: x.F.map(f => f.rule)}; }
     games.push(o); }); });
   games.sort((a, b) => a.kick.localeCompare(b.kick));
-  return {mine, ai_lox: lox, games};
+  const dfs = dfsEntries().filter(e => e.day >= cut).map(e => ({day: e.day, sport: e.sport || 'NFL', contest: e.contest || e.slate || '', mode: e.mode, kind: e.kind, fee: e.fee, entries: e.entries || 1,
+    status: e.status, points: e.points ?? (DFS_LIVE[e.id] ? DFS_LIVE[e.id].pts : null), points_final: !!(e.autoFinal || e.status === 'done' || (DFS_LIVE[e.id] || {}).final), proj: e.proj ?? null,
+    place: e.place ?? null, field: e.field ?? null, won: e.won ?? null, players: (e.players || []).map((p, i) => (p.cpt ? 'CPT ' : '') + p.n + (p.pts != null ? ` ${p.pts}` : DFS_LIVE[e.id] && DFS_LIVE[e.id].per[i] != null ? ` ${DFS_LIVE[e.id].per[i]}` : ''))}));
+  return {mine, ai_lox: lox, games, dfs};
 }
 async function reportPush() {
   if (!ST.gh || repBusy) return; repBusy = true;
@@ -1574,7 +1591,7 @@ function renderMine() {
 const mGames = () => Object.values(ST.slate[$('#m-lg').value + ':' + $('#m-date').value] || {}).sort((a, b) => a.kick < b.kick ? -1 : a.kick > b.kick ? 1 : a.away.localeCompare(b.away));
 function mFillGames() {
   const G = mGames(), sel = $('#m-game'), cur = sel.value;
-  sel.innerHTML = G.length ? '<option value="">Choose the game</option>' + G.map(g => `<option value="${esc(g.id)}">${esc(g.away)} @ ${esc(g.home)} · ${ctTime(g.kick)}${g.done ? ' (final)' : ''}</option>`).join('') : '<option value="">No games found for that day</option>';
+  sel.innerHTML = G.length ? '<option value="">Choose the game</option>' + G.map(g => `<option value="${esc(g.id)}">${esc(g.lg === 'MLB' ? g.aabbr + ' ' + g.anick : g.away)} @ ${esc(g.lg === 'MLB' ? g.habbr + ' ' + g.hnick : g.home)} · ${ctTime(g.kick)}${g.done ? ' (final)' : ''}</option>`).join('') : '<option value="">No games found for that day</option>';
   sel.value = G.some(g => g.id === cur) ? cur : ''; mFillSide();
 }
 async function mLoadDay() { const k = $('#m-lg').value + ':' + $('#m-date').value;
@@ -1583,7 +1600,7 @@ async function mLoadDay() { const k = $('#m-lg').value + ':' + $('#m-date').valu
 function mFillSide() {
   const g = mGames().find(x => x.id === $('#m-game').value), m = $('#m-mkt').value, sel = $('#m-side');
   sel.innerHTML = m === 'total' ? '<option value="over">Over</option><option value="under">Under</option>'
-    : g ? `<option value="away">${esc(g.away)}</option><option value="home">${esc(g.home)}</option>` : '<option value="">pick a game first</option>';
+    : g ? `<option value="away">${esc(g.lg === 'MLB' ? g.aabbr : g.away)}</option><option value="home">${esc(g.lg === 'MLB' ? g.habbr : g.home)}</option>` : '<option value="">pick a game first</option>';
   $('#m-linewrap').classList.toggle('hide', m === 'ml'); mPrefill();
 }
 function mPrefill() {
@@ -1608,7 +1625,7 @@ $('#m-save').onclick = () => {
   const sg = lg === 'CFB' ? SNAP.cfb.games.find(x => x.id === g.id) : SNAP.nfl.games.find(x => x.espn === g.id);
   const kh = ctHour(g.kick);
   const b = {id: `mine|${lg}|${g.id}|${m}|${side}|${Date.now()}`, src: 'mine', rule: 'mine', date: ctDate(g.kick), kick: g.kick, league: lg, week: sg ? (lg === 'CFB' ? SNAP.cfb.week : SNAP.nfl.week) : '',
-    game_id: g.id, game: `${g.away} @ ${g.home}`, away: lg === 'NFL' ? g.aabbr : g.away, home: lg === 'NFL' ? g.habbr : g.home, market: m, side,
+    game_id: g.id, game: lg === 'MLB' ? `${g.aabbr} @ ${g.habbr}` : `${g.away} @ ${g.home}`, away: lg !== 'CFB' ? g.aabbr : g.away, home: lg !== 'CFB' ? g.habbr : g.home, market: m, side,
     line: m === 'ml' ? '' : m === 'total' ? ln : (side === 'away' ? -ln : ln), odds, stake, result: '', kick_hour: kh,
     away_conf: sg ? (sg.away_conf || sg.away_div || '') : '', home_conf: sg ? (sg.home_conf || sg.home_div || '') : ''};
   if (g.done) b.result = grade(b, {hs: g.hs, as: g.as});
@@ -1668,8 +1685,8 @@ async function shotFindGame(lg, leg, around) {   // best-scoring game on the nea
 }
 function shotLeg(lg, leg, g, side) {   // one leg in this page's format (spread lines stored from the home team's side)
   const m = leg.market === 'moneyline' ? 'ml' : leg.market;
-  if (m === 'total') return {league: lg, game_id: g.id, espn: g.id, kick: g.kick, away: lg === 'NFL' ? g.aabbr : g.away, home: lg === 'NFL' ? g.habbr : g.home, market: 'total', side: String(leg.pick || '').toLowerCase().startsWith('u') ? 'under' : 'over', line: +leg.line};
-  return {league: lg, game_id: g.id, espn: g.id, kick: g.kick, away: lg === 'NFL' ? g.aabbr : g.away, home: lg === 'NFL' ? g.habbr : g.home, market: m, side,
+  if (m === 'total') return {league: lg, game_id: g.id, espn: g.id, kick: g.kick, away: lg !== 'CFB' ? g.aabbr : g.away, home: lg !== 'CFB' ? g.habbr : g.home, market: 'total', side: String(leg.pick || '').toLowerCase().startsWith('u') ? 'under' : 'over', line: +leg.line};
+  return {league: lg, game_id: g.id, espn: g.id, kick: g.kick, away: lg !== 'CFB' ? g.aabbr : g.away, home: lg !== 'CFB' ? g.habbr : g.home, market: m, side,
           line: m === 'ml' ? '' : (side === 'away' ? -(+leg.line) : +leg.line)};
 }
 let SHOT = null;
@@ -1688,9 +1705,10 @@ function shotOdds(b) {   // the slip's American odds; if the reader missed them,
 }
 async function shotGames() {   // NFL + college games from 3 days back to 6 ahead, for the reader to pick from
   const days = []; for (let k = -3; k <= 6; k++) { const d = new Date(today() + 'T12:00:00'); d.setDate(d.getDate() + k); days.push(d.toISOString().slice(0, 10)); }
-  await Promise.all(['NFL', 'CFB'].flatMap(lg => days.filter(d => !ST.slate[lg + ':' + d]).map(d => espnDay(lg, d).catch(() => null))));
+  const LGS = ['NFL', 'CFB', 'MLB'].filter(lg => inSeason(lg));   // only leagues being played, so the reader is not handed 150 idle games
+  await Promise.all(LGS.flatMap(lg => days.filter(d => !ST.slate[lg + ':' + d]).map(d => espnDay(lg, d).catch(() => null))));
   const byId = {}, lines = [];
-  for (const lg of ['NFL', 'CFB']) for (const d of days) for (const g of Object.values(ST.slate[lg + ':' + d] || {})) {
+  for (const lg of LGS) for (const d of days) for (const g of Object.values(ST.slate[lg + ':' + d] || {})) {
     if (byId[g.id]) continue; byId[g.id] = {g, lg};
     lines.push(`${g.id} | ${lg} | ${ctDate(g.kick)} | ${g.away}${g.anick ? ' ' + g.anick : ''}${g.aabbr ? ' (' + g.aabbr + ')' : ''} @ ${g.home}${g.hnick ? ' ' + g.hnick : ''}${g.habbr ? ' (' + g.habbr + ')' : ''}`);
   }
@@ -1720,9 +1738,9 @@ async function shotRead(files) {
           if (Math.abs(exp - win) > Math.max(0.5, 0.03 * win)) { warn.push(`Odds ${b.odds > 0 ? '+' : ''}${b.odds} don't match the $${win.toFixed(2)} to win on the slip — using odds from the payout.`); b.odds = decToAm(win / b.stake); b.odds_how = 'from the payout'; }
         }
       }
-      const lg = /college|ncaa|cfb/i.test(b.league || '') ? 'CFB' : /nfl/i.test(b.league || '') ? 'NFL' : (b.league || '').toUpperCase();
+      const lg = /college|ncaa|cfb/i.test(b.league || '') ? 'CFB' : /nfl/i.test(b.league || '') ? 'NFL' : /mlb|baseball/i.test(b.league || '') ? 'MLB' : (b.league || '').toUpperCase();
       const legs = [], miss = [], slip = [];
-      if (lg !== 'NFL' && lg !== 'CFB') { out.push({b, err: `${b.league || 'This sport'} isn't tracked yet (NFL and college football only for now).`}); continue; }
+      if (lg !== 'NFL' && lg !== 'CFB' && lg !== 'MLB') { out.push({b, err: `${b.league || 'This sport'} isn't tracked yet (NFL, college football and MLB only for now).`}); continue; }
       for (const leg of b.legs || []) {
         if (!/^(spread|total|moneyline|ml)$/.test(leg.market)) { miss.push(`${leg.description || leg.team} (player props can't be graded yet)`); continue; }
         let f = null; const pick = leg.game_id && GM.byId[String(leg.game_id)];
@@ -1898,7 +1916,7 @@ async function refreshLive() {
 }
 function scoreLine(g) { if (!g || !(g.state === 'in' || g.state === 'post' || g.done)) return '';
   return `<div class="sline ${g.state === 'in' ? 'in' : ''}">${g.as} – ${g.hs} <span class="small">${esc(g.detail || 'Final')}</span></div>`; }
-const PAGE_VER = "20261122095706";   // stamped by tracker.py; a newer published page reloads itself
+const PAGE_VER = "20261122101158";   // stamped by tracker.py; a newer published page reloads itself
 // ---------------- AUTO REFRESH (while the page is open) ----------------
 const busy = () => { const a = document.activeElement; return a && ['INPUT', 'SELECT', 'TEXTAREA'].includes(a.tagName) || $('#m-form').classList.contains('open'); };
 let tickN = 0;
@@ -1914,7 +1932,9 @@ async function tick() {
   if (tickN % 30 === 0) refreshAll(false);
   if (tickN % 5 === 0 && location.protocol.startsWith('http')) checkNewWeek();
   if (tickN % 30 === 0) applySeasons();
+  if (inSeason('MLB') && Object.values(ST.mine).some(b => !b.result && (b.league === 'MLB' || (b.legs || []).some(l => l.league === 'MLB')))) await espnDay('MLB', today()).catch(() => {});   // your open MLB bets
   if (TAB === 'mlb' && tickN % 3 === 0) { if (MLB) await Promise.allSettled([...new Set(MLB.games.map(g => g.date))].map(d => mlbEspnDay(d))); mlbRender(); }
+  if (inSeason('MLB') && tickN % 20 === 0) mlbLoad(true);   // a new build lands several times a day
   if (!busy()) recompute(true);
 }
 async function checkNewWeek() {   // the Tuesday update publishes a new page; load it on its own
@@ -2097,7 +2117,22 @@ function dfsPickAi() {
 // ---------------- MY DFS ENTRIES ----------------
 // Entered lineups live in ST.dfsMine (synced). "I entered this lineup" saves the lineup on screen; DFS screenshots (lineups, My Contests,
 // results) go to the relay's /dfsshot reader and are matched to saved entries by player overlap (first initial + last name).
-let DFS_SHOWN = null, DFSSHOT = [];
+let DFS_SHOWN = null, DFSSHOT = [], DFS_CON = null;
+async function dfsContests() {   // DraftKings contest choices per slate (name, entry fee, prize pool), listed each morning by the slate job
+  if (DFS_CON) return DFS_CON;
+  try { const t = await (await fetch('https://raw.githubusercontent.com/Dan2Duper/betting-model/data/dfs_todo.json?t=' + Date.now())).json();
+    DFS_CON = Object.fromEntries((t.slates || []).map(s => [s.dg, s.contests || []])); } catch (e) { DFS_CON = {}; }
+  return DFS_CON; }
+const dfsMoney = v => v >= 1e6 ? '$' + (v / 1e6).toFixed(v % 1e6 ? 1 : 0) + 'M' : v >= 1e3 ? '$' + Math.round(v / 1e3) + 'K' : '$' + v;
+const dfsShort = n => String(n || '').replace(/^(NFL|MLB)\s+/i, '').replace(/\s*\[.*?\]\s*/g, ' ').trim();
+async function dfsPicks() {
+  const box = $('#dfs-e-picks'); if (!box || !DFS_SHOWN) return;
+  const C = (await dfsContests())[DFS_SHOWN.s.dg] || [];
+  box.innerHTML = C.length ? C.map((c, i) => `<button class="btn small" data-dfspick="${i}">${esc(dfsShort(c.name))} · ${fmt$(+c.fee)}${c.prize ? ' · ' + dfsMoney(+c.prize) : ''}</button>`).join('') : '<span class="small">Contest list not loaded for this slate; type it below.</span>';
+  $$('[data-dfspick]').forEach(el => el.onclick = () => { const c = C[+el.dataset.dfspick];
+    $('#dfs-e-contest').value = c.name; $('#dfs-e-fee').value = c.fee; $('#dfs-e-mode').value = c.cash ? 'cash' : 'gpp';
+    $$('[data-dfspick]').forEach(b => b.classList.toggle('primary', b === el)); });
+}
 const dfsNum = v => { if (typeof v === 'number') return isFinite(v) ? v : null; const m = String(v ?? '').replace(/,/g, '').match(/-?\d+(\.\d+)?/); return m ? +m[0] : null; };
 const dfsKey = n => { const w = String(n || '').toLowerCase().replace(/\b(jr|sr|ii|iii|iv|v)\b\.?/g, ' ').replace(/[^a-z .'-]/g, ' ').replace(/[.'-]/g, ' ').trim().split(/\s+/).filter(Boolean);
   return w.length ? (w.length > 1 ? w[0][0] + ' ' + w[w.length - 1] : w[0]) : ''; };
@@ -2112,10 +2147,77 @@ function dfsSaveShown() {
   const id = dfsId(); ST.dfsMine = ST.dfsMine || {};
   ST.dfsMine[id] = {id, created: Date.now(), day: today(), sport: s.sport || 'NFL', slate: s.label, kind: s.kind || (rows.length <= 6 ? 'showdown' : 'classic'), mode: $('#dfs-e-mode').value,
     contest: $('#dfs-e-contest').value.trim(), fee, entries: n, src: 'app', status: 'open', proj: L.proj, salary: L.salary,
-    players: rows.map(r => ({n: r[1].name, pos: r[0], t: r[1].team, cpt: r[0] === 'CPT', proj: +(r[2] * r[1].proj).toFixed(1)}))};
+    players: rows.map(r => ({n: r[1].name, pos: r[0], rp: r[1].pos, t: r[1].team, cpt: r[0] === 'CPT', proj: +(r[2] * r[1].proj).toFixed(1)}))};
   usave(); $('#dfs-e-msg').textContent = 'Saved to My DFS results.'; $('#dfs-enter-form').classList.add('hide'); dfsMineRender();
 }
-function dfsMineRender() {
+// ---------------- DFS AUTO SCORING ----------------
+// Live DraftKings points for every entered NFL lineup, from ESPN box scores (DK classic/showdown scoring; CPT x1.5). When every
+// player's game is final the total is saved on the entry (autoFinal). Place and winnings still come from a results screenshot.
+const DFS_LIVE = {}, DFS_BOX = {}, DFS_SB = {}; let dfsScoreAt = 0, dfsScoreBusy = false;
+const ESPN_NV = {LAR: 'LA', WSH: 'WAS', JAC: 'JAX', LVR: 'LV'};
+const dkPA = pa => pa === 0 ? 10 : pa <= 6 ? 7 : pa <= 13 ? 4 : pa <= 20 ? 1 : pa <= 27 ? 0 : pa <= 34 ? -1 : -4;
+function dfsBoxPoints(S) {
+  const comp = ((S.header || {}).competitions || [])[0] || {}, state = ((comp.status || {}).type || {}).state || 'pre';
+  const score = {}, opp = {}; (comp.competitors || []).forEach(c => { score[ESPN_NV[c.team.abbreviation] || c.team.abbreviation] = +c.score || 0; });
+  const ab = Object.keys(score); if (ab.length === 2) { opp[ab[0]] = ab[1]; opp[ab[1]] = ab[0]; }
+  const P = {}, T = {}; ab.forEach(t => T[t] = {sacks: 0, int: 0, td: 0, fr: 0, lost: 0});
+  ((S.boxscore || {}).players || []).forEach(tb => { const t = ESPN_NV[tb.team.abbreviation] || tb.team.abbreviation; T[t] = T[t] || {sacks: 0, int: 0, td: 0, fr: 0, lost: 0};
+    (tb.statistics || []).forEach(cat => { const lab = cat.labels || cat.keys || [];
+      (cat.athletes || []).forEach(a => { const v = k => { const i = lab.indexOf(k); return i < 0 ? 0 : parseFloat(String(a.stats[i]).split('/')[0]) || 0; };
+        const nm = (a.athlete || {}).displayName || '', key = dfsKey(nm) + '|' + t, p = P[key] = P[key] || {n: nm, t, pts: 0};
+        if (cat.name === 'passing') { const y = v('YDS'); p.pts += 0.04 * y + 4 * v('TD') - v('INT') + (y >= 300 ? 3 : 0); }
+        else if (cat.name === 'rushing') { const y = v('YDS'); p.pts += 0.1 * y + 6 * v('TD') + (y >= 100 ? 3 : 0); }
+        else if (cat.name === 'receiving') { const y = v('YDS'); p.pts += v('REC') + 0.1 * y + 6 * v('TD') + (y >= 100 ? 3 : 0); }
+        else if (cat.name === 'fumbles') { p.pts -= v('LOST'); T[t].lost += v('LOST'); }
+        else if (cat.name === 'kickReturns' || cat.name === 'puntReturns') { p.pts += 6 * v('TD'); T[t].td += v('TD'); }
+        else if (cat.name === 'interceptions') { T[t].int += v('INT'); T[t].td += v('TD'); }
+        else if (cat.name === 'defensive') { T[t].sacks += v('SACKS'); T[t].td += v('TD'); }
+        else if (cat.name === 'kicking') { const lg = v('LONG'); p.pts += 3 * v('FG') + v('XP') + (v('FG') ? (lg >= 50 ? 2 : lg >= 40 ? 1 : 0) : 0); } }); }); });
+  const D = {}; ab.forEach(t => { const o = opp[t]; D[t] = T[t].sacks + 2 * T[t].int + 2 * ((T[o] || {}).lost || 0) + 6 * T[t].td + dkPA(score[o] || 0); });
+  return {P, D, state, teams: ab};
+}
+async function dfsScore(force) {
+  if (dfsScoreBusy || (!force && Date.now() - dfsScoreAt < 60000)) return; dfsScoreBusy = true; dfsScoreAt = Date.now();
+  try {
+    const E = dfsEntries().filter(e => (e.sport || 'NFL') === 'NFL' && !e.autoFinal && e.day && Math.abs(Date.parse(e.day) - Date.parse(today())) <= 3 * 864e5 && (e.players || []).length);
+    if (!E.length) return;
+    let changed = false;
+    for (const day of [...new Set(E.map(e => e.day))]) {
+      const ds = [day, ctDate(new Date(Date.parse(day) + 864e5).toISOString())];   // Sunday entries can include Monday night
+      const evs = [];
+      for (const d of ds) { if (!DFS_SB[d] || Date.now() - DFS_SB[d].at > 60000) { try { const j = await (await fetch(`https://site.api.espn.com/apis/site/v2/sports/football/nfl/scoreboard?dates=${d.replace(/-/g, '')}`)).json(); DFS_SB[d] = {at: Date.now(), ev: j.events || []}; } catch (e) { DFS_SB[d] = DFS_SB[d] || {at: 0, ev: []}; } } evs.push(...DFS_SB[d].ev); }
+      const byTeam = {}, byName = {}, dst = {}, tstate = {};
+      for (const ev of evs) {
+        const st = (((ev.status || {}).type) || {}).state || 'pre';
+        const tm = ((ev.competitions || [])[0] || {}).competitors || []; tm.forEach(c => { tstate[ESPN_NV[c.team.abbreviation] || c.team.abbreviation] = st; });
+        if (st === 'pre') continue;
+        const c = DFS_BOX[ev.id]; let B = c && (c.final || Date.now() - c.at < 60000) ? c.B : null;
+        if (!B) { try { B = dfsBoxPoints(await (await fetch(`https://site.api.espn.com/apis/site/v2/sports/football/nfl/summary?event=${ev.id}`)).json()); DFS_BOX[ev.id] = {at: Date.now(), final: B.state === 'post', B}; } catch (e) { continue; } }
+        Object.entries(B.P).forEach(([k, p]) => { byTeam[k] = p; const nk = dfsKey(p.n); byName[nk] = byName[nk] === undefined ? p : null; });
+        Object.assign(dst, B.D);
+      }
+      for (const e of E.filter(x => x.day === day)) {
+        let tot = 0, final = true, any = false;
+        const per = e.players.map(p => { const t0 = p.t || '', isD = /^(DST|D\/ST|DEF)$/i.test(p.rp || p.pos || '');
+          let pts = null, tt = t0;
+          if (isD) pts = dst[t0] ?? null;
+          else { const r = byTeam[dfsKey(p.n) + '|' + t0] || byName[dfsKey(p.n)]; if (r) { pts = r.pts; tt = r.t; } else if (t0 && tstate[t0] && tstate[t0] !== 'pre') pts = 0; }
+          if (tt ? (tstate[tt] || 'pre') !== 'post' : evs.some(v => (((v.status || {}).type) || {}).state !== 'post')) final = false;
+          if (pts != null) { any = true; tot += (p.cpt ? 1.5 : 1) * pts; }
+          return pts == null ? null : +((p.cpt ? 1.5 : 1) * pts).toFixed(2); });
+        if (!any) continue;
+        DFS_LIVE[e.id] = {pts: +tot.toFixed(2), final, per};
+        if (final) { const s = ST.dfsMine[e.id]; if (s) { s.autoPts = +tot.toFixed(2); s.autoFinal = true; if (s.points == null) s.points = s.autoPts;
+          s.players.forEach((p, i) => { if (per[i] != null) p.pts = per[i]; }); changed = true; } }
+      }
+    }
+    if (changed) usave();
+    dfsMineRender(true);
+  } catch (e) {} finally { dfsScoreBusy = false; }
+}
+setInterval(() => { if (TAB === 'dfs' || (typeof ST !== 'undefined' && ST.gh)) dfsScore(); }, 60000);
+function dfsMineRender(fromScore) {
+  if (!fromScore) setTimeout(() => dfsScore(), 0);
   const box = $('#dfs-mine'); if (!box) return;
   const E = dfsEntries();
   if (!E.length) { box.innerHTML = '<div class="small">Nothing yet. Tap "I entered this lineup" under a lineup, or add DraftKings screenshots.</div>'; return; }
@@ -2128,10 +2230,11 @@ function dfsMineRender() {
     (open.length ? `<div class="small">${open.length} not settled yet (${fmt$(openFees)} in entry fees).</div>` : '') +
     E.map(e => `<div class="card" style="margin:6px 0;padding:10px">
       <div style="display:flex;justify-content:space-between;gap:8px;align-items:flex-start"><div><b>${esc(e.contest || e.slate || 'Lineup')}</b>
-        <div class="small">${esc(e.day || '')} · ${e.sport || 'NFL'} ${esc(e.kind || '')}${e.src === 'screenshot' ? ' · from screenshot' : ''} · ${e.fee != null ? fmt$(e.fee) : '$?'}${(e.entries || 1) > 1 ? ' × ' + e.entries : ''} · ${ST_LAB[e.status] || e.status}${e.points != null ? ` · <b>${e.points} pts</b>` : e.proj ? ` · proj ${e.proj}` : ''}${e.place ? ` · ${(+e.place).toLocaleString()}${e.field ? ' of ' + (+e.field).toLocaleString() : ''}` : ''}${e.won != null ? ` · won <b>${fmt$(+e.won)}</b>` : ''}</div></div>
-        <div style="display:flex;gap:6px;align-items:center"><select data-dfsmode="${e.id}" class="small"><option value="cash"${e.mode === 'cash' ? ' selected' : ''}>Cash</option><option value="gpp"${e.mode !== 'cash' ? ' selected' : ''}>Tournament</option></select><button class="btn small" data-dfsdel="${e.id}">✕</button></div></div>
-      <details><summary class="small">Players</summary><div class="small">${(e.players || []).map(p => `${p.cpt ? '<b>CPT</b> ' : esc(p.pos || '') + ' '}${esc(p.n)}${p.t ? ' (' + esc(p.t) + ')' : ''}${p.pts != null ? ' ' + p.pts : ''}`).join(' · ')}</div></details></div>`).join('');
+        <div class="small">${esc(e.day || '')} · ${e.sport || 'NFL'} ${esc(e.kind || '')}${e.src === 'screenshot' ? ' · from screenshot' : ''} · ${e.fee != null ? fmt$(e.fee) : '$?'}${(e.entries || 1) > 1 ? ' × ' + e.entries : ''} · ${ST_LAB[e.status] || e.status}${e.points != null ? ` · <b>${e.points} pts</b>${e.autoFinal && e.won == null ? ' final' : ''}` : DFS_LIVE[e.id] ? ` · <b>${DFS_LIVE[e.id].pts} pts</b> ${DFS_LIVE[e.id].final ? 'final' : 'live'}` : e.proj ? ` · proj ${e.proj}` : ''}${e.place ? ` · ${(+e.place).toLocaleString()}${e.field ? ' of ' + (+e.field).toLocaleString() : ''}` : ''}${e.won != null ? ` · won <b>${fmt$(+e.won)}</b>` : ''}</div></div>
+        <div style="display:flex;gap:6px;align-items:center"><button class="btn small" data-dfsfee2="${e.id}">$</button><select data-dfsmode="${e.id}" class="small"><option value="cash"${e.mode === 'cash' ? ' selected' : ''}>Cash</option><option value="gpp"${e.mode !== 'cash' ? ' selected' : ''}>Tournament</option></select><button class="btn small" data-dfsdel="${e.id}">✕</button></div></div>
+      <details><summary class="small">Players</summary><div class="small">${(e.players || []).map(p => `${p.cpt ? '<b>CPT</b> ' : esc(p.pos || '') + ' '}${esc(p.n)}${p.t ? ' (' + esc(p.t) + ')' : ''}${p.pts != null ? ' ' + p.pts : DFS_LIVE[e.id] && DFS_LIVE[e.id].per[(e.players || []).indexOf(p)] != null ? ' ' + DFS_LIVE[e.id].per[(e.players || []).indexOf(p)] : ''}`).join(' · ')}</div></details></div>`).join('');
   $$('[data-dfsmode]').forEach(el => el.onchange = () => { ST.dfsMine[el.dataset.dfsmode].mode = el.value; usave(); dfsMineRender(); });
+  $$('[data-dfsfee2]').forEach(el => el.onclick = () => { const e = ST.dfsMine[el.dataset.dfsfee2], v = prompt('Entry fee for one entry ($):', e.fee != null ? e.fee : ''); if (v === null) return; const n = dfsNum(v); if (n == null) return; e.fee = n; usave(); dfsMineRender(); });
   $$('[data-dfsdel]').forEach(el => el.onclick = () => { if (!confirm('Remove this entry from My DFS results?')) return; delete ST.dfsMine[el.dataset.dfsdel]; usave(); dfsMineRender(); });
 }
 async function dfsShotRead(files) {
@@ -2144,31 +2247,50 @@ async function dfsShotRead(files) {
     const images = await Promise.all(files.map(shotImage));
     const r = await fetch(DFS_AI_URL + '/dfsshot', {method: 'POST', headers: {'Content-Type': 'application/json', 'X-Code': code}, body: JSON.stringify({images, today: today()})});
     const j = await r.json(); if (!r.ok) throw new Error(j.error || r.status);
-    const E = dfsEntries();
+    const E = dfsEntries(), CON = await dfsContests();
     DFSSHOT = (j.items || []).map(it => {
       if (it.kind === 'ignore' || !(it.players || []).length && it.kind !== 'result') return {it, act: 'skip', why: it.ignore_reason || 'no lineup on it'};
+      if (!(it.players || []).length) {   // a contest screen with no lineup (Standings / Details): attach to saved entries in that contest
+        const near = e => Math.abs(Date.parse(e.day) - Date.parse(today())) <= 2 * 864e5;
+        let cs = E.filter(e => near(e) && e.contest && it.contest && shotNorm(e.contest) === shotNorm(it.contest));
+        if (!cs.length) cs = E.filter(e => near(e) && !e.contest && e.status !== 'done');
+        const lob = it.contest ? Object.values(CON).flat().find(c => shotNorm(c.name) === shotNorm(it.contest)) : null;
+        const fee = dfsNum(it.entry_fee) ?? (cs.find(e => e.fee != null) || {}).fee ?? (lob ? +lob.fee : null);
+        return {it, pl: [], cs, fee, feeHow: dfsNum(it.entry_fee) != null ? 'read' : (cs.find(e => e.fee != null) ? 'saved' : lob ? 'DraftKings lobby' : ''), act: cs.length ? 'contest' : 'new'};
+      }
       const pl = (it.players || []).map(p => ({n: p.name, pos: p.slot || '', t: p.team || '', cpt: !!p.captain || /^(cpt|captain|mvp)$/i.test(p.slot || ''), pts: dfsNum(p.points)}));
       let best = null, bo = 0; E.forEach(e => { const o = dfsOverlap(pl, e.players || []); if (o > bo) { bo = o; best = e; } });
       const need = Math.max(4, pl.length - 2), m = pl.length >= 4 && bo >= need ? best : null;
-      return {it, pl, m, act: it.kind === 'result' ? (m ? 'update' : 'new') : (m ? 'dup' : 'new')};
+      let fee = dfsNum(it.entry_fee), feeHow = fee != null ? 'read' : '';
+      if (fee == null && m && m.fee != null) { fee = m.fee; feeHow = 'saved'; }
+      if (fee == null && it.contest) { const same = E.find(e => e.fee != null && e.contest && shotNorm(e.contest) === shotNorm(it.contest)); if (same) { fee = same.fee; feeHow = 'same contest'; } }
+      if (fee == null && it.contest) { const lob = Object.values(CON).flat().find(c => shotNorm(c.name) === shotNorm(it.contest)); if (lob) { fee = +lob.fee; feeHow = 'DraftKings lobby'; } }
+      if (fee == null) { const last = E.find(e => e.fee != null); if (last) { fee = last.fee; feeHow = 'guess'; } }
+      return {it, pl, m, fee, feeHow, act: it.kind === 'result' ? (m ? 'update' : 'new') : (m ? 'dup' : 'new')};
     });
     dfsShotShow();
   } catch (e) { box.innerHTML = `<div class="note">Could not read that: ${esc(e.message || e)}</div>`; }
 }
 function dfsShotApply(i) {
   const x = DFSSHOT[i]; if (!x || x.done || x.act === 'skip') return;
+  const fi = $(`[data-dfsfee="${i}"]`); if (fi) x.fee = dfsNum(fi.value);
   const it = x.it, st = it.status === 'completed' ? 'done' : it.status === 'live' ? 'live' : null;
   const res = {}; [['points', 'total_points'], ['place', 'place'], ['field', 'field'], ['won', 'winnings']].forEach(([k, f]) => { const v = dfsNum(it[f]); if (v != null) res[k] = v; });
   ST.dfsMine = ST.dfsMine || {};
+  if (x.act === 'contest') {
+    x.cs.forEach(c => { const e = ST.dfsMine[c.id]; if (!e) return; if (!e.contest && it.contest) e.contest = it.contest; if (x.fee != null) e.fee = x.fee;
+      if (st) e.status = st; if (x.cs.length === 1) { Object.assign(e, res); if (dfsNum(it.entries)) e.entries = dfsNum(it.entries); } });
+    x.done = true; usave(); return;
+  }
   if (x.m) {
     const e = ST.dfsMine[x.m.id]; if (!e) return;
     Object.assign(e, res); if (st) e.status = st;
-    if (e.fee == null && dfsNum(it.entry_fee) != null) e.fee = dfsNum(it.entry_fee);
+    if (x.fee != null && (e.fee == null || x.feeHow === 'read' || fi)) e.fee = x.fee;
     if (dfsNum(it.entries)) e.entries = dfsNum(it.entries);
     if (!e.contest && it.contest) e.contest = it.contest;
     if (x.pl.some(p => p.pts != null)) { const pts = Object.fromEntries(x.pl.map(p => [dfsKey(p.n), p.pts])); e.players.forEach(p => { const v = pts[dfsKey(p.n)]; if (v != null) p.pts = v; }); }
   } else {
-    const id = dfsId(), fee = dfsNum(it.entry_fee);
+    const id = dfsId(), fee = x.fee;
     ST.dfsMine[id] = Object.assign({id, created: Date.now(), day: today(), sport: (it.sport || 'NFL').toUpperCase(), slate: it.date || '', kind: it.game_type || (x.pl.length <= 6 ? 'showdown' : 'classic'),
       mode: dfsGuessMode(it.contest), contest: it.contest || '', fee, entries: Math.max(1, Math.round(dfsNum(it.entries) || 1)), src: 'screenshot',
       status: st || 'open', salary: dfsNum(it.total_salary), players: x.pl}, res);
@@ -2176,21 +2298,24 @@ function dfsShotApply(i) {
   x.done = true; usave();
 }
 function dfsShotShow() {
-  const box = $('#dfs-shot-box'), LAB = {new: 'New entry', update: 'Result for a saved entry', dup: 'Already saved', skip: 'Skipped'};
+  const box = $('#dfs-shot-box'), LAB = {new: 'New entry', update: 'Result for a saved entry', dup: 'Already saved', skip: 'Skipped', contest: 'Contest info for saved entries'};
+  const HOW = {read: 'read from the screenshot', saved: 'from the saved entry', 'same contest': 'same contest as before', guess: 'your last fee, check it', typed: 'typed', 'DraftKings lobby': 'from the DraftKings lobby'};
   const todo = DFSSHOT.filter(x => !x.done && x.act !== 'skip').length;
   box.innerHTML = DFSSHOT.map((x, i) => { const it = x.it;
     return `<div class="card" style="margin:6px 0;padding:10px"><span class="pill ${x.act === 'skip' || x.act === 'dup' ? 'P' : 'O'}" style="margin-right:6px">${x.done ? 'Saved' : LAB[x.act]}</span>
-      <b>${esc(it.contest || (it.kind === 'result' ? 'Contest result' : 'Lineup'))}</b>${x.m ? ` <span class="small">→ matches ${esc(x.m.contest || x.m.slate || 'a saved lineup')} (${x.m.day})</span>` : ''}
+      <b>${esc(it.contest || (it.kind === 'result' ? 'Contest result' : 'Lineup'))}</b>${x.m ? ` <span class="small">→ matches ${esc(x.m.contest || x.m.slate || 'a saved lineup')} (${x.m.day})</span>` : ''}${x.cs && x.cs.length ? ` <span class="small">→ ${x.cs.length} saved entr${x.cs.length > 1 ? 'ies' : 'y'}</span>` : ''}
+      ${x.act !== 'skip' && x.act !== 'dup' && !x.done ? `<div><label class="small">Entry fee $ <input data-dfsfee="${i}" inputmode="decimal" style="width:64px" value="${x.fee != null ? x.fee : ''}"></label> <span class="small">${HOW[x.feeHow] || 'not shown, type it (the DETAILS tab shows it)'}</span></div>` : ''}
       <div class="small">${x.act === 'skip' ? esc(x.why) : `${(x.pl || []).length} players${dfsNum(it.entry_fee) != null ? ' · fee ' + fmt$(dfsNum(it.entry_fee)) : ''}${dfsNum(it.entries) > 1 ? ' × ' + dfsNum(it.entries) : ''}${it.status ? ' · ' + esc(it.status) : ''}${dfsNum(it.total_points) != null ? ' · ' + dfsNum(it.total_points) + ' pts' : ''}${dfsNum(it.place) ? ' · ' + dfsNum(it.place).toLocaleString() + (dfsNum(it.field) ? ' of ' + dfsNum(it.field).toLocaleString() : '') : ''}${dfsNum(it.winnings) != null ? ' · won ' + fmt$(dfsNum(it.winnings)) : ''}`}</div>
       ${it.cut_off ? `<div class="small" style="color:var(--bad,#b00)">Looks cut off${it.note ? ': ' + esc(it.note) : ''}. Add the other screenshot with it if you have one.</div>` : ''}
       ${x.pl && x.pl.length ? `<div class="small">${x.pl.map(p => (p.cpt ? 'CPT ' : '') + esc(p.n) + (p.pts != null ? ' ' + p.pts : '')).join(' · ')}</div>` : ''}
       ${!x.done && x.act !== 'skip' && x.act !== 'dup' ? `<button class="btn small primary" data-dfsapply="${i}" style="margin-top:6px">Save</button>` : ''}</div>`; }).join('') +
     `<div style="display:flex;gap:8px;margin-top:6px">${todo > 1 ? `<button class="btn primary small" id="dfs-shot-all">Save all ${todo}</button>` : ''}<button class="btn small" id="dfs-shot-close">Close</button></div>`;
   $$('[data-dfsapply]').forEach(el => el.onclick = () => { dfsShotApply(+el.dataset.dfsapply); dfsShotShow(); dfsMineRender(); });
+  $$('[data-dfsfee]').forEach(el => el.onchange = () => { const x = DFSSHOT[+el.dataset.dfsfee]; x.fee = dfsNum(el.value); x.feeHow = 'typed'; });
   if ($('#dfs-shot-all')) $('#dfs-shot-all').onclick = () => { DFSSHOT.forEach((x, i) => { if (x.act !== 'dup') dfsShotApply(i); }); dfsShotShow(); dfsMineRender(); };
   $('#dfs-shot-close').onclick = () => { box.classList.add('hide'); box.innerHTML = ''; };
 }
-$('#dfs-enter').onclick = () => { $('#dfs-enter-form').classList.toggle('hide'); $('#dfs-e-mode').value = dfsMode === 'cash' ? 'cash' : 'gpp'; $('#dfs-e-msg').textContent = ''; };
+$('#dfs-enter').onclick = () => { $('#dfs-enter-form').classList.toggle('hide'); $('#dfs-e-mode').value = dfsMode === 'cash' ? 'cash' : 'gpp'; $('#dfs-e-msg').textContent = ''; dfsPicks(); };
 $('#dfs-e-save').onclick = dfsSaveShown;
 $('#dfs-shot').onchange = e => { if (e.target.files.length) dfsShotRead(e.target.files); e.target.value = ''; };
 function dfsRender() {
@@ -2245,95 +2370,185 @@ function applySeasons() {
   $$('#tabs button').forEach(b => { if (b.dataset.sport) b.classList.toggle('hide', !on[b.dataset.sport]); });
   $('#status')?.classList.toggle('hide', !on.fb);   // score / line / QB status chips are football's
   ['lg', 'sb-lg'].forEach(id => $$('#' + id + ' button').forEach(b => b.classList.toggle('hide', !fb[b.dataset.l])));
-  $$('#m-lg option').forEach(o => { o.hidden = o.disabled = !fb[o.value] && on.fb; });
+  const ins = {CFB: fb.CFB, NFL: fb.NFL, MLB: on.mlb}, any = on.fb || on.mlb;
+  $$('#m-lg option').forEach(o => { o.hidden = o.disabled = any && !ins[o.value]; });
+  if (any && !ins[$('#m-lg').value]) $('#m-lg').value = ['CFB', 'NFL', 'MLB'].find(l => ins[l]);
+  // "My bets" (add a bet, screenshots) lives on the Week tab; when football is out of season it moves to the MLB tab
+  { const card = $('#m-form').closest('.card'), slot = on.fb ? null : $('#mlb-mine-slot');
+    if (slot && card.parentNode !== slot) slot.appendChild(card); else if (!slot && card.parentNode.id === 'mlb-mine-slot') $('#t-week').insertBefore(card, $('#t-week').children[2] || null); }
+  $$('#tk-lg button').forEach(b => { if (b.dataset.v === 'MLB') b.classList.toggle('hide', !on.mlb && !(MLBLOG && Object.keys(MLBLOG.games || {}).length)); if (b.dataset.v === '') b.textContent = on.mlb ? 'All' : 'Both'; });
+  if (TK.lg === 'MLB' && !on.mlb && !MLBLOG) TK.lg = '';
   if (on.fb) {   // move off a league that just ended
     if (!fb[LG]) $$('#lg button').find(b => fb[b.dataset.l])?.click();
     if (!fb[SB.lg]) $$('#sb-lg button').find(b => fb[b.dataset.l])?.click();
-    if (!fb[$('#m-lg').value]) { $('#m-lg').value = fb.CFB ? 'CFB' : 'NFL'; }
   }
   const cur = $$('#tabs button').find(b => b.dataset.t === TAB);
   if (cur && cur.classList.contains('hide')) $$('#tabs button').find(b => !b.classList.contains('hide'))?.click();
 }
 
-// ---------------- MLB: daily model file (data branch) + DraftKings lines and scores from ESPN ----------------
-const MLB_URL = 'https://raw.githubusercontent.com/Dan2Duper/betting-model/data/mlb.json';
+// ---------------- MLB: daily model file + season pick log (data branch), live scores and current lines from ESPN ----------------
+// The picks are made by the daily build (mlb/live.py on GitHub): winner, run line and over/under for every game against the DraftKings
+// line in hand at build time, frozen at first pitch, graded from finals. This page only shows them; nothing here depends on it being open.
+const MLB_RAW = 'https://raw.githubusercontent.com/Dan2Duper/betting-model/data/';
+const MLB_URL = MLB_RAW + 'mlb.json';
 const MLB_ESPN = {LAA: 'ANA', CHC: 'CHN', CHW: 'CHA', CWS: 'CHA', KC: 'KCA', LAD: 'LAN', NYM: 'NYN', NYY: 'NYA', SD: 'SDN', SF: 'SFN', STL: 'SLN', TB: 'TBA', WSH: 'WAS', OAK: 'ATH', AZ: 'ARI'};
 const MLB_SHOW = {ANA: 'LAA', CHN: 'CHC', CHA: 'CWS', KCA: 'KC', LAN: 'LAD', NYN: 'NYM', NYA: 'NYY', SDN: 'SD', SFN: 'SF', SLN: 'STL', TBA: 'TB', WAS: 'WSH'};
 const mlbT = c => MLB_SHOW[c] || c;
-let MLB = null, mlbDay = '', mlbEspn = {}, mlbErr = '';
+let MLB = null, MLBLOG = null, mlbLogBusy = false, mlbDay = '', mlbEspn = {}, mlbErr = '', MLBROWS = [];
 const amImp = o => o < 0 ? -o / (-o + 100) : 100 / (o + 100);
 const amTxt = o => o == null || isNaN(o) ? '' : (o > 0 ? '+' : '') + Math.round(o);
-function mlbOdds(c) {   // ESPN lists the DraftKings line two ways depending on the feed version
+function mlbOdds(c) {   // ESPN lists the DraftKings line two ways depending on the feed version; rl = the HOME run line (-1.5 / +1.5)
   const o = c.odds?.[0]; if (!o) return null;
   const num = v => { const n = parseFloat(String(v ?? '').replace(/[^0-9.+-]/g, '')); return isNaN(n) ? null : n; };
-  const mh = num(o.homeTeamOdds?.moneyLine ?? o.moneyline?.home?.close?.odds), ma = num(o.awayTeamOdds?.moneyLine ?? o.moneyline?.away?.close?.odds);
-  return {mh, ma, total: num(o.overUnder ?? o.total?.over?.close?.line), over: num(o.overOdds ?? o.total?.over?.close?.odds), under: num(o.underOdds ?? o.total?.under?.close?.odds), src: o.provider?.name || 'ESPN'};
+  const am = v => /^ev/i.test(String(v ?? '').trim()) ? 100 : (x => x != null && Math.abs(x) >= 100 ? x : null)(num(v));
+  const out = {mh: am(o.homeTeamOdds?.moneyLine ?? o.moneyline?.home?.close?.odds), ma: am(o.awayTeamOdds?.moneyLine ?? o.moneyline?.away?.close?.odds),
+    total: num(o.overUnder ?? o.total?.over?.close?.line), over: am(o.overOdds ?? o.total?.over?.close?.odds), under: am(o.underOdds ?? o.total?.under?.close?.odds), rl: null,
+    rl_h: am(o.pointSpread?.home?.close?.odds ?? o.homeTeamOdds?.spreadOdds), rl_a: am(o.pointSpread?.away?.close?.odds ?? o.awayTeamOdds?.spreadOdds), src: o.provider?.name || 'ESPN'};
+  let hl = num(o.pointSpread?.home?.close?.line);
+  if (hl == null && o.spread != null) { const sp = Math.abs(num(o.spread) || 0); if (sp) hl = o.homeTeamOdds?.favorite ? -sp : o.awayTeamOdds?.favorite ? sp : null; }
+  if (hl != null && Math.abs(hl) === 1.5) out.rl = hl;
+  if (out.total != null && !(out.total >= 4 && out.total <= 20)) out.total = null;
+  return out.mh != null || out.total != null || out.rl != null ? out : null;
 }
 async function mlbEspnDay(d) {
   const j = await getJSON('https://site.api.espn.com/apis/site/v2/sports/baseball/mlb/scoreboard?dates=' + ymd(d)); const out = [];
   for (const ev of j.events || []) {
     const c = ev.competitions?.[0]; if (!c) continue;
     const H = c.competitors.find(x => x.homeAway === 'home'), A = c.competitors.find(x => x.homeAway === 'away');
-    out.push({id: ev.id, kick: ev.date, home: MLB_ESPN[H.team.abbreviation] || H.team.abbreviation, away: MLB_ESPN[A.team.abbreviation] || A.team.abbreviation, hs: +H.score, as: +A.score,
+    out.push({id: String(ev.id), kick: ev.date, home: MLB_ESPN[H.team.abbreviation] || H.team.abbreviation, away: MLB_ESPN[A.team.abbreviation] || A.team.abbreviation, hs: +H.score, as: +A.score,
               state: ev.status?.type?.state || '', done: !!ev.status?.type?.completed, detail: ev.status?.type?.shortDetail || '', odds: mlbOdds(c)});
+    if (ev.status?.type?.completed) ST.finals['MLB:' + ev.id] = {lg: 'MLB', id: String(ev.id), date: ctDate(ev.date), home: H.team.abbreviation, away: A.team.abbreviation, habbr: H.team.abbreviation, aabbr: A.team.abbreviation, hs: +H.score, as: +A.score, done: true};
   }
   const keep = ST.mlbLines = ST.mlbLines || {};   // remember the last pregame line so it is still shown after first pitch
   out.forEach(e => { if (e.odds && e.state === 'pre') keep[e.id] = e.odds; else if (keep[e.id]) e.odds = keep[e.id]; });
+  const ids = Object.keys(keep); if (ids.length > 400) ids.slice(0, ids.length - 400).forEach(k => delete keep[k]);
   mlbEspn[d] = out; save();
+}
+function mlbRulesIn() {   // the build's self-tuned rule numbers are the truth for MLB (the weekly football snapshot does not carry them)
+  Object.entries((MLB && MLB.rule_stats) || {}).forEach(([k, r]) => { BR.rules[k] = Object.assign({}, BR.rules[k] || {}, r); if (r.name) NAMES2[k] = r.name; });
 }
 async function mlbLoad(force) {
   if (!MLB || force) {
-    try { const r = await fetch(MLB_URL + '?t=' + Date.now()); if (!r.ok) throw new Error(r.status); MLB = await r.json(); mlbErr = ''; }
+    try { const r = await fetch(MLB_URL + '?t=' + Date.now()); if (!r.ok) throw new Error(r.status); MLB = await r.json(); mlbErr = ''; mlbRulesIn(); }
     catch (e) { mlbErr = 'No MLB file yet. It appears after the next automatic refresh.'; MLB = MLB || null; }
   }
   if (MLB) {
-    const days = [...new Set(MLB.games.map(g => g.date))].sort(); if (!days.includes(mlbDay)) mlbDay = days[0] || '';
-    await Promise.allSettled(days.map(d => mlbEspnDay(d)));
+    const days = mlbDays(); if (!days.includes(mlbDay)) mlbDay = days.find(d => d >= mlbToday()) || days[days.length - 1] || '';
+    await Promise.allSettled([...new Set(MLB.games.map(g => g.date))].map(d => mlbEspnDay(d)));
   }
-  mlbRender();
+  mlbRender(); mlbLogLoad(force);
 }
-function mlbMatch(g) {   // the ESPN game for a model game: same teams, closest start (doubleheaders)
-  const c = (mlbEspn[g.date] || []).filter(e => e.home === g.home && e.away === g.away);
+const mlbToday = () => ASOF || today();
+async function mlbLogLoad(force) {   // the season log: every game's frozen picks and results (Tracker, yesterday's games, records)
+  if (mlbLogBusy || (MLBLOG && !force)) return; mlbLogBusy = true;
+  const f = (MLB && MLB.log) || `mlb/log_${asofDate().getFullYear()}.json`;
+  try { const r = await fetch(MLB_RAW + f + '?t=' + Date.now()); if (r.ok) { MLBLOG = await r.json(); mlbRows(); if (TAB === 'mlb') mlbRender(); else if (TAB === 'track') recompute(); else { buildBets(); } } }
+  catch (e) {}
+  mlbLogBusy = false;
+}
+function mlbRows() {   // lean / rule picks from the log, in the same shape as the football pick rows
+  MLBROWS = [];
+  Object.values((MLBLOG && MLBLOG.games) || {}).forEach(r => (r.rules || []).forEach(x => {
+    const gid = String(r.espn || r.pk), o = {date: r.date, kick: r.kick, league: 'MLB', week: '', game_id: gid, game: `${r.away} @ ${r.home}`, away: r.away, home: r.home, rule: x.rule, market: x.market, side: x.side, line: x.line,
+      odds: x.odds || -110, line_total: (r.line || {}).total ?? '', model_total: r.total != null ? (+r.total - ((MLB && MLB.rules && MLB.rules.total_offset) ?? 0.45)).toFixed(2) : '', src: 'model', result: ((r.res || {}).rules || {})[x.rule] || '', kick_hour: r.kick ? ctHour(r.kick) : 0};
+    o.id = o.date + '|' + o.game_id + '|' + o.rule; MLBROWS.push(o); }));
+}
+function mlbDays() { const s = new Set((MLB ? MLB.games : []).map(g => g.date)); const y = ctDate(new Date(new Date(mlbToday() + 'T12:00:00').getTime() - 864e5).toISOString());
+  if (MLBLOG && Object.values(MLBLOG.games || {}).some(r => r.date === y)) s.add(y); return [...s].sort(); }
+function mlbMatch(g) {   // the ESPN game for a model game: its ESPN id, else same teams and closest start (doubleheaders)
+  const L = mlbEspn[g.date] || [], byId = g.espn && L.find(e => e.id === String(g.espn)); if (byId) return byId;
+  const c = L.filter(e => e.home === (g.h || g.home) && e.away === (g.a || g.away));
   return c.sort((a, b) => Math.abs(new Date(a.kick) - new Date(g.kick)) - Math.abs(new Date(b.kick) - new Date(g.kick)))[0] || null;
 }
-function mlbView(g) {
-  const e = mlbMatch(g), o = e && e.odds, R = MLB.rules || {}, off = R.total_offset ?? 0.45, gapMin = R.total_gap_min ?? 0.75, ov = MLB.model.over;
-  const v = {g, e, o, fav: g.p_home >= 0.5 ? 'home' : 'away', pFav: Math.max(g.p_home, 1 - g.p_home), mtot: g.total - off, leans: []};
-  if (o && o.mh != null && o.ma != null) { const ih = amImp(o.mh), ia = amImp(o.ma); v.mktHome = ih / (ih + ia); v.edge = g.p_home - v.mktHome; }
-  if (o && o.total != null) {
-    v.gap = v.mtot - o.total; v.pOver = 1 / (1 + Math.exp(-(ov.a + ov.b * (g.total - o.total))));
-    if (v.gap >= gapMin) v.leans.push({rule: 'mlb_total_gap_over', txt: `Lean: Over ${o.total}`}); else if (v.gap <= -gapMin) v.leans.push({rule: 'mlb_total_gap_under', txt: `Lean: Under ${o.total}`});
-    if (g.park === 'CHI11' && g.wind_out >= (R.wrigley_wind_out_mph ?? 10)) v.leans.push({rule: 'mlb_wrigley_wind_out_over', txt: `Lean: Over ${o.total} (Wrigley, wind out ${g.wind_out})`});
-  }
-  return v;
+function mlbGamesFor(d) {   // today's file first; a day no longer in it (yesterday) comes from the log
+  const G = (MLB ? MLB.games : []).filter(g => g.date === d).map(g => Object.assign({}, g, g.logged || {}, {away: g.away, home: g.home}));
+  if (G.length || !MLBLOG) return G;
+  return Object.values(MLBLOG.games).filter(r => r.date === d).map(r => Object.assign({}, r, {away: r.a || r.away, home: r.h || r.home, logonly: true}));
+}
+const mlbRes = d => d > 0 ? 'W' : d < 0 ? 'L' : 'P';
+function mlbGrade(g, hs, as) {   // W / L / P of the three model picks and each lean from a score (final or live)
+  const P = g.picks || {}, m = hs - as, t = hs + as, R = {rules: {}};
+  if (P.ml) R.su = mlbRes(P.ml.side === 'home' ? m : -m);
+  if (P.rl) R.rl = mlbRes((P.rl.side === 'home' ? 1 : -1) * (m + P.rl.line));
+  if (P.tot) R.tot = mlbRes((P.tot.side === 'over' ? 1 : -1) * (t - P.tot.line));
+  (g.rules || []).forEach(x => { R.rules[x.rule] = mlbRes((x.market === 'total' ? t - x.line : m + (+x.line || 0)) * (x.side === 'under' || x.side === 'away' ? -1 : 1)); });
+  return R;
+}
+const mlbPct = p => p == null ? '' : Math.round(100 * p) + '%';
+const WDIR = {out: '↑ out', in: '↓ in', x: '↔ across'};
+function mlbWx(g) {
+  if (g.dome) return (g.wx_more && g.wx_more.roof && g.wx_more.roof !== 'dome' ? 'roof ' + String(g.wx_more.roof).replace(' (expected)', '') + ' (expected)' : 'roof closed / dome');
+  if (g.wx === 'neutral') return '';
+  const w = g.wind_out ? `wind ${WDIR.out} ${g.wind_out} mph` : g.wind_in ? `wind ${WDIR.in} ${g.wind_in} mph` : g.wind_x ? `wind ${WDIR.x} ${g.wind_x} mph` : 'calm';
+  const rain = g.wx_more && g.wx_more.rain >= 40 ? `, rain ${Math.round(g.wx_more.rain)}%` : '';
+  return `${g.temp}°, ${w}${rain}${g.wx === 'forecast' ? ' (forecast)' : ''}`;
+}
+function mlbRecLine(S) {
+  if (!S || !S.model) return '';
+  const m = S.model, pc = x => x.W + x.L ? ' (' + Math.round(100 * x.W / (x.W + x.L)) + '%)' : '', u = x => x.n_u ? `, ${x.u >= 0 ? '+' : ''}${(+x.u).toFixed(1)}u` : '';
+  return `Winner ${m.su.W}-${m.su.L}${pc(m.su)} · Run line ${m.rl.W}-${m.rl.L}${u(m.rl)} · Totals ${m.tot.W}-${m.tot.L}${m.tot.P ? '-' + m.tot.P : ''}${u(m.tot)}`;
 }
 function mlbRender() {
   const el = $('#mlb-games'); if (!el) return;
-  $('#mlb-note').innerHTML = `<b>How to read this.</b> The model predicts each team's runs from the starter, bullpen, lineup, park and weather, using only games played before today. Tested on 29,045 games (2013-25) it picked the winner 57.9% of the time; DraftKings' closing line picked 58.1%. Betting its moneyline disagreements lost about the juice, so <b>no MLB bet is an AI-LOX yet</b>. The leans (model total 0.75+ runs from the line, Wrigley with the wind blowing out) won 53-61% in the backtest but have not cleared the bar; they are tracked, not staked.`;
+  const st = (MLB && MLB.stats_note) || 'Tested on 29,045 games (2013-25) the model picked the winner 57.9% of the time; DraftKings\' closing line picked 58.1%.';
+  $('#mlb-note').innerHTML = `<b>How to read this.</b> The model predicts each team's runs from the starter, bullpen, lineup, park, plate umpire and weather, using only games played before today, and makes three picks a game against the DraftKings line: the winner, the run line (the side whose chance to cover beats its price by more) and the over/under. ${esc(st)} Betting its moneyline or run-line disagreements at closing prices lost about the juice, and none of 67 rules or 5 new groups of variables beat the closing line in both test windows, so <b>no MLB pick is an AI-LOX yet and none get stars</b>. Every pick is logged at first pitch and graded, with closing-line value, so a real edge would show up here first. Leans (model total 0.75+ runs from the line; Wrigley with the wind blowing out) won 53-61% in the backtest; they are tracked, not staked, until 50 live picks at 55% or better.`;
   if (!MLB) { $('#mlb-built').textContent = mlbErr || 'loading…'; el.innerHTML = ''; return; }
-  const days = [...new Set(MLB.games.map(g => g.date))].sort();
+  const days = mlbDays(); if (!days.includes(mlbDay)) mlbDay = days.find(d => d >= mlbToday()) || days[days.length - 1] || '';
   $('#mlb-day').innerHTML = days.map(d => `<button data-d="${d}" class="${d === mlbDay ? 'on' : ''}">${new Date(d + 'T12:00:00').toLocaleDateString([], {weekday: 'short', month: 'short', day: 'numeric'})}</button>`).join('');
-  $$('#mlb-day button').forEach(b => b.onclick = () => { mlbDay = b.dataset.d; mlbRender(); });
+  $$('#mlb-day button').forEach(b => b.onclick = () => { mlbDay = b.dataset.d; if (!mlbEspn[mlbDay]) mlbEspnDay(mlbDay).then(mlbRender, () => {}); mlbRender(); });
+  const I = MLB.inputs || {};
   $('#mlb-built').textContent = `Model built ${new Date(MLB.built).toLocaleString([], {weekday: 'short', hour: 'numeric', minute: '2-digit'})} · lines: DraftKings via ESPN`;
-  const G = MLB.games.filter(g => g.date === mlbDay).sort((a, b) => a.kick < b.kick ? -1 : 1);
-  if (!G.length) { el.innerHTML = '<div class="small">No games on this day.</div>'; return; }
+  const rec = MLB.record || (MLBLOG && MLBLOG.record), r7 = MLB.record_7 || (MLBLOG && MLBLOG.record_7), RS = MLB.rule_stats || {};
+  const cv = rec && rec.clv ? Object.entries(rec.clv).map(([k, v]) => `${({ml: 'moneyline', tot: 'totals', rl: 'run line'})[k]} beat the close ${Math.round(100 * v.beat)}% of ${v.n}`).join(', ') : '';
+  const leanRec = Object.entries(RS).filter(([, r]) => r.live_n).map(([k, r]) => `${esc(RNAME(k).replace(/^MLB /, '').replace(' (lean)', ''))} ${r.live_w}-${r.live_n - r.live_w}`).join(' · ');
+  $('#mlb-record').innerHTML = rec && (rec.model.su.W + rec.model.su.L) ? `<div class="small"><b>Model picks this season:</b> ${mlbRecLine(rec)}</div>${r7 && (r7.model.su.W + r7.model.su.L) ? `<div class="small">Last 7 days: ${mlbRecLine(r7)}</div>` : ''}
+    <details class="small" style="margin:2px 0 4px"><summary>Leans, closing-line value, what "u" means</summary>${leanRec ? `<div>Leans (tracked, not bet): ${leanRec}</div>` : ''}${cv ? `<div>Closing line value: ${cv}. Beating the close more than half the time is the sign of a real edge.</div>` : '<div>Closing line value appears once games have a closing snapshot.</div>'}<div>u = units won or lost betting 1 unit on every pick at its listed price. The Tracker tab (MLB) has every game.</div></details>`
+    : '<span class="small">No graded MLB picks yet this season. The record starts with the first game.</span>';
+  const G = mlbGamesFor(mlbDay).sort((a, b) => a.kick < b.kick ? -1 : 1);
+  if (!G.length) { el.innerHTML = '<div class="small">No games on this day.</div>'; mlbMineCard(); return; }
+  const pill = r => r ? `<span class="pill ${r}">${r}</span>` : '';
   el.innerHTML = G.map(g => {
-    const v = mlbView(g), o = v.o, e = v.e, favT = mlbT(v.fav === 'home' ? g.home : g.away);
+    const e = mlbMatch(g), P = g.picks || {}, L = g.line || null, o = e && e.odds, A = mlbT(g.away), H = mlbT(g.home), tm = s => s === 'home' ? H : A;
+    const fin = g.final ? {as: g.final[0], hs: g.final[1]} : e && e.done ? e : null, live = !fin && e && e.state === 'in' ? e : null;
+    const R = g.res || (fin ? mlbGrade(g, fin.hs, fin.as) : live ? mlbGrade(g, live.hs, live.as) : {rules: {}}), lv = !g.res && !fin && live;   // live: where each pick stands right now
     const when = new Date(g.kick).toLocaleTimeString([], {hour: 'numeric', minute: '2-digit'});
-    const score = e && (e.state === 'in' || e.done) ? `<span>${mlbT(g.away)} ${e.as}, ${mlbT(g.home)} ${e.hs} <span class="small">${esc(e.detail)}</span></span>` : `<span class="small">${when}</span>`;
-    const warn = [!g.sp_away_known || !g.sp_home_known ? 'starter not announced' : '', g.lineup_away !== 'posted' || g.lineup_home !== 'posted' ? 'lineups not posted (using last game)' : '', g.wx !== 'posted' ? 'weather not in yet (72°, calm)' : ''].filter(Boolean);
-    const ml = o && o.mh != null ? `${mlbT(g.away)} ${amTxt(o.ma)} / ${mlbT(g.home)} ${amTxt(o.mh)}` : 'no line yet';
-    const mktFav = v.mktHome != null ? (v.fav === 'home' ? v.mktHome : 1 - v.mktHome) : null;
-    return `<div class="mg"><div class="top"><span>${mlbT(g.away)} @ ${mlbT(g.home)}${g.num ? ' (G' + g.num + ')' : ''}</span>${score}</div>
-      <div class="small">${esc(g.sp_away)} vs ${esc(g.sp_home)} · ${esc(g.venue)}${g.wx === 'posted' && !g.dome ? ` · ${g.temp}°${g.wind_out ? ', wind out ' + g.wind_out : g.wind_in ? ', wind in ' + g.wind_in : ''}` : ''}</div>
-      <div class="row"><div><span class="k">Model score</span><b>${mlbT(g.away)} ${g.pa.toFixed(1)}, ${mlbT(g.home)} ${g.ph.toFixed(1)}</b></div>
-        <div><span class="k">Model winner</span><b>${favT} ${(100 * v.pFav).toFixed(0)}%</b></div>
-        <div><span class="k">DraftKings moneyline</span>${ml}${mktFav != null ? ` <span class="small">(${favT} ${(100 * mktFav).toFixed(0)}%)</span>` : ''}</div>
-        <div><span class="k">Total: model / line</span><b>${v.mtot.toFixed(1)}</b> / ${o && o.total != null ? o.total + (o.over != null ? ` <span class="small">(o ${amTxt(o.over)}, u ${amTxt(o.under)})</span>` : '') : 'no line yet'}</div></div>
-      <div>${v.leans.map(l => `<span class="chip lean" title="${esc((BR.rules[l.rule] || {}).src || '')}">${esc(l.txt)}</span>`).join('')}${warn.map(w => `<span class="chip">${esc(w)}</span>`).join('')}</div></div>`;
+    const score = fin ? `<span>${A} ${fin.as}, ${H} ${fin.hs} <span class="small">Final</span></span>` : live ? `<span>${A} ${live.as}, ${H} ${live.hs} <span class="small">${esc(live.detail)}</span></span>` : g.status === 'ppd' ? '<span class="small">Postponed</span>' : `<span class="small">${when}</span>`;
+    const pre = !fin && !live && !started(g.kick);
+    const ok = [], warn = [];
+    if (!g.logonly) { (g.sp_away_known && g.sp_home_known ? ok : warn).push(g.sp_away_known && g.sp_home_known ? 'starters set' : 'starter not announced');
+      (g.lineup_away === 'posted' && g.lineup_home === 'posted' ? ok : warn).push(g.lineup_away === 'posted' && g.lineup_home === 'posted' ? 'lineups confirmed' : 'lineups not posted (using last game)');
+      if (g.wx === 'neutral') warn.push('weather not in yet (72°, calm)'); if (g.ump) ok.push('ump ' + g.ump); }
+    const pk = (k, label, txt, sub) => `<div class="mp"><span class="k">${label}</span> ${lv && R[k === 'ml' ? 'su' : k] ? `<span class="pill O" title="where it stands right now">${R[k === 'ml' ? 'su' : k] === 'W' ? 'ahead' : R[k === 'ml' ? 'su' : k] === 'L' ? 'behind' : 'even'}</span>` : pill(R[k === 'ml' ? 'su' : k])}<b>${txt}</b>${sub ? ` <span class="small">${sub}</span>` : ''}</div>`;
+    const rows = [];
+    if (P.ml) rows.push(pk('ml', 'Winner', `${tm(P.ml.side)} ${mlbPct(P.ml.p)}`, P.ml.odds != null ? `DK ${amTxt(P.ml.odds)} = ${mlbPct(P.ml.mkt)}` : 'no line yet'));
+    if (P.rl) { const ln = P.rl.side === 'home' ? P.rl.line : -P.rl.line; rows.push(pk('rl', 'Run line', `${tm(P.rl.side)} ${ln > 0 ? '+' : ''}${ln}`, P.rl.odds != null ? `${amTxt(P.rl.odds)} · model ${mlbPct(P.rl.p)}, price ${mlbPct(P.rl.mkt)}` : `model ${mlbPct(P.rl.p)}`)); }
+    if (P.tot) rows.push(pk('tot', 'Total', `${P.tot.side === 'over' ? 'Over' : 'Under'} ${P.tot.line}`, `${amTxt(P.tot.odds)} · model ${(P.tot.line + P.tot.gap).toFixed(1)}`));
+    const leans = (g.rules || []).map(x => { const r = BR.rules[x.rule] || {}, bet = r.lean_only === false, rr = R.rules && R.rules[x.rule];
+      return `<span class="chip lean" title="${esc(r.src || '')}">${bet ? LOX : ''}${lv && rr ? '' : pill(rr)}${bet ? '' : 'Lean: '}${x.market === 'total' ? (x.side === 'over' ? 'Over ' : 'Under ') + x.line : esc(RNAME(x.rule))}${x.rule === 'mlb_wrigley_wind_out_over' ? ' (Wrigley, wind out)' : ''}${r.p ? ` · ${Math.round(100 * r.p)}% of ${r.n}` : ''}</span>`; }).join('');
+    const moved = pre && o && L && ((o.total != null && L.total != null && o.total !== L.total) || (o.mh != null && L.mh != null && Math.abs(amImp(o.mh) - amImp(L.mh)) >= 0.02));
+    const now = moved ? `<div class="small">Line now: ${A} ${amTxt(o.ma)} / ${H} ${amTxt(o.mh)}${o.total != null ? ', total ' + o.total : ''} (picks above were made at ${A} ${amTxt(L.ma)} / ${H} ${amTxt(L.mh)}${L.total != null ? ', ' + L.total : ''}; they update at the next build)</div>` : '';
+    const noline = !L && pre ? `<div class="small">No DraftKings line at the last build${o && o.mh != null ? ` (now ${A} ${amTxt(o.ma)} / ${H} ${amTxt(o.mh)}${o.total != null ? ', total ' + o.total : ''}; run line and total picks arrive with the next build)` : ' yet'}.</div>` : '';
+    const wx = mlbWx(g), cl = g.clv ? Object.entries(g.clv).map(([k, v]) => `${({ml: 'winner', tot: 'total', rl: 'run line'})[k]} ${v > 0 ? 'beat' : v < 0 ? 'lost to' : 'matched'} the close`).join(', ') : '';
+    return `<div class="mg"><div class="top"><span>${A} @ ${H}${g.num ? ' (G' + g.num + ')' : ''}</span>${score}</div>
+      <div class="small">${esc(g.sp_away || '')} vs ${esc(g.sp_home || '')}${g.venue ? ' · ' + esc(g.venue) : ''}${wx ? ' · ' + esc(wx) : ''}</div>
+      <div class="row"><div><span class="k">Model score</span><b>${A} ${(+g.pa).toFixed(1)}, ${H} ${(+g.ph).toFixed(1)}</b></div>${rows.join('')}</div>
+      ${now}${noline}${cl ? `<div class="small">${cl}</div>` : ''}
+      <div>${leans}${ok.map(w => `<span class="chip okc">${esc(w)}</span>`).join('')}${warn.map(w => `<span class="chip">${esc(w)}</span>`).join('')}</div></div>`;
   }).join('');
+  mlbMineCard();
 }
+function mlbMineCard() { if ($('#t-mlb').contains($('#mineboard'))) renderMine(); }
 $('#mlb-refresh').onclick = () => mlbLoad(true);
+// every logged MLB game as a "model game" for the Tracker scorecard: winner, run line (as ATS) and over/under, graded by the build
+function mlbModelGames() {
+  return Object.values((MLBLOG && MLBLOG.games) || {}).map(r => { const P = r.picks || {}, R = r.res || {}, o = {league: 'MLB', date: r.date, kick: r.kick || r.date, game: `${r.away} @ ${r.home}`, away: r.away, home: r.home, pa: +r.pa, ph: +r.ph,
+      f: r.final ? {as: r.final[0], hs: r.final[1]} : null, ln: r.line || null, res: {}, pick: {}, star: {}, gap: {}, units: r.units || {}, dec: 1};
+    const tm = s => s === 'home' ? r.home : r.away;
+    if (P.ml) { o.pick.su = `${tm(P.ml.side)} to win${P.ml.odds != null ? ' (' + amTxt(P.ml.odds) + ')' : ''}`; if (R.su) o.res.su = R.su; }
+    if (P.rl) { const ln = P.rl.side === 'home' ? P.rl.line : -P.rl.line; o.pick.ats = `Take ${tm(P.rl.side)} ${ln > 0 ? '+' : ''}${ln}${P.rl.odds != null ? ' (' + amTxt(P.rl.odds) + ')' : ''}`; if (R.rl) o.res.ats = R.rl; }
+    if (P.tot) { const k = P.tot.side === 'over' ? 'over' : 'under'; o.pick[k] = `Take the ${k.toUpperCase()} ${P.tot.line}`; o.gap[k] = Math.abs(P.tot.gap); if (R.tot) o.res[k] = R.tot; }
+    return o; });
+}
 
 let TAB = 'week';
 $$('#tabs button').forEach(b => b.onclick = () => { TAB = b.dataset.t; if (TAB === 'live') setTimeout(refreshLive, 0); if (TAB === 'reports') setTimeout(repLoad, 0); if (TAB === 'dfs') setTimeout(dfsLoad, 0); if (TAB === 'mlb') setTimeout(mlbLoad, 0); $$('#tabs button').forEach(x => x.classList.toggle('on', x === b)); ['week', 'mlb', 'live', 'dfs', 'reports', 'track', 'stats', 'rules', 'settings'].forEach(t => $('#t-' + t).classList.toggle('hide', t !== TAB)); renderAll(); });
@@ -2350,7 +2565,7 @@ async function refreshAll(force) {
 }
 $('#refresh').onclick = () => { refreshAll(true); syncCycle(); };
 setStatus('scores', '<b>Scores:</b> loading…'); setStatus('lines', '<b>Lines:</b> loading…'); setStatus('wx', '<b>Weather:</b> loading…'); setStatus('qb', '<b>QB news:</b> loading…');
-themeLbl(); applySeasons(); if (TAB !== 'mlb') sbLoad(); restoreGF(); $$('.ftoggle').forEach(b => b._set && b._set()); recompute(); refreshAll(false); syncCycle(); repLoad();
+themeLbl(); applySeasons(); if (TAB !== 'mlb') sbLoad(); restoreGF(); $$('.ftoggle').forEach(b => b._set && b._set()); recompute(); refreshAll(false); syncCycle(); repLoad(); if (inSeason('MLB')) mlbLoad();
 if (screen.width <= 700 && innerWidth >= 900) $('#dsnote').innerHTML = '<div class="note">Your phone is showing the desktop version, so everything is tiny. In Chrome tap <b>⋮</b> and uncheck <b>Desktop site</b>.</div>';
 let rt; addEventListener('resize', () => { clearTimeout(rt); rt = setTimeout(renderAll, 150); });
 </script>
