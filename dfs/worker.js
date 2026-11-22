@@ -293,17 +293,28 @@ Numbers: use ONLY the numbers in the facts. Never invent a score, line, dollar a
 ${kind === 'preview' ? 'This is the PRE-GAME report: nothing has kicked off yet. Preview today\'s bets and AI-LOX picks with trash talk, and say what each one needs.' : kind === 'final' ? 'This is the FINAL report for the day: every game is done. Give the verdict.' : 'This is an UPDATE: some games are done, some are still to come.'}
 Format: light markdown. Sections in this order, each starting with its label in bold: **MY BETS:**, **AI-LOX:**, **THE MODEL:**, **STILL TO COME:** (skip any section with nothing in it). Under a section, one short "- " line per bet. Short paragraphs, 150-320 words total.
 Answer with only a JSON object: {"title": "<a funny headline under 110 characters>", "text": "<the report>"}`;
+const REPORT_TOOL = {name: 'game_report', description: 'The finished game report.', input_schema: {type: 'object', required: ['title', 'text'], properties: {
+  title: {type: 'string', description: 'A funny headline under 110 characters.'}, text: {type: 'string', description: 'The report, light markdown.'}}}};
+function looseReport(text) {   // last resort when the model answers in text: strict JSON, then the JSON with raw line breaks escaped, then the fields by pattern
+  const body = text.slice(text.indexOf('{'), text.lastIndexOf('}') + 1);
+  for (const t of [body, body.replace(/\r?\n/g, '\\n')]) { try { const o = JSON.parse(t); if (o.title && o.text) return o; } catch (e) {} }
+  const ti = text.match(/"title"\s*:\s*"([\s\S]*?)"\s*,\s*"text"/), tx = text.match(/"text"\s*:\s*"([\s\S]*)"\s*}\s*$/);
+  if (ti && tx) return {title: ti[1].replace(/\\"/g, '"'), text: tx[1].replace(/\\n/g, '\n').replace(/\\"/g, '"')};
+  return null;
+}
 async function writeReport(env, F, kind, recent) {
   const used = new Set(recent.map(x => x.style));
   const pool = STYLES.filter(s => !used.has(s)), style = pool[Math.floor(Math.random() * pool.length)] || STYLES[0];
   const user = `FACTS (the only source of truth):\n${factsText(F)}\n\nRecent report headlines (don't repeat their jokes): ${recent.slice(0, 4).map(x => x.title).join(' | ') || 'none'}`;
   const r = await fetch('https://api.anthropic.com/v1/messages', {method: 'POST',
     headers: {'x-api-key': env.ANTHROPIC_API_KEY, 'anthropic-version': '2023-06-01', 'content-type': 'application/json'},
-    body: JSON.stringify({model: env.MODEL || 'claude-sonnet-5-5', max_tokens: 1800, system: SYS_REPORT(style, kind), messages: [{role: 'user', content: user}]})});
+    body: JSON.stringify({model: env.MODEL || 'claude-sonnet-5-5', max_tokens: 2500, system: SYS_REPORT(style, kind) + '\nAnswer by calling the game_report tool.',
+      tools: [REPORT_TOOL], tool_choice: {type: 'tool', name: 'game_report'}, messages: [{role: 'user', content: user}]})});
   const j = await r.json(); if (!r.ok) throw new Error((j.error && j.error.message) || 'AI error');
-  const text = (j.content || []).filter(c => c.type === 'text').map(c => c.text).join('\n');
-  let out; try { out = JSON.parse(text.slice(text.indexOf('{'), text.lastIndexOf('}') + 1)); } catch (e) { throw new Error('report not readable: ' + text.slice(0, 120)); }
-  if (!out.title || !out.text) throw new Error('report missing title or text');
+  const use = (j.content || []).find(c => c.type === 'tool_use');
+  let out = use && use.input;
+  if (!out || !out.title || !out.text) { const text = (j.content || []).filter(c => c.type === 'text').map(c => c.text).join('\n'); out = looseReport(text);
+    if (!out) throw new Error('report not readable: ' + text.slice(0, 120)); }
   return {title: String(out.title).slice(0, 160), text: String(out.text), style};
 }
 async function runReports(env, now, opts = {}) {
