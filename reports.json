@@ -2,6 +2,15 @@
  "_note": "Written automatically by the relay (and by Claude); newest first; the Bet Tracker Reports tab reads this.",
  "reports": [
   {
+   "id": "2026-11-23T15:00:47Z-NFL",
+   "time": "2026-11-23T15:00:47Z",
+   "league": "NFL",
+   "kind": "preview",
+   "title": "COLD CASE MONDAY: Rich Backs CIN -6.5 at WAS While AI-LOX Bets $130.00 the Points Never Show Up",
+   "text": "Welcome back to the show, true crime fans. Tonight's case: a man, a Monday night game, and a bankroll with no alibi. It's 9:00 AM Central on 2026-11-23. Nothing has kicked off, so nobody's dead yet. Give it time.\n\n**MY BETS:**\n\n- CIN -6.5 at WAS, $9.69 to win $9.32, kicks 8:15 PM EST. Exhibit A. Rich is laying a touchdown-ish with Cincinnati on the road. He needs the Bengals to win by 7 or more. A one-score win leaves him standing over the body holding the weapon. Nine dollars and sixty-nine cents. That's not a bet, that's what a guy finds in his couch and loses on purpose.\n\n**AI-LOX:**\n\n- UNDER 54.5, CIN @ WAS, $130.00 to win $126.21, same kickoff. Here's where it gets interesting, folks. The machine wants $130.00 of paper money on this one. Paper, thank God. It needs CIN and WAS to combine for 54 or fewer. That means punts, flags, and two offenses that clearly have something to hide.\n\nDetectives will note the tension here. Rich's bet wants Cincinnati to win comfortably, and the under wants the game to stay quiet. Those two can live together, but only if the Bengals win ugly. If Cincinnati hangs 40 and covers, the under goes down in the street.\n\n**THE MODEL:**\n\nZero of one modeled games are final. The record is blank, the average miss is 0.0 points, and the suspect has yet to be questioned. Innocent until it screws up.\n\n**STILL TO COME:**\n\n- AI-LOX UNDER 54.5, $130.00 to win $126.21, 8:15 PM EST.\n- Rich's CIN -6.5, $9.69 to win $9.32, 8:15 PM EST.\n\nBoth are pending, nothing is live, and the net is +$0.00. Tonight we find out whether this was a clean job or just another sloppy crime scene. Stay nosy, stay broke.",
+   "style": "a true-crime podcast host walking through the evidence"
+  },
+  {
    "id": "2026-11-23T02:57:57Z-NFL",
    "time": "2026-11-23T02:57:57Z",
    "league": "NFL",
@@ -404,6 +413,15 @@
     "update",
     "update",
     "update"
+   ]
+  },
+  "2026-11-23": {
+   "n": 1,
+   "last": "2026-11-23T15:00:47Z",
+   "fp": "|0",
+   "fpBets": "",
+   "kinds": [
+    "preview"
    ]
   }
  }
