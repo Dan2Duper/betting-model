@@ -2,6 +2,15 @@
  "_note": "Written automatically by the relay (and by Claude); newest first; the Bet Tracker Reports tab reads this.",
  "reports": [
   {
+   "id": "2026-11-23T00:00:47Z-NFL",
+   "time": "2026-11-23T00:00:47Z",
+   "league": "NFL",
+   "kind": "update",
+   "title": "T-MINUS SF: Lunar Chargers Blow Up on the Pad, Parlay Is Debris, Rich Still +$5.71 in Orbit",
+   "text": "**MY BETS:**\n\nFLIGHT, this is BETS. Telemetry is in. Settled 2-2-0, net +$5.71 on $69.04 staked. We have a vehicle. It is damaged. It is still technically flying.\n\n- **LOST -$9.95:** 4-leg parlay, $9.95 to win $145.07. Stage One (LAC -3.5) lit and then shat itself: New York 27, Los Angeles 24, missing by 6.5. Detroit and Dallas separated cleanly. Doesn't matter. The rocket is confetti, and SF never even left the hangar.\n- **WON +$8.31:** DET -3.5 over Tampa Bay, 31-21. Cleared the number by 6.5. Nominal. Boring. Beautiful.\n- **WON +$17.35:** DAL -7.5 over Tennessee, 51-30. Cleared by 13.5. Tennessee got scorched on the pad like a bad Tuesday tailgate.\n- **LOST -$10.00:** LAC -3.5, same game that killed the parlay. The Chargers lost to the Jets, which is like losing your keys inside the house.\n- **PENDING:** SF -3.5 vs MIN, $19.76 to win $18.30. Not started.\n\n**THE MODEL:**\n\nEight of 11 modeled games are final. Winners: 6 of 8. Against the spread: 4-4, a coin flip with a PhD. Totals: 5-3. Average miss on the final margin: 7.1 points.\n\n- Closest call: Baltimore 33-35 Carolina. The model had 23-24. Close in margin, hilariously light on points.\n- Worst miss: Arizona 7-34 Kansas City. The model had 17-27. Arizona didn't launch. It cratered.\n- Live: Jacksonville 6-20 New York, 12:53 left in the 4th (model had 27-21). Las Vegas 17-24 Denver, 11:26 left in the 4th (model had 19-28).\n\n**STILL TO COME:**\n\n- **MY BET:** SF -3.5 vs MIN, tonight, 8:20 PM EST. $19.76 to win $18.30. One engine left. Pray, Rich.\n- **AI-LOX:** UNDER 54.5 in CIN @ WAS, Monday, 8:15 PM EST. $130.00 to win $126.21. Tracked, not bet, unless Rich does something stupid. Yes, we'll monitor.\n\nAll stations, hold for 8:20.",
+   "style": "mission control during a launch that may or may not explode"
+  },
+  {
    "id": "2026-11-22T22:43:19Z-NFL",
    "time": "2026-11-22T22:43:19Z",
    "league": "NFL",
@@ -374,12 +383,13 @@
    ]
   },
   "2026-11-22": {
-   "n": 5,
-   "last": "2026-11-22T22:43:19Z",
-   "fp": "mine|NFL|401873072|spread|1795346164868|3W,mine|NFL|401873073|spread|1795346164868|4W|7",
-   "fpBets": "mine|NFL|401873072|spread|1795346164868|3W,mine|NFL|401873073|spread|1795346164868|4W",
+   "n": 6,
+   "last": "2026-11-23T00:00:47Z",
+   "fp": "mine|NFL|401873072|spread|1795346164868|3W,mine|NFL|401873073|spread|1795346164868|4W,mine|NFL|401873074+401873072+401873073+401873077|parlay|1795346164867|1L,mine|NFL|401873074|spread|1795346164868|2L|8",
+   "fpBets": "mine|NFL|401873072|spread|1795346164868|3W,mine|NFL|401873073|spread|1795346164868|4W,mine|NFL|401873074+401873072+401873073+401873077|parlay|1795346164867|1L,mine|NFL|401873074|spread|1795346164868|2L",
    "kinds": [
     "preview",
+    "update",
     "update",
     "update",
     "update",
