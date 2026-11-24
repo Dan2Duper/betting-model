@@ -2,6 +2,15 @@
  "_note": "Written automatically by the relay (and by Claude); newest first; the Bet Tracker Reports tab reads this.",
  "reports": [
   {
+   "id": "2026-11-24T04:30:47Z-NFL",
+   "time": "2026-11-24T04:30:47Z",
+   "league": "NFL",
+   "kind": "final",
+   "title": "CIN Lays 6.5, Loses Outright to WAS, Rich Down $9.69 While AI-LOX Cashes the Under",
+   "text": "**MY BETS:**\n\nYeah, hi, first-time caller, long-time sufferer, I've been on hold for AN HOUR listening to a jingle about a mattress sale, so I'm gonna say this fast. RICH LAID 6.5 WITH CINCINNATI. On the road. In WASHINGTON. And they LOST. 22-20. Outright. Not a backdoor cover, not a bad beat, just a flaming bag of shit on the porch.\n\n- **LOST -$9.69:** CIN -6.5 at WAS. $9.69 to win $9.32. Missed the number by 8.5. EIGHT AND A HALF. You could've covered that with a sleeping bag and a prayer.\n\nNine dollars and sixty-nine cents, Rich. Nice. The bet's cheap, but the judgment cost you extra, you absolute clown.\n\n**AI-LOX:**\n\nNow LISTEN, because the screener told me to \"keep it brief\" and I said fuck that. The robot took the UNDER 54.5 and the two teams scraped together 42 points between them. 42! My grandmother's bridge club scores higher!\n\n- **WON +$122.64:** UNDER 54.5, CIN at WAS. $130.00 staked, cleared by 12.5. Paper money unless Rich was dumb enough to bet it, and apparently he bet the OTHER dumb thing instead.\n\nYes, the robot cashed. No, I won't be thanking a toaster with a gambling problem.\n\n**THE MODEL:**\n\nThe model had Cincinnati 28-24 and picked the wrong winner. 0 of 1! But it went 1-0 against the spread and 1-0 on totals, because even a busted clock gets lucky. It missed the final margin by 6.4 points on average. Closest call: CIN 20, WAS 22. Closest, my ass. It's the only call.\n\n**STILL TO COME:**\n\nNothing. Every game is done. I've been on hold since the kickoff, Chuck. Put me through or I swear to God I'm hanging up and betting the Bengals again out of spite.",
+   "style": "a furious sports-talk radio caller who has been on hold for an hour"
+  },
+  {
    "id": "2026-11-23T15:00:47Z-NFL",
    "time": "2026-11-23T15:00:47Z",
    "league": "NFL",
@@ -416,12 +425,13 @@
    ]
   },
   "2026-11-23": {
-   "n": 1,
-   "last": "2026-11-23T15:00:47Z",
-   "fp": "|0",
-   "fpBets": "",
+   "n": 2,
+   "last": "2026-11-24T04:30:47Z",
+   "fp": "2026-11-23|2026_11_CIN_WAS|nfl_wind_under_10_14W,mine|NFL|401873078|spread|1795402646691|0L|1",
+   "fpBets": "2026-11-23|2026_11_CIN_WAS|nfl_wind_under_10_14W,mine|NFL|401873078|spread|1795402646691|0L",
    "kinds": [
-    "preview"
+    "preview",
+    "final"
    ]
   }
  }
