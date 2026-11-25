@@ -2,6 +2,15 @@
  "_note": "Written automatically by the relay (and by Claude); newest first; the Bet Tracker Reports tab reads this.",
  "reports": [
   {
+   "id": "2026-11-25T22:00:13Z-NFL",
+   "time": "2026-11-25T22:00:13Z",
+   "league": "NFL",
+   "kind": "preview",
+   "title": "★☆☆☆☆ \"Nothing to bet today, yet somehow I'm still anxious\" — Rich, Wednesday before Thanksgiving",
+   "text": "**★☆☆☆☆ Would not wager again. Zero bets, zero fun.**\n\nShowed up Wednesday expecting action. Got nothing. No real money from Rich, no AI-LOX picks live today. Like going to a steakhouse and being handed a glass of tap water and a napkin. One star. The model has one game on the board and it hasn't finished. Nothing is final and 0 of 0 picks are right, which is the only perfect record this app has ever had.\n\n**MY BETS:**\n- None today. Rich's wallet gets a day off, and so does his bad judgment. Enjoy it.\n\n**AI-LOX:**\n- Nothing today. The robot is out of the office, probably in a tryptophan coma it hasn't earned yet.\n\n**THE MODEL:**\n- 0 of 1 modeled games final. 0-0 against the spread, 0-0 on totals, average miss of 0.0 points. Unbeaten and untested. That's what happens when you never play anybody.\n\n**STILL TO COME:**\nThursday's turkey leftovers come with three AI-LOX picks, so loosen the belt.\n\n- Nebraska @ Iowa: Take Iowa -4.5. $25.00 to win $22.32. Noon EST kickoff, so Rich can lose money before the gravy sets. Iowa's offense has to score enough to cover, which is a hell of a thing to ask.\n- Minnesota @ Wisconsin: Take Wisconsin -7.5. $35.00 to win $32.41. Badgers need more than a field goal of daylight in a rivalry game. Good luck with that.\n- West Virginia @ Utah: Take the UNDER 68.5. $70.00 to win $62.50. The big stake of the bunch. It needs both offenses to stall like a Buick in January. Fingers crossed for punts.\n\nFinal verdict: today was a bust, the weekend is a loaded gun, and Rich is holding it. Would pre-gripe again.",
+   "style": "a one-star (or five-star) online review of the day"
+  },
+  {
    "id": "2026-11-24T04:30:47Z-NFL",
    "time": "2026-11-24T04:30:47Z",
    "league": "NFL",
@@ -432,6 +441,15 @@
    "kinds": [
     "preview",
     "final"
+   ]
+  },
+  "2026-11-25": {
+   "n": 1,
+   "last": "2026-11-25T22:00:13Z",
+   "fp": "|0",
+   "fpBets": "",
+   "kinds": [
+    "preview"
    ]
   }
  }
