@@ -2,6 +2,15 @@
  "_note": "Written automatically by the relay (and by Claude); newest first; the Bet Tracker Reports tab reads this.",
  "reports": [
   {
+   "id": "2026-11-26T22:31:43Z-NFL+CFB",
+   "time": "2026-11-26T22:31:43Z",
+   "league": "NFL+CFB",
+   "kind": "update",
+   "title": "Rich Cashed One Ticket and Now Thinks He's Warren Buffett, Folks: Everything Else Rides on Buffalo",
+   "text": "Ladies and gentlemen, give it up for Rich, a man who bets his rent money on turkey day and calls it tradition! Look at him, he's smiling. Chicago covered once and he thinks he's a genius. Sit down, Rich, you're +$18.30 on $94.09 staked. That's a tip jar, not a career.\n\n**MY BETS:**\n- Chicago -1.5: WON +$18.30. Chicago 39-35 Detroit, covered by 2.5. Two defenses showed up like Rich at a gym.\n- Dallas -8.5: $9.72 to win $8.31. Philly has 0 points to Dallas's 14 in the 2nd, covering by 5.5. Philly's offense is as dry as Rich's love life.\n- Buffalo -2.5: $24.64 to win $19.40. Kicks 8:20 PM EST. The biggest stake of the day on a team Rich hasn't seen play yet. Romantic. Stupid, but romantic.\n- 3-leg parlay: $19.97 to win $104.04. Chicago cashed, Dallas is winning, and Buffalo is the last leg. Rich is one Buffalo game from a payday.\n- 2-leg parlay: $20.00 to win $47.00. Chicago's done, so this is just Buffalo again. Rich put Buffalo on three tickets. That's not a strategy, that's a hostage situation.\n\n**AI-LOX:**\n- UNDER 45.5 KC/BUF: $130.00 to win $121.50, not started. $130 on an under, the most boring way to light money on fire.\n\n**THE MODEL:**\n1 of 4 games final, 0-1 on winners, 0-1 ATS, 0-1 on totals. Average miss: 7.0 points. The model had Chicago-Detroit 24-27 and got 39-35. Wrong on the winner, wrong on the total, wrong about life. Live, it has Philly 25, Dallas 26 while Philly sits on 0. Sure, buddy.\n\n**STILL TO COME:**\n- Buffalo tonight carries both parlays and the straight bet, and Rich's whole mood.\n- Friday: Iowa -3.5, Toledo/Ohio under 45.5, DEN/PIT under 36.5 ($95.00 to win $94.06), Wisconsin -7.5.\n- Saturday: LSU -14.5, Michigan State -3, Boise State/Colorado State under 76.5, Purdue +23.5, Hawai'i -13.5.\n\nThank you, I'm here all week, and so is Rich's bankroll, barely!",
+   "style": "a roast-battle comic tearing Rich apart in front of a rowdy crowd"
+  },
+  {
    "id": "2026-11-26T21:45:47Z-NFL+CFB",
    "time": "2026-11-26T21:45:47Z",
    "league": "NFL+CFB",
@@ -491,12 +500,13 @@
    ]
   },
   "2026-11-26": {
-   "n": 2,
-   "last": "2026-11-26T21:45:47Z",
+   "n": 3,
+   "last": "2026-11-26T22:31:43Z",
    "fp": "mine|NFL|401873081|spread|1795699869021|1W|1",
    "fpBets": "mine|NFL|401873081|spread|1795699869021|1W",
    "kinds": [
     "preview",
+    "update",
     "update"
    ]
   }
