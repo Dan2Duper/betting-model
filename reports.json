@@ -2,6 +2,15 @@
  "_note": "Written automatically by the relay (and by Claude); newest first; the Bet Tracker Reports tab reads this.",
  "reports": [
   {
+   "id": "2026-11-26T04:30:06Z-NFL",
+   "time": "2026-11-26T04:30:06Z",
+   "league": "NFL",
+   "kind": "update",
+   "title": "Session Notes: Rich Has $0 Riding Tonight and Is Coping by Staring at Green Bay Lose 26-13",
+   "text": "**MY BETS:**\n- Nothing. Rich, we've talked about this. You have no money on anything today, and I want you to sit with that feeling. Where do you feel it? In the wallet? Good. That's the only place it's safe.\n\n**AI-LOX:**\n- Nothing today either. Even the robot took a night off. Notice how you're not the only one avoiding commitment.\n\n**THE MODEL:**\nZero of one modeled games are final, so the model's record is 0-0 against the spread, 0-0 on totals, and 0 of 0 on winners. Unbeaten, and unproven. Let's not call that confidence, it's just paperwork.\n\n- Live now: Green Bay 13, Los Angeles 26, 0:27 left in the 4th. The model had it 21-26, so it's got the Rams side's number nailed and gave Green Bay eight points it was never going to see. Optimism is a hell of a drug, and the model is high as shit.\n\n**STILL TO COME:**\nNow, Rich, I notice you're already looking at tomorrow. That's avoidance, and also a pile of Unders.\n\n- KC @ BUF, 11/26, 8:20 PM EST: UNDER 46.5, $130.00 to win $117.12. Big boy stake. Big boy feelings.\n- Nebraska @ Iowa, 11/27, 12:00 PM EST: Iowa -4.5, $16.00 to win $14.29.\n- Toledo @ Ohio, 11/27, 12:00 PM EST: UNDER 45.5, $11.00 to win $10.00.\n- Buffalo @ Akron, 11/27, 12:00 PM EST: UNDER 48.5, $5.00 to win $4.35. Five bucks. That's not a bet, that's a tip for the sadness.\n- DEN @ PIT, 11/27, 3:00 PM EST: UNDER 36.5, $82.00 to win $78.10.\n- Minnesota @ Wisconsin, 11/27, 7:30 PM EST: Wisconsin -7.5, $16.00 to win $14.29.\n\nFour Unders, two favorites, and zero imagination. You don't have a strategy, you have a coping mechanism with a spreadsheet. Same time tomorrow. Bring turkey and your shame.",
+   "style": "a therapist gently (then not gently) unpacking the day"
+  },
+  {
    "id": "2026-11-26T04:29:42Z-NFL",
    "time": "2026-11-26T04:29:42Z",
    "league": "NFL",
@@ -453,12 +462,13 @@
    ]
   },
   "2026-11-25": {
-   "n": 2,
-   "last": "2026-11-26T04:29:42Z",
+   "n": 3,
+   "last": "2026-11-26T04:30:06Z",
    "fp": "|0",
    "fpBets": "",
    "kinds": [
     "preview",
+    "update",
     "update"
    ]
   }
