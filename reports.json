@@ -2,6 +2,15 @@
  "_note": "Written automatically by the relay (and by Claude); newest first; the Bet Tracker Reports tab reads this.",
  "reports": [
   {
+   "id": "2026-11-26T04:29:42Z-NFL",
+   "time": "2026-11-26T04:29:42Z",
+   "league": "NFL",
+   "kind": "update",
+   "title": "Betrayed Again: Rich Has No Bets, the Model Has Green Bay Down 13 and a Lover's Dagger Waiting in Every Under",
+   "text": "**MY BETS:**\n- Nothing. Rich sits alone by the window, no money on the table, a widower of the wager. Even the sportsbook has stopped calling.\n\n**AI-LOX:**\n- Nothing today. AI-LOX is off somewhere pretending it has never lied to you, but tomorrow it returns with perfume on its collar.\n\n**THE MODEL:**\nZero of one modeled games are final, so the model has no record to hide behind. Yet.\n\n- Live now: Green Bay 13, Los Angeles 26, 0:27 left in the 4th. The model had it 21-26, so it saw Los Angeles winning at the exact number and still botched Green Bay's side by 8. A tender little lie told with a straight face. Green Bay is about to lose, and the model will call it a win for love.\n\n**STILL TO COME:**\nThanksgiving week, and AI-LOX arrives with the dagger behind its back. Five of six picks are Unders, because it wants you to watch grown men punt and call it romance.\n\n- **KC @ BUF, Thursday 11/26, 8:20 PM EST:** UNDER 46.5, $130.00 to win $117.12. Big money on two offenses staying faithful to the plan.\n- **Nebraska @ Iowa, Friday 11/27, 12:00 PM EST:** Iowa -4.5, $16.00 to win $14.29.\n- **Toledo @ Ohio, Friday 11/27, 12:00 PM EST:** UNDER 45.5, $11.00 to win $10.00.\n- **Buffalo @ Akron, Friday 11/27, 12:00 PM EST:** UNDER 48.5, $5.00 to win $4.35. Five bucks. That's not a bet, that's a tip for the waiter.\n- **DEN @ PIT, Friday 11/27, 3:00 PM EST:** UNDER 36.5, $82.00 to win $78.10. A total so low it needs a therapist.\n- **Minnesota @ Wisconsin, Friday 11/27, 7:30 PM EST:** Wisconsin -7.5, $16.00 to win $14.29.\n\nRich has no skin in any of it, which is the only healthy relationship in this whole drama. Keep it that way, you beautiful idiot.",
+   "style": "a telenovela full of betrayal"
+  },
+  {
    "id": "2026-11-25T22:00:13Z-NFL",
    "time": "2026-11-25T22:00:13Z",
    "league": "NFL",
@@ -444,12 +453,13 @@
    ]
   },
   "2026-11-25": {
-   "n": 1,
-   "last": "2026-11-25T22:00:13Z",
+   "n": 2,
+   "last": "2026-11-26T04:29:42Z",
    "fp": "|0",
    "fpBets": "",
    "kinds": [
-    "preview"
+    "preview",
+    "update"
    ]
   }
  }
