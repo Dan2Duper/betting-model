@@ -2,6 +2,15 @@
  "_note": "Written automatically by the relay (and by Claude); newest first; the Bet Tracker Reports tab reads this.",
  "reports": [
   {
+   "id": "2026-11-26T21:45:47Z-NFL+CFB",
+   "time": "2026-11-26T21:45:47Z",
+   "league": "NFL+CFB",
+   "kind": "update",
+   "title": "Uncle Rich Corners You By the Turkey: Chicago Cashed, So Why Is Buffalo On Everything, Huh?",
+   "text": "**MY BETS:**\n\nSit down, sit DOWN, I'm not done. Rich is 1-0-0, up $18.30 on $94.09 staked, and he's insufferable about it.\n\n- Chicago -1.5 WON, 39-35 over Detroit, covering by 2.5. $19.76 to win $18.30, and that's the $18.30. A defense-free shitshow and I loved every second of it.\n- 3-leg parlay (CHI -1.5, DAL -8.5, BUF -2.5): $19.97 to win $104.04. One leg is in the bank. Two to go, and Dallas is one of them. Dallas! Pass the gravy.\n- 2-leg parlay (BUF -2.5 & CHI -1.5): $20.00 to win $47.00. Chicago did its job. Now it's Buffalo or nothing, kid.\n- Dallas -8.5: $9.72 to win $8.31 against Philly, 4:30 PM EST. Nine and a half bucks on the Cowboys. Your grandfather had better judgment and he's been dead since '09.\n- Buffalo -2.5: $24.64 to win $19.40 against KC, 8:20 PM EST. Rich is on Buffalo three different ways. That's not a bet, that's a hostage situation.\n\n**AI-LOX:**\n\n- UNDER 45.5 in KC @ BUF: $130.00 to win $119.27, paper money, 8:20 PM EST. A hundred and thirty bucks on Mahomes not scoring. I'll have another.\n\n**THE MODEL:**\n\nOne game final, and the model picked the winner in 0 of 1. It had Chicago 24, Detroit 27. Final was 39-35. It went 1-0 against the spread and 0-1 on totals, so it's right for the wrong reasons, like your cousin's whole marriage. Average miss: 7.0 points.\n\n**STILL TO COME:**\n\n- Dallas, then Buffalo tonight. Both parlays and two straight bets need them.\n- Friday: AI-LOX likes the UNDER 36.5 in DEN @ PIT for $95.00. Thirty-six and a half! Pure misery football.\n- Also Iowa -3.5, Wisconsin -7.5, LSU -14.5 and Purdue +23.5 against Indiana. Whatever, I'm getting more pie.",
+   "style": "a drunk uncle at Thanksgiving who will not shut up about these bets"
+  },
+  {
    "id": "2026-11-26T15:00:47Z-NFL+CFB",
    "time": "2026-11-26T15:00:47Z",
    "league": "NFL+CFB",
@@ -482,12 +491,13 @@
    ]
   },
   "2026-11-26": {
-   "n": 1,
-   "last": "2026-11-26T15:00:47Z",
-   "fp": "|0",
-   "fpBets": "",
+   "n": 2,
+   "last": "2026-11-26T21:45:47Z",
+   "fp": "mine|NFL|401873081|spread|1795699869021|1W|1",
+   "fpBets": "mine|NFL|401873081|spread|1795699869021|1W",
    "kinds": [
-    "preview"
+    "preview",
+    "update"
    ]
   }
  }
