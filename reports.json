@@ -2,6 +2,15 @@
  "_note": "Written automatically by the relay (and by Claude); newest first; the Bet Tracker Reports tab reads this.",
  "reports": [
   {
+   "id": "2026-11-26T15:00:47Z-NFL+CFB",
+   "time": "2026-11-26T15:00:47Z",
+   "league": "NFL+CFB",
+   "kind": "preview",
+   "title": "Honest Rich's Pre-Owned Picks: Buffalo Is On Four Tickets, Runs Great, Only Dropped Once, Don't Look Under the Hood",
+   "text": "**MY BETS:**\n\nRich! Buddy! Come on in. Pull up a folding chair. Today's inventory is $74.33 across 4 tickets, and every one is a favorite. Nothing has kicked off, so everything is still shiny.\n\n- 3-leg parlay, CHI -1.5 & DAL -8.5 & BUF -2.5: $19.97 to win $104.04. It's the fully loaded model. It needs three favorites to cover, and I'm sure none of them will do something stupid. Zero miles on it, pal.\n- 2-leg parlay, BUF -2.5 & CHI -1.5: $20.00 to win $47.00. It's the same car with the heated seats ripped out. It needs Buffalo and Chicago, and it's one fewer thing to break.\n- DAL -8.5 vs PHI: $9.72 to win $8.31, kicks 4:30 PM EST. Nine bucks to win eight. I wouldn't call that a bet. It's a parking-lot handshake. Dallas has to win by 9 or more, and that's a lot to ask of Dallas.\n- BUF -2.5 vs KC: $24.64 to win $19.40, kicks 8:20 PM EST. It's your biggest straight bet, and Buffalo is also in both parlays. That's three tickets on one team, Rich. We call that a \"single point of failure,\" and I'll throw in floor mats.\n\n**AI-LOX:**\n\n- UNDER 45.5, KC @ BUF: $130.00 to win $118.18, 8:20 PM EST. It's the model's flagship. It's a hundred-thirty-dollar paper bet on two offenses sitting on their hands. It needs a field-goal slog, and it sits nicely next to your Buffalo bet. Mostly.\n\n**THE MODEL:**\n\n0 of 4 modeled games are final. It's 0-0 on spreads and 0-0 on totals. That's a perfect record, and it's the best the model has ever looked. Enjoy it.\n\n**STILL TO COME:**\n\nThe lot keeps going after tonight:\n- Friday: Iowa -4.5, Toledo/Ohio UNDER 45.5, DEN/PIT UNDER 36.5 for $81.00 and Wisconsin -8.5.\n- Saturday: LSU -14.5, Michigan State -3, Boise State/Colorado State UNDER 76.5, Purdue +23.5 and Hawai'i -13.5.\n\nSign here, Rich. I can't hold this deal past kickoff.",
+   "style": "a used-car salesman trying to sell Rich on tomorrow's picks"
+  },
+  {
    "id": "2026-11-26T04:30:06Z-NFL",
    "time": "2026-11-26T04:30:06Z",
    "league": "NFL",
@@ -470,6 +479,15 @@
     "preview",
     "update",
     "update"
+   ]
+  },
+  "2026-11-26": {
+   "n": 1,
+   "last": "2026-11-26T15:00:47Z",
+   "fp": "|0",
+   "fpBets": "",
+   "kinds": [
+    "preview"
    ]
   }
  }
