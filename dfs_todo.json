@@ -1,5 +1,5 @@
 {
- "built": "2026-11-26T22:36:46.443089+00:00",
+ "built": "2026-11-27T22:21:03.995057+00:00",
  "slates": [
   {
    "sport": "NFL",
@@ -54,12 +54,12 @@
      "cash": false
     },
     {
-     "id": 198126912,
-     "name": "NFL $150K Red Zone [Single Entry]",
-     "fee": 50,
+     "id": 198126888,
+     "name": "NFL $150K mini-MAX [150 Entry Max]",
+     "fee": 0.5,
      "prize": 150000.0,
-     "size": 3409,
-     "per_user": 1,
+     "size": 356718,
+     "per_user": 150,
      "cash": false
     },
     {
@@ -81,102 +81,12 @@
      "cash": true
     },
     {
-     "id": 198126937,
-     "name": "NFL Single Entry $5 Double Up",
-     "fee": 5,
-     "prize": 15000.0,
+     "id": 198126933,
+     "name": "NFL GIANT $10 Double Up [Single Entry]",
+     "fee": 10,
+     "prize": 30000.0,
      "size": 3448,
      "per_user": 1,
-     "cash": true
-    }
-   ]
-  },
-  {
-   "sport": "NFL",
-   "kind": "classic",
-   "dg": 157065,
-   "label": "Thu-Fri Thu 8:20PM",
-   "url": "https://api.draftkings.com/draftgroups/v1/draftgroups/157065/draftables",
-   "contests": [
-    {
-     "id": 198130253,
-     "name": "NFL $15K Thu-Fri Special [$5K to 1st] (Thu-Fri)",
-     "fee": 15,
-     "prize": 15000.0,
-     "size": 1176,
-     "per_user": 35,
-     "cash": false
-    },
-    {
-     "id": 198130035,
-     "name": "NFL $5K Huddle [Single Entry] (Thu-Fri)",
-     "fee": 5,
-     "prize": 5000.0,
-     "size": 1189,
-     "per_user": 1,
-     "cash": false
-    },
-    {
-     "id": 198130025,
-     "name": "NFL $3K Hot Route [Single Entry] (Thu-Fri)",
-     "fee": 100,
-     "prize": 3000.0,
-     "size": 33,
-     "per_user": 1,
-     "cash": false
-    },
-    {
-     "id": 198130034,
-     "name": "NFL $3K Fair Catch [Single Entry] (Thu-Fri)",
-     "fee": 12,
-     "prize": 3000.0,
-     "size": 294,
-     "per_user": 1,
-     "cash": false
-    },
-    {
-     "id": 198130030,
-     "name": "NFL $2.5K First Down (Thu-Fri)",
-     "fee": 1,
-     "prize": 2500.0,
-     "size": 2972,
-     "per_user": 20,
-     "cash": false
-    },
-    {
-     "id": 198130036,
-     "name": "NFL $2K Pylon [Single Entry] (Thu-Fri)",
-     "fee": 3,
-     "prize": 2000.0,
-     "size": 792,
-     "per_user": 1,
-     "cash": false
-    },
-    {
-     "id": 198130044,
-     "name": "NFL $2 Double Up (Thu-Fri)",
-     "fee": 2,
-     "prize": 400.0,
-     "size": 229,
-     "per_user": 6,
-     "cash": true
-    },
-    {
-     "id": 198130043,
-     "name": "NFL Single Entry $5 Double Up (Thu-Fri)",
-     "fee": 5,
-     "prize": 500.0,
-     "size": 114,
-     "per_user": 1,
-     "cash": true
-    },
-    {
-     "id": 198130042,
-     "name": "NFL $5 Double Up (Thu-Fri)",
-     "fee": 5,
-     "prize": 500.0,
-     "size": 114,
-     "per_user": 3,
      "cash": true
     }
    ]
@@ -216,21 +126,21 @@
      "cash": false
     },
     {
-     "id": 198177091,
-     "name": "NFL $30K Huddle [Single Entry] (Early Only)",
-     "fee": 5,
-     "prize": 30000.0,
-     "size": 7134,
-     "per_user": 1,
-     "cash": false
-    },
-    {
      "id": 198177123,
      "name": "NFL $30K Bootleg [$10K to 1st] (Early Only)",
      "fee": 33,
      "prize": 30000.0,
      "size": 1060,
      "per_user": 31,
+     "cash": false
+    },
+    {
+     "id": 198177091,
+     "name": "NFL $30K Huddle [Single Entry] (Early Only)",
+     "fee": 5,
+     "prize": 30000.0,
+     "size": 7134,
+     "per_user": 1,
      "cash": false
     },
     {
@@ -297,21 +207,21 @@
      "cash": false
     },
     {
-     "id": 198177138,
-     "name": "NFL $3K Fair Catch [Single Entry] (Sun-Mon)",
-     "fee": 12,
-     "prize": 3000.0,
-     "size": 294,
-     "per_user": 1,
-     "cash": false
-    },
-    {
      "id": 198177132,
      "name": "NFL $3K Flea Flicker [$1K to 1st] (Sun-Mon)",
      "fee": 5,
      "prize": 3000.0,
      "size": 713,
      "per_user": 21,
+     "cash": false
+    },
+    {
+     "id": 198177138,
+     "name": "NFL $3K Fair Catch [Single Entry] (Sun-Mon)",
+     "fee": 12,
+     "prize": 3000.0,
+     "size": 294,
+     "per_user": 1,
      "cash": false
     },
     {
@@ -724,186 +634,6 @@
   {
    "sport": "NFL",
    "kind": "showdown",
-   "dg": 157075,
-   "label": "KC @ BUF Thu 8:20PM",
-   "url": "https://api.draftkings.com/draftgroups/v1/draftgroups/157075/draftables",
-   "contests": [
-    {
-     "id": 198130093,
-     "name": "NFL Showdown $800K Thanksgiving Night Showdown [$200K to 1st] (KC @ BUF)",
-     "fee": 25,
-     "prize": 800000.0,
-     "size": 37647,
-     "per_user": 150,
-     "cash": false
-    },
-    {
-     "id": 198130095,
-     "name": "NFL Showdown $100K Play-Action [20 Entry Max] (KC @ BUF)",
-     "fee": 3,
-     "prize": 100000.0,
-     "size": 39635,
-     "per_user": 20,
-     "cash": false
-    },
-    {
-     "id": 198130113,
-     "name": "NFL Showdown $40K Huddle [Single Entry] (KC @ BUF)",
-     "fee": 5,
-     "prize": 40000.0,
-     "size": 9512,
-     "per_user": 1,
-     "cash": false
-    },
-    {
-     "id": 198130107,
-     "name": "NFL Showdown $40K Spy [$10K to 1st, Single Entry] (KC @ BUF)",
-     "fee": 100,
-     "prize": 40000.0,
-     "size": 444,
-     "per_user": 1,
-     "cash": false
-    },
-    {
-     "id": 198130092,
-     "name": "NFL Showdown $40K Bootleg [$10K to 1st]  (KC @ BUF)",
-     "fee": 33,
-     "prize": 40000.0,
-     "size": 1413,
-     "per_user": 42,
-     "cash": false
-    },
-    {
-     "id": 198130097,
-     "name": "NFL Showdown $30K First Down (KC @ BUF)",
-     "fee": 1,
-     "prize": 30000.0,
-     "size": 35671,
-     "per_user": 20,
-     "cash": false
-    },
-    {
-     "id": 198130133,
-     "name": "NFL Showdown $2 Double Up (KC @ BUF)",
-     "fee": 2,
-     "prize": 2000.0,
-     "size": 1149,
-     "per_user": 20,
-     "cash": true
-    },
-    {
-     "id": 198130131,
-     "name": "NFL Showdown Single Entry $5 Double Up (KC @ BUF)",
-     "fee": 5,
-     "prize": 3000.0,
-     "size": 689,
-     "per_user": 1,
-     "cash": true
-    },
-    {
-     "id": 198130130,
-     "name": "NFL Showdown $5 Double Up (KC @ BUF)",
-     "fee": 5,
-     "prize": 3000.0,
-     "size": 689,
-     "per_user": 20,
-     "cash": true
-    }
-   ]
-  },
-  {
-   "sport": "NFL",
-   "kind": "showdown",
-   "dg": 157076,
-   "label": "DEN @ PIT Fri 3:00PM",
-   "url": "https://api.draftkings.com/draftgroups/v1/draftgroups/157076/draftables",
-   "contests": [
-    {
-     "id": 198174394,
-     "name": "NFL Showdown $1M Black Friday Showdown [$250K to 1st] (DEN @ PIT)",
-     "fee": 20,
-     "prize": 1000000.0,
-     "size": 58823,
-     "per_user": 150,
-     "cash": false
-    },
-    {
-     "id": 198174396,
-     "name": "NFL Showdown $200K Play-Action [20 Entry Max] (DEN @ PIT)",
-     "fee": 3,
-     "prize": 200000.0,
-     "size": 79270,
-     "per_user": 20,
-     "cash": false
-    },
-    {
-     "id": 198174395,
-     "name": "NFL Showdown $150K Flea Flicker [$25K to 1st] (DEN @ PIT)",
-     "fee": 5,
-     "prize": 150000.0,
-     "size": 35671,
-     "per_user": 150,
-     "cash": false
-    },
-    {
-     "id": 198174410,
-     "name": "NFL Showdown $75K Spy [$15K to 1st, Single Entry] (DEN @ PIT)",
-     "fee": 100,
-     "prize": 75000.0,
-     "size": 833,
-     "per_user": 1,
-     "cash": false
-    },
-    {
-     "id": 198174393,
-     "name": "NFL Showdown $60K Bootleg [$20K to 1st] (DEN @ PIT)",
-     "fee": 33,
-     "prize": 60000.0,
-     "size": 2120,
-     "per_user": 63,
-     "cash": false
-    },
-    {
-     "id": 198174399,
-     "name": "NFL Showdown $60K mini-MAX [150 Entry Max] (DEN @ PIT)",
-     "fee": 0.5,
-     "prize": 60000.0,
-     "size": 142687,
-     "per_user": 150,
-     "cash": false
-    },
-    {
-     "id": 198174438,
-     "name": "NFL Showdown $2 Double Up (DEN @ PIT)",
-     "fee": 2,
-     "prize": 2000.0,
-     "size": 1149,
-     "per_user": 20,
-     "cash": true
-    },
-    {
-     "id": 198174435,
-     "name": "NFL Showdown $5 Double Up (DEN @ PIT)",
-     "fee": 5,
-     "prize": 3000.0,
-     "size": 689,
-     "per_user": 20,
-     "cash": true
-    },
-    {
-     "id": 198174436,
-     "name": "NFL Showdown Single Entry $5 Double Up (DEN @ PIT)",
-     "fee": 5,
-     "prize": 2000.0,
-     "size": 459,
-     "per_user": 1,
-     "cash": true
-    }
-   ]
-  },
-  {
-   "sport": "NFL",
-   "kind": "showdown",
    "dg": 157080,
    "label": "NO @ CIN Sun 1:00PM",
    "url": "https://api.draftkings.com/draftgroups/v1/draftgroups/157080/draftables",
@@ -1287,21 +1017,21 @@
      "cash": false
     },
     {
-     "id": 198170473,
-     "name": "NFL Showdown $1K Flea Flicker (NYG @ IND)",
-     "fee": 5,
-     "prize": 1000.0,
-     "size": 237,
-     "per_user": 7,
-     "cash": false
-    },
-    {
      "id": 198170474,
      "name": "NFL Showdown $1K Play-Action (NYG @ IND)",
      "fee": 3,
      "prize": 1000.0,
      "size": 396,
      "per_user": 11,
+     "cash": false
+    },
+    {
+     "id": 198170473,
+     "name": "NFL Showdown $1K Flea Flicker (NYG @ IND)",
+     "fee": 5,
+     "prize": 1000.0,
+     "size": 237,
+     "per_user": 7,
      "cash": false
     },
     {
@@ -1485,21 +1215,21 @@
      "cash": false
     },
     {
-     "id": 198219794,
-     "name": "NFL Showdown $1K Spy [Single Entry] (NE @ LAC)",
-     "fee": 100,
-     "prize": 1000.0,
-     "size": 11,
-     "per_user": 1,
-     "cash": false
-    },
-    {
      "id": 198219799,
      "name": "NFL Showdown $1K First Down [20 Entry Max] (NE @ LAC)",
      "fee": 1,
      "prize": 1000.0,
      "size": 1189,
      "per_user": 20,
+     "cash": false
+    },
+    {
+     "id": 198219794,
+     "name": "NFL Showdown $1K Spy [Single Entry] (NE @ LAC)",
+     "fee": 100,
+     "prize": 1000.0,
+     "size": 11,
+     "per_user": 1,
      "cash": false
     },
     {
