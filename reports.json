@@ -2,6 +2,15 @@
  "_note": "Written automatically by the relay (and by Claude); newest first; the Bet Tracker Reports tab reads this.",
  "reports": [
   {
+   "id": "2026-11-27T04:30:47Z-NFL+CFB",
+   "time": "2026-11-27T04:30:47Z",
+   "league": "NFL+CFB",
+   "kind": "final",
+   "title": "Wake Up: Dallas Was the One Thread Sabotaging Your Parlay, and Buffalo Cashed by 0.5 Because \"They\" Wanted It",
+   "text": "Pull up a chair. I've got the corkboard out, and the red string is already tangled around a Thanksgiving turkey. Finals are in, and nothing here is a coincidence.\n\n**MY BETS:** Settled 3-2-0, **+$55.01** on $94.09 staked. Look at the pins.\n\n- LOST -$19.97: the 3-leg parlay. CHI and BUF both covered. DAL -8.5 lost to Philadelphia 39-38, missing by 9.5. A 104-dollar dream died because Dallas is a front for something. I'm connecting it.\n- WON +$47.00: BUF -2.5 & CHI -1.5. The same two legs, minus the Dallas poison. Draw that string yourself.\n- WON +$18.30: Chicago 39-35 Detroit, covering by 2.5. A shootout, and the defenses were obviously paid to stay home.\n- LOST -$9.72: Dallas -8.5. They lost by one point and missed the number by 9.5. Dallas gave up 39 to Philadelphia, and the books knew it.\n- WON +$19.40: Buffalo 13, Kansas City 10, covering by 0.5. A half-point. Someone up there likes you, or someone is setting you up. I'm not ruling out either.\n\n**AI-LOX:** 1-0-0, **+$121.50** on $130.00 staked.\n\n- WON +$121.50: UNDER 45.5 in KC-BUF. The game finished 23 total points, beating the number by 22.5. The model finally pointed at a real thing, and I don't trust it one bit.\n\n**THE MODEL:** It picked 2 of 4 winners, went 1-2 against the spread and 2-2 on totals. The average miss was 4.2 points. It had KC-BUF at 20-23, which is close. It had TCU 27-48 Texas Tech at 15-28. That's a fucking weather balloon, not a prediction.\n\n**STILL TO COME:** Black Friday is stacked with AI-LOX paper picks.\n\n- Iowa -3.5 ($19.00), Toledo/Ohio UNDER 45.5 ($5.00)\n- DEN/PIT UNDER 36.5 ($95.00), Wisconsin -7.5 ($11.00)\n- LSU -14.5 ($26.00), Michigan State -3 ($26.00)\n- Boise/Colorado State UNDER 76.5 ($38.00), Purdue +23.5 ($19.00)\n- Hawai'i -13.5 ($21.00)\n\nBank the profit, Rich. The string only goes so far.",
+   "style": "a conspiracy theorist with a corkboard and red string"
+  },
+  {
    "id": "2026-11-27T01:45:47Z-NFL+CFB",
    "time": "2026-11-27T01:45:47Z",
    "league": "NFL+CFB",
@@ -509,15 +518,16 @@
    ]
   },
   "2026-11-26": {
-   "n": 4,
-   "last": "2026-11-27T01:45:47Z",
-   "fp": "mine|NFL|401873080|spread|1795699777299|0L,mine|NFL|401873081+401873080+401873082|parlay|1795699785739|3L,mine|NFL|401873081|spread|1795699869021|1W|2",
-   "fpBets": "mine|NFL|401873080|spread|1795699777299|0L,mine|NFL|401873081+401873080+401873082|parlay|1795699785739|3L,mine|NFL|401873081|spread|1795699869021|1W",
+   "n": 5,
+   "last": "2026-11-27T04:30:47Z",
+   "fp": "2026-11-26|2026_12_KC_BUF|nfl_wind_under_15plusW,mine|NFL|401873080|spread|1795699777299|0L,mine|NFL|401873081+401873080+401873082|parlay|1795699785739|3L,mine|NFL|401873081|spread|1795699869021|1W,mine|NFL|401873082+401873081|parlay|1795699790087|4W,mine|NFL|401873082|spread|1795699779647|1W|4",
+   "fpBets": "2026-11-26|2026_12_KC_BUF|nfl_wind_under_15plusW,mine|NFL|401873080|spread|1795699777299|0L,mine|NFL|401873081+401873080+401873082|parlay|1795699785739|3L,mine|NFL|401873081|spread|1795699869021|1W,mine|NFL|401873082+401873081|parlay|1795699790087|4W,mine|NFL|401873082|spread|1795699779647|1W",
    "kinds": [
     "preview",
     "update",
     "update",
-    "update"
+    "update",
+    "final"
    ]
   }
  }
