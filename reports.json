@@ -2,6 +2,15 @@
  "_note": "Written automatically by the relay (and by Claude); newest first; the Bet Tracker Reports tab reads this.",
  "reports": [
   {
+   "id": "2026-11-27T15:00:47Z-NFL+CFB",
+   "time": "2026-11-27T15:00:47Z",
+   "league": "NFL+CFB",
+   "kind": "preview",
+   "title": "The Case of the Missing Money: AI-LOX Wants $95 on a 36.5 Under, and Nobody's Walking Away Clean",
+   "text": "It was Black Friday eve, and the rain tasted like cheap bourbon. Rich had no bets today. Smartest thing he's done all year, and he probably tripped into it. The model had other ideas, the dumb bastard.\n\n**AI-LOX:**\nFour paper tickets, $130.00 staked, nothing settled, nobody dead yet.\n\n- Iowa -3.5 vs Nebraska, $19.00 to win $17.27, 12:08 PM EST. Needs Iowa by 4 or more. Hawkeyes scoring on offense is a rumor in this town.\n- UNDER 45.5 Toledo @ Ohio, $5.00 to win $4.35, 12:00 PM EST. Needs 45 or fewer. Five bucks. Even the model is scared of this one.\n- UNDER 36.5 DEN @ PIT, $95.00 to win $94.06, 3:00 PM EST. Needs 36 or fewer. Ninety-five bucks on two offenses that run like a stolen Buick. One garbage-time field goal and the whole alley gets bloody.\n- Wisconsin -7.5 vs Minnesota, $11.00 to win $9.57, 7:30 PM EST. Needs Wisconsin by 8 or more, against a rival that loves ruining nights like this.\n\n**THE MODEL:**\n0 of 14 modeled games final. 0-0 on winners, spread and totals. Average miss: 0.0 points. A spotless record, same as every guy who hasn't done the job yet.\n\n**STILL TO COME:**\nThe trail doesn't go cold. It goes through the weekend.\n\n- LSU -14.5 @ Arkansas, $26.00 to win $24.76, 11/28 12:45 PM EST\n- Michigan State -3 @ Rutgers, $26.00 to win $24.76, 11/28 4:15 PM EST\n- UNDER 76.5 Boise State @ Colorado State, $38.00 to win $35.19, 11/28 6:00 PM EST\n- Purdue +23.5 @ Indiana, $19.00 to win $16.96, 11/28 7:00 PM EST\n- Hawai'i -13.5 vs Sacramento State, $21.00 to win $18.75, 11/28 11:00 PM EST\n- UNDER 43.5 SEA @ SF, $79.00 to win $73.83, 11/29 4:25 PM EST\n- UNDER 40.5 LV @ CLE, $51.00 to win $43.59, 11/29 8:20 PM EST\n\nSeven more tickets in the dark. Somebody's getting fleeced. Pour me another.",
+   "style": "a hard-boiled 1940s noir detective working the case of the missing money"
+  },
+  {
    "id": "2026-11-27T04:30:47Z-NFL+CFB",
    "time": "2026-11-27T04:30:47Z",
    "league": "NFL+CFB",
@@ -528,6 +537,15 @@
     "update",
     "update",
     "final"
+   ]
+  },
+  "2026-11-27": {
+   "n": 1,
+   "last": "2026-11-27T15:00:47Z",
+   "fp": "|0",
+   "fpBets": "",
+   "kinds": [
+    "preview"
    ]
   }
  }
