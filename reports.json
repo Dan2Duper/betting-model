@@ -2,6 +2,15 @@
  "_note": "Written automatically by the relay (and by Claude); newest first; the Bet Tracker Reports tab reads this.",
  "reports": [
   {
+   "id": "2026-11-27T20:30:47Z-NFL+CFB",
+   "time": "2026-11-27T20:30:47Z",
+   "league": "NFL+CFB",
+   "kind": "update",
+   "title": "Planet Earth: Rich's Bankroll Limps Across the Savanna While Toledo and Ohio Circle the Under",
+   "text": "**MY BETS:**\n- Nothing. Rich has no real money out today. Remarkable. The beast is resting, or simply too broke to hunt.\n\n**AI-LOX:**\nHere we observe the AI-LOX in its natural habitat: on paper, safe, and still capable of bleeding. Settled record: 1-0-0, net +$17.27 on $130.00 staked.\n\n- Iowa -3.5 over Nebraska: WON +$17.27. Nebraska lost 7-31, beating the number by 20.5. A slaughter. Nebraska was not so much hunted as fed to the pride.\n- Toledo/Ohio UNDER 45.5: LOSING, $5.00 to win $4.35. It's 31-31 with 0:44 left in the 4th. This lamb is already in the jaws. Only a miracle, or two kneel-downs, can save it.\n- Denver/Pittsburgh UNDER 36.5: WINNING, $95.00 to win $94.06. It's Denver 0-7 Pittsburgh with 4:38 in the 1st. The pace is 41 against 36.5, which is not comfortable. Ninety-five dollars on a first quarter. Magnificent, and stupid.\n- Wisconsin -7.5: PENDING, $11.00 to win $9.57. Kickoff 7:30 PM EST.\n\n**THE MODEL:**\n3 of 14 modeled games are final. It has picked 3 of 3 winners and gone 3-0 against the spread, with 2-1 on totals. The average miss on the margin is 7.8 points.\n\nClosest call: Mississippi State 17-41 Ole Miss (model had 19-39). Worst miss: Nebraska 7-31 Iowa (model had 14-24), though it cashed anyway. Even a blind hyena finds a carcass.\n\nStill alive: Tulsa 22-28 UTSA, 1:56 in the 4th. Toledo 31-31 Ohio, 0:44 in the 4th. App State 0-10 South Alabama, 2:46 in the 1st.\n\n**STILL TO COME:**\nThe herd gathers on the horizon:\n- LSU -14.5 at Arkansas: $26.00 to win $24.76\n- Michigan State -3 at Rutgers: $26.00 to win $24.76\n- Boise State/Colorado State UNDER 76.5: $38.00 to win $35.19\n- Purdue +23.5 at Indiana: $19.00 to win $16.96\n- Hawai'i -13.5 over Sacramento State: $21.00 to win $18.75\n- SEA/SF UNDER 43.5: $79.00 to win $73.83\n- LV/CLE UNDER 40.5: $51.00 to win $43.59\n\nSoon, the dust settles. Someone always gets eaten.",
+   "style": "a nature documentary narrator watching Rich's bankroll get hunted on the savanna"
+  },
+  {
    "id": "2026-11-27T15:00:47Z-NFL+CFB",
    "time": "2026-11-27T15:00:47Z",
    "league": "NFL+CFB",
@@ -540,12 +549,13 @@
    ]
   },
   "2026-11-27": {
-   "n": 1,
-   "last": "2026-11-27T15:00:47Z",
-   "fp": "|0",
-   "fpBets": "",
+   "n": 2,
+   "last": "2026-11-27T20:30:47Z",
+   "fp": "2026-11-27|401858536|cfb_letdownW|3",
+   "fpBets": "2026-11-27|401858536|cfb_letdownW",
    "kinds": [
-    "preview"
+    "preview",
+    "update"
    ]
   }
  }
