@@ -2,6 +2,15 @@
  "_note": "Written automatically by the relay (and by Claude); newest first; the Bet Tracker Reports tab reads this.",
  "reports": [
   {
+   "id": "2026-11-27T23:00:47Z-NFL+CFB",
+   "time": "2026-11-27T23:00:47Z",
+   "league": "NFL+CFB",
+   "kind": "update",
+   "title": "Dear Sportsbook: It's Not You, It's the $106.33 You Let Paper Money Take From You",
+   "text": "Dear Sportsbook,\n\nWe need to talk. Rich has no real money on the board today, so technically we're on a break. But AI-LOX keeps texting you at 2 a.m. with paper bets, and it's going great, which is annoying.\n\n**AI-LOX:** Settled 2-1-0, net +$106.33. Here's what you've been up to behind my back.\n\n- WON +$17.27: Iowa -3.5. Nebraska lost 7-31, so Iowa covered by 20.5. Nebraska played like they were trying to get dumped.\n- LOST -$5.00: Under 45.5 in Toledo-Ohio. Toledo won 34-31, and the under missed by 19.5. A $5.00 loss. You didn't even make me feel something.\n- WON +$94.06: Under 36.5, Denver-Pittsburgh. Final: Denver 5, Pittsburgh 27. The under cashed by 4.5, and Denver's offense can't even hold up its end of a relationship.\n\n**THE MODEL:** 6 of 14 games are final. It picked 5 winners in 6 games and went 5-0 against the spread. Totals are 3-3, and the average miss on margin is 8.1 points. Its worst miss was Denver-Pittsburgh (it had 22-20, the real score was 5-27). It's still getting more right than I do.\n\nLive right now: Florida leads Florida State 17-10 in the 3rd. North Dakota State leads San José State 31-14. Temple trails Memphis 14-31 early in the 4th, and the model had Memphis winning 45-19. Hey, at least it's trying.\n\n**STILL TO COME:**\n\n- Wisconsin -7.5 vs Minnesota, tonight at 7:30 PM EST. $11.00 to win $9.57. Small money, like your apologies.\n- LSU -14.5 at Arkansas, Saturday. $26.00 to win $24.76.\n- Purdue +23.5 at Indiana. $19.00 to win $16.96. Purdue is my emotional support dog.\n- Under 43.5 in SEA-SF on Sunday. $79.00 to win $73.83. This is the big one. Don't fuck it up.\n\nI'm not leaving you. I just want to see how this plays out first.\n\nYours, barely,\nRich",
+   "style": "a breakup letter to the sportsbook (or from it)"
+  },
+  {
    "id": "2026-11-27T20:30:47Z-NFL+CFB",
    "time": "2026-11-27T20:30:47Z",
    "league": "NFL+CFB",
@@ -549,12 +558,13 @@
    ]
   },
   "2026-11-27": {
-   "n": 2,
-   "last": "2026-11-27T20:30:47Z",
-   "fp": "2026-11-27|401858536|cfb_letdownW|3",
-   "fpBets": "2026-11-27|401858536|cfb_letdownW",
+   "n": 3,
+   "last": "2026-11-27T23:00:47Z",
+   "fp": "2026-11-27|2026_12_DEN_PIT|nfl_wind_under_10_14W,2026-11-27|401858536|cfb_letdownW,2026-11-27|401866473|cfb_wind_underL|6",
+   "fpBets": "2026-11-27|2026_12_DEN_PIT|nfl_wind_under_10_14W,2026-11-27|401858536|cfb_letdownW,2026-11-27|401866473|cfb_wind_underL",
    "kinds": [
     "preview",
+    "update",
     "update"
    ]
   }
