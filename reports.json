@@ -2,6 +2,15 @@
  "_note": "Written automatically by the relay (and by Claude); newest first; the Bet Tracker Reports tab reads this.",
  "reports": [
   {
+   "id": "2026-11-28T04:00:47Z-NFL+CFB",
+   "time": "2026-11-28T04:00:47Z",
+   "league": "NFL+CFB",
+   "kind": "update",
+   "title": "Session Notes: Rich Bet Nothing, the Model Cashed +$115.90, and We Need to Talk About Why That Stings",
+   "text": "**AI-LOX:** Sit down, Rich. Breathe. Your real money did nothing today, and the paper money went 3-1-0 for +$115.90 on $130.00 staked. Notice the feeling in your chest. That's not pride. That's FOMO with a mortgage.\n\n- Iowa -3.5: WON +$17.27. Nebraska lost 7-31, covering nothing, including their dignity.\n- Toledo/Ohio UNDER 45.5: LOST -$5.00. Toledo 34-31 Ohio. Two defenses went to a therapist and neither one showed up.\n- DEN/PIT UNDER 36.5: WON +$94.06. Denver scored 5. Five. Pittsburgh won 27-5 and nobody had fun, which was the assignment.\n- Wisconsin -7.5: WON +$9.57. Minnesota lost 5-28. Let's hold space for their fans. Briefly.\n\n**THE MODEL:** It picked 10 of 12 winners, went 6-5 against the spread and 7-4 on totals. That's a coin flip with a lanyard. Average miss: 11.1 points.\n\n- Closest call: Toledo 34-31 Ohio (model had 25-22). Even a stopped clock, etc.\n- Worst miss: Temple 35-31 Memphis (model had 19-45). It saw a blowout and got a thriller. Denial is a river, buddy.\n- Live: Texas 16-6 Texas A&M, 1:14 left in the 4th (model 27-11). West Virginia 7-38 Utah at the half (model 21-47). The model is already blaming West Virginia's mother's basement. (Just kidding. Basements only.)\n\n**STILL TO COME:** Tomorrow's homework. We're not avoiding it.\n\n- LSU -14.5 at Arkansas, $26.00 to win $24.76.\n- Michigan State -3 at Rutgers, $26.00 to win $24.76.\n- UNDER 76.5 Boise State/Colorado State, $38.00 to win $35.19.\n- Purdue +23.5 at Indiana, $19.00 to win $16.96.\n- Hawai'i -13.5 vs Sacramento State, $21.00 to win $18.75.\n- UNDER 43.5 SEA/SF Sunday, $79.00 to win $73.83.\n- UNDER 40.5 LV/CLE Sunday night, $51.00 to win $43.59.\n\nOur time is up. Same time tomorrow. Try not to touch the Purdue line.",
+   "style": "a therapist gently (then not gently) unpacking the day"
+  },
+  {
    "id": "2026-11-28T02:00:47Z-NFL+CFB",
    "time": "2026-11-28T02:00:47Z",
    "league": "NFL+CFB",
@@ -567,12 +576,13 @@
    ]
   },
   "2026-11-27": {
-   "n": 4,
-   "last": "2026-11-28T02:00:47Z",
-   "fp": "2026-11-27|2026_12_DEN_PIT|nfl_wind_under_10_14W,2026-11-27|401858536|cfb_letdownW,2026-11-27|401866473|cfb_wind_underL|11",
-   "fpBets": "2026-11-27|2026_12_DEN_PIT|nfl_wind_under_10_14W,2026-11-27|401858536|cfb_letdownW,2026-11-27|401866473|cfb_wind_underL",
+   "n": 5,
+   "last": "2026-11-28T04:00:47Z",
+   "fp": "2026-11-27|2026_12_DEN_PIT|nfl_wind_under_10_14W,2026-11-27|401858536|cfb_letdownW,2026-11-27|401858544|cfb_letdownW,2026-11-27|401866473|cfb_wind_underL|12",
+   "fpBets": "2026-11-27|2026_12_DEN_PIT|nfl_wind_under_10_14W,2026-11-27|401858536|cfb_letdownW,2026-11-27|401858544|cfb_letdownW,2026-11-27|401866473|cfb_wind_underL",
    "kinds": [
     "preview",
+    "update",
     "update",
     "update",
     "update"
