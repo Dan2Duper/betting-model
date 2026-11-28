@@ -2,6 +2,15 @@
  "_note": "Written automatically by the relay (and by Claude); newest first; the Bet Tracker Reports tab reads this.",
  "reports": [
   {
+   "id": "2026-11-28T05:45:47Z-NFL+CFB",
+   "time": "2026-11-28T05:45:47Z",
+   "league": "NFL+CFB",
+   "kind": "final",
+   "title": "Chef Rich Bet Nothing: AI-LOX Plates +$115.90 and Pittsburgh Serves Denver Raw",
+   "text": "**MY BETS:**\n- Nothing. Rich brought an empty plate to the final round and wants credit for \"presentation.\" Get out of my kitchen.\n\n**AI-LOX:**\nSettled 3-1-0, net +$115.90 on $130.00 staked. Fuck me, it's edible.\n\n- WON +$17.27: Iowa -3.5. Nebraska lost 7-31, a raw chicken served to a blind man. Beat the number by 20.5. Nebraska, you are a gluten-free sadness.\n- LOST -$5.00: Toledo/Ohio UNDER 45.5. Toledo won 34-31, so the soufflé collapsed by 19.5 points. But it was a five-dollar bet, a garnish. I've shed more on a napkin.\n- WON +$94.06: Broncos/Steelers UNDER 36.5. Denver 5, Pittsburgh 27. Gorgeous. Dry, bland, joyless football, and the under cleared by 4.5. Denver's offense is unseasoned boiled water.\n- WON +$9.57: Wisconsin -7.5. Minnesota 5-28, covered by 15.5. Minnesota brought five points to a twenty-eight-point cookoff. Disgusting. Seconds, please.\n\nRich didn't bet any of it. A man stood next to a Michelin dinner and ate a protein bar.\n\n**THE MODEL:**\nPicked 12 of 14 winners, 7-6 against the spread, 9-4 on totals, average miss 10.1 points. A competent line cook with a drinking problem.\n\n- Closest call: Toledo 34-31 Ohio (model had 25-22). Close, and still undercooked.\n- Worst miss: Temple 35-31 Memphis (model had 19-45). The model served Memphis a feast and Temple stole the whole damn table. Send it back.\n\n**STILL TO COME:**\nTomorrow's menu, paper money, as usual:\n- LSU -14.5 at Arkansas, $26.00 to win $24.76\n- Michigan State -3 at Rutgers, $26.00 to win $24.76\n- Boise State/Colorado State UNDER 76.5, $38.00 to win $35.19\n- Purdue +23.5 at Indiana, $19.00 to win $16.96\n- Hawai'i -13.5 vs Sacramento State, $21.00 to win $18.75\n- SEA/SF UNDER 43.5, $79.00 to win $73.83\n- LV/CLE UNDER 40.5, $51.00 to win $43.59\n\nVerdict: AI-LOX advances. Rich, pick up a goddamn knife and bet something.",
+   "style": "an unhinged TV cooking-competition judge"
+  },
+  {
    "id": "2026-11-28T04:00:47Z-NFL+CFB",
    "time": "2026-11-28T04:00:47Z",
    "league": "NFL+CFB",
@@ -576,16 +585,17 @@
    ]
   },
   "2026-11-27": {
-   "n": 5,
-   "last": "2026-11-28T04:00:47Z",
-   "fp": "2026-11-27|2026_12_DEN_PIT|nfl_wind_under_10_14W,2026-11-27|401858536|cfb_letdownW,2026-11-27|401858544|cfb_letdownW,2026-11-27|401866473|cfb_wind_underL|12",
+   "n": 6,
+   "last": "2026-11-28T05:45:47Z",
+   "fp": "2026-11-27|2026_12_DEN_PIT|nfl_wind_under_10_14W,2026-11-27|401858536|cfb_letdownW,2026-11-27|401858544|cfb_letdownW,2026-11-27|401866473|cfb_wind_underL|14",
    "fpBets": "2026-11-27|2026_12_DEN_PIT|nfl_wind_under_10_14W,2026-11-27|401858536|cfb_letdownW,2026-11-27|401858544|cfb_letdownW,2026-11-27|401866473|cfb_wind_underL",
    "kinds": [
     "preview",
     "update",
     "update",
     "update",
-    "update"
+    "update",
+    "final"
    ]
   }
  }
