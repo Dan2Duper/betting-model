@@ -2,6 +2,15 @@
  "_note": "Written automatically by the relay (and by Claude); newest first; the Bet Tracker Reports tab reads this.",
  "reports": [
   {
+   "id": "2026-11-28T02:00:47Z-NFL+CFB",
+   "time": "2026-11-28T02:00:47Z",
+   "league": "NFL+CFB",
+   "kind": "update",
+   "title": "IN A WORLD WHERE UNDERS PAY: Pittsburgh Strangles Denver, Rich Bets Nothing, AI-LOX Eats Anyway",
+   "text": "**MY BETS:**\n\n- In a world... where Rich has no real money on the board... one man sat on his hands. And his hands were clean. Boring. But clean.\n\n**AI-LOX:**\n\nSettled 2-1-0. Net +$106.33 on $130.00 staked. This summer, one robot refuses to die.\n\n- **WON +$17.27:** Iowa -3.5. Nebraska 7, Iowa 31. Beat the number by 20.5. Nebraska brought a knife to a gunfight and forgot the knife.\n- **LOST -$5.00:** UNDER 45.5 in Toledo @ Ohio. Final: Toledo 34, Ohio 31. Missed by 19.5. Both defenses went down like extras in act one. Five bucks. Walk it off.\n- **WON +$94.06:** UNDER 36.5, DEN @ PIT. Denver 5, Pittsburgh 27. Cleared by 4.5. Ninety-five dollars of pure, grinding, ugly football. Nobody got hurt but your eyeballs.\n- **WINNING:** Wisconsin -7.5. Minnesota 3, Wisconsin 14, 0:32 left in the 2nd. Up 3.5 on the number. The Badgers are one dumb turnover from ruining everything. It's Wisconsin. They'll try.\n\n**THE MODEL:**\n\n11 of 14 games final. Winners picked in 9 of 11. 5-5 against the spread. 6-4 on totals. Average miss: 10.8 points. Mediocre. Reliable. Like a divorced dad's sedan.\n\n- Closest call: Toledo 34, Ohio 31. Model had 25-22.\n- Worst miss: Temple 35, Memphis 31. Model had 19-45. Not a miss. A hate crime against math.\n- Live: Texas 10, Texas A&M 0 (1:38 - 2nd), model had 27-11. Minnesota 3, Wisconsin 14, model had 14-23.\n\n**STILL TO COME:**\n\nTomorrow. The sequel. Bigger. Dumber. More paper money.\n\n- LSU -14.5 @ Arkansas, 12:45 PM EST. $26.00 to win $24.76.\n- Michigan State -3 @ Rutgers, 4:15 PM EST. $26.00 to win $24.76.\n- UNDER 76.5, Boise State @ Colorado State, 6:00 PM EST. $38.00 to win $35.19.\n- Purdue +23.5 @ Indiana, 7:00 PM EST. $19.00 to win $16.96.\n- Hawai'i -13.5 vs Sacramento State, 11:00 PM EST. $21.00 to win $18.75.\n- UNDER 43.5, SEA @ SF, Sunday 4:25 PM EST. $79.00 to win $73.83.\n- UNDER 40.5, LV @ CLE, Sunday 8:20 PM EST. $51.00 to win $43.59.\n\nRated R. For Rutgers.",
+   "style": "a cheesy 1980s action-movie trailer voice"
+  },
+  {
    "id": "2026-11-27T23:00:47Z-NFL+CFB",
    "time": "2026-11-27T23:00:47Z",
    "league": "NFL+CFB",
@@ -558,12 +567,13 @@
    ]
   },
   "2026-11-27": {
-   "n": 3,
-   "last": "2026-11-27T23:00:47Z",
-   "fp": "2026-11-27|2026_12_DEN_PIT|nfl_wind_under_10_14W,2026-11-27|401858536|cfb_letdownW,2026-11-27|401866473|cfb_wind_underL|6",
+   "n": 4,
+   "last": "2026-11-28T02:00:47Z",
+   "fp": "2026-11-27|2026_12_DEN_PIT|nfl_wind_under_10_14W,2026-11-27|401858536|cfb_letdownW,2026-11-27|401866473|cfb_wind_underL|11",
    "fpBets": "2026-11-27|2026_12_DEN_PIT|nfl_wind_under_10_14W,2026-11-27|401858536|cfb_letdownW,2026-11-27|401866473|cfb_wind_underL",
    "kinds": [
     "preview",
+    "update",
     "update",
     "update"
    ]
